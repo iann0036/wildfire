@@ -1,0 +1,25 @@
+{
+  "name": "Wildfire",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Records user actions and suggests automation.",
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "background":  {
+    "scripts": ["main.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "storage"
+  ]
+}
