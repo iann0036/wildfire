@@ -1,3 +1,5 @@
+var recording = false;
+
 function simulate(element, eventName) {
     var options = extend(defaultOptions, arguments[2] || {});
     var oEvent, eventType = null;
@@ -55,29 +57,52 @@ var defaultOptions = {
 
 var events = [];
 
-chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
-    if (changeInfo.status == 'complete' && tab.active) {
-        console.log();
-        events.push({
-            tab: tab,
-            type: 'tabchange',
-            data: {
-                id: tabId,
-                openerTabId: changeInfo.openerTabId
-            },
-            time: Date.now()
-            });
+chrome.tabs.onUpdated.addListener(
+    function (tabId, changeInfo, tab) {
+        if (changeInfo.status == 'complete' && tab.active) {
+            if (recording) {
+                events.push({
+                    tab: tab,
+                    evt: 'tabchange',
+                    evt_data: {
+                        id: tabId,
+                        openerTabId: changeInfo.openerTabId,
+                        url: tab.url
+                    },
+                    time: Date.now()
+                });
+            }
+        }
     }
-})
+)
 
-function newEvent() {}
 chrome.runtime.onMessage.addListener(
-    function(request, sender, newEvent) {
-        events.push({
-            tab: sender.tab,
-            type: request.evt,
-            data: request.evt_data,
-            time: Date.now()
-        });
+    function(request, sender, sendResponse) {
+        if (request.evt=='query_recording_status') {
+            sendResponse({recording: recording});
+        } else if (request.evt=='query_events') {
+            sendResponse({events: events});
+        } else {
+            if (request.evt=='begin_recording') {
+                events = []; // reset events
+                recording = true;
+                events.unshift({
+                    tab: sender.tab,
+                    evt: request.evt,
+                    evt_data: request.evt_data,
+                    time: Date.now()
+                });
+            } else if (recording) {
+                events.push({
+                    tab: sender.tab,
+                    evt: request.evt,
+                    evt_data: request.evt_data,
+                    time: Date.now()
+                });
+            }
+            if (request.evt=='end_recording') {
+                recording = false;
+            }
+        }
     }
 );

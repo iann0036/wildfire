@@ -28,39 +28,11 @@ function processPath(elementPath) {
     return path;
 }
 
-window.onload = function() {
+if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
     document.body.addEventListener("mousedown", function(e) {
         chrome.runtime.sendMessage({
             evt: 'mousedown',
             evt_data: {
-                //target: e.target,
-                //path: processPath(e.path),
-                clientX: e.clientX,
-                clientY: e.clientY,
-                altKey: e.altKey,
-                ctrlKey: e.ctrlKey,
-                shiftKey: e.shiftKey,
-                metaKey: e.metaKey,
-                button: e.button,
-                bubbles: e.bubbles,
-                cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
-        });
-    }, true);
-    document.body.addEventListener("click", function(e) {
-        /*var el = e.target;
-        do {
-            if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                return;
-            }
-        } while (el = el.parentNode);*/
-        console.log(e);
-        console.log(processPath(e.path));
-        chrome.runtime.sendMessage({
-            evt: 'click',
-            evt_data: {
-                //target: e.target,
                 path: processPath(e.path),
                 clientX: e.clientX,
                 clientY: e.clientY,
@@ -71,16 +43,23 @@ window.onload = function() {
                 button: e.button,
                 bubbles: e.bubbles,
                 cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
         });
     }, true);
-    document.body.addEventListener("mouseup", function(e) {
+    document.body.addEventListener("click", function(e) {
+        /*var el = e.target;
+        do {
+            if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                return;
+            }
+        } while (el = el.parentNode);*/
         chrome.runtime.sendMessage({
-            evt: 'mouseup',
+            evt: 'click',
             evt_data: {
-                //target: e.target,
-                //path: processPath(e.path),
+                path: processPath(e.path),
                 clientX: e.clientX,
                 clientY: e.clientY,
                 altKey: e.altKey,
@@ -90,8 +69,30 @@ window.onload = function() {
                 button: e.button,
                 bubbles: e.bubbles,
                 cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
+        });
+    }, true);
+    document.body.addEventListener("mouseup", function(e) {
+        chrome.runtime.sendMessage({
+            evt: 'mouseup',
+            evt_data: {
+                path: processPath(e.path),
+                clientX: e.clientX,
+                clientY: e.clientY,
+                altKey: e.altKey,
+                ctrlKey: e.ctrlKey,
+                shiftKey: e.shiftKey,
+                metaKey: e.metaKey,
+                button: e.button,
+                bubbles: e.bubbles,
+                cancelable: e.cancelable,
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
         });
     }, true);
     document.body.addEventListener("keydown", function(e) {
@@ -106,8 +107,10 @@ window.onload = function() {
                 metaKey: e.metaKey,
                 bubbles: e.bubbles,
                 cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
         });
     }, true);
     document.body.addEventListener("keypress", function(e) {
@@ -122,8 +125,10 @@ window.onload = function() {
                 metaKey: e.metaKey,
                 bubbles: e.bubbles,
                 cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
         });
     }, true);
     document.body.addEventListener("keyup", function(e) {
@@ -138,8 +143,10 @@ window.onload = function() {
                 metaKey: e.metaKey,
                 bubbles: e.bubbles,
                 cancelable: e.cancelable,
-                timeStamp: e.timeStamp
-            }
+                innerText: e.srcElement.innerText,
+                url: document.url
+            },
+            time: e.timeStamp
         });
     }, true);
 }

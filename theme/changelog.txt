@@ -1,0 +1,6 @@
+v.1.1
+* sidebar right improved
+* minor changes and improvements
++ new header colors added
+v.1.0
+- Release
