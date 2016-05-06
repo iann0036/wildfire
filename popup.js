@@ -2,36 +2,51 @@
  * Created by ian on 24/04/2016.
  */
 
-var isRecording = false;
+var recording = false;
 
 function toggleRecording() {
-    if (isRecording) {
-        chrome.runtime.sendMessage({
-            evt: 'end_recording',
-            time: Date.now(),
-            evt_data: {}
+    if (recording) {
+        chrome.storage.local.set({recording: false});
+        chrome.storage.local.get('events', function (result) {
+            var events = result.events;
+            events.push({
+                evt: 'end_recording',
+                time: Date.now(),
+                evt_data: {}
+            });
+            chrome.storage.local.set({events: events});
+            window.close();
         });
-        chrome.tabs.query({
-            url: "chrome-extension://" + chrome.runtime.id + "/app.html"
-        }, function(tabs) {
-            if (tabs.length < 1)
-                chrome.tabs.create({ url: "app.html" });
-            else
-                chrome.tabs.update(tabs[0].id, {active: true});
-        });
+
+        chrome.tabs.create({ url: "app.html" });
     } else {
-        chrome.runtime.sendMessage({
-            evt: 'begin_recording',
-            time: Date.now(),
-            evt_data: {}
+        chrome.storage.local.set({recording: true});
+        chrome.storage.local.get('events', function (result) {
+            var events = [];
+            events.push({
+                evt: 'begin_recording',
+                time: Date.now(),
+                evt_data: {}
+            });
+            chrome.storage.local.set({events: events});
+            window.close();
         });
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    chrome.runtime.sendMessage({evt: "query_recording_status",time: Date.now(),evt_data: {}}, function(response) {
-        isRecording = response.recording;
-        if (response.recording) {
+    document.getElementById('recordButton').addEventListener('click', toggleRecording);
+    updateButton();
+    chrome.storage.onChanged.addListener(function(changes, namespace) {
+        updateButton(); // changes could be used to improve performance
+    });
+});
+
+function updateButton() {
+    chrome.storage.local.get('recording', function (result) {
+        recording = result.recording;
+
+        if (recording) {
             document.getElementById('recordButton').innerHTML = "Stop Recording";
             document.getElementById('recordButton').setAttribute('class','btn btn-hover btn-danger btn-block');
         } else {
@@ -39,5 +54,4 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('recordButton').setAttribute('class','btn btn-hover btn-info btn-block');
         }
     });
-    document.getElementById('recordButton').addEventListener('click', toggleRecording);
-});
+};

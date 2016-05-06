@@ -75,10 +75,11 @@
 
         <!-- -------------- Topbar -------------- -->
         <header id="topbar" class="alt">
-            <div class="topbar-left">
+            <div class="topbar-left" style="float: left;">
                 <h3><img src="/icon-32.png" /> Wildfire</h3>
             </div>
-            <div class="topbar-right">
+            <div class="topbar-right" style="margin-top: 10px;">
+                <button id="simulateButton" class="btn btn-lg btn-info">Start Simulation</button>
             </div>
         </header>
         <!-- -------------- /Topbar -------------- -->
@@ -101,15 +102,15 @@
                                     <table class="table mbn table-striped allcp-form theme-info">
                                         <thead>
                                         <tr class="hiden">
-                                            <th class="w30">Time</th>
-                                            <th class="hidden-xs">Event</th>
+                                            <th class="w30 hidden-xs">Time</th>
+                                            <th class="">Event</th>
                                             <th class="hidden-xs">URL</th>
                                             <th class="hidden-xs">Event Details</th>
                                             <th class="w175 text-right">Actions</th>
                                         </tr>
                                         </thead>
                                         <tbody id="events">
-                                        <tr><td colspan="3">Loading...</td></tr>
+                                        <tr><td colspan="5">Loading...</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -143,7 +144,7 @@
 <script src="/theme/assets/js/main.js"></script>
 <script src="/theme/assets/js/demo/widgets_sidebar.js"></script>
 <script src="/theme/assets/js/activate.js"></script>
-<script src="/get_events.js"></script>
+<script src="/app.js"></script>
 <!-- -------------- /Scripts -------------- -->
 
 </body>
