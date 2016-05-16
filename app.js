@@ -58,6 +58,9 @@ function populateEvents() {
                 case 'keypress':
                     event_type = "Key Pressed";
                     break;
+                case 'dataentry':
+                    event_type = "Data Entry";
+                    break;
                 case 'tabchange':
                     event_type = "Changed Tabs";
                     if (events[i].evt_data.url=="chrome://newtab/")
@@ -89,6 +92,8 @@ function populateEvents() {
                 event_data = "Finished clicking at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
             } else if (events[i].evt=="click") {
                 event_data = "Clicked at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+            } else if (events[i].evt=="dataentry") {
+                event_data = "Changed a &lt;" + events[i].evt_data.type + "&gt; element to the value \"" + events[i].evt_data.value + "\"";
             }
 
             var innerHTML = "<td class=\"fs15 fw600 hidden-xs\">" + event_time + "</td>" +
@@ -136,6 +141,10 @@ function removeListener(element, eventName, handler) {
 
 function constructElementIdentifier(path) {
     var js_string = "document";
+
+    if (path.length==1) {
+        return "document.getElementById('" + path[0].uniqueId + "')";
+    }
     for (var i=path.length-2; i>=0; i--) {
         js_string += ".childNodes[" + path[i].childIndex + "]";
     }
@@ -167,9 +176,8 @@ function runSimulation() {
                         break;
                     case 'end_recording':
                         setTimeout(function(new_window) {
-                            chrome.windows.remove(new_window.id,function(){
+                            chrome.windows.remove(new_window.id,function(){});
 
-                            });
                             chrome.notifications.create("",{
                                 type: "basic",
                                 title: "Wildfire",
@@ -182,12 +190,12 @@ function runSimulation() {
                         setTimeout(function(new_window, events, i) {
                             chrome.tabs.executeScript(new_window.tabs[0].id,{
                                 code:"simulate(" +
-                                    constructElementIdentifier(events[i].evt_data.path) +
-                                    ",'mousedown', { clientX: " +
-                                    events[i].evt_data.clientX +
-                                    ", clientY: " +
-                                    events[i].evt_data.clientX +
-                                    " });"
+                                constructElementIdentifier(events[i].evt_data.path) +
+                                ",'mousedown', { clientX: " +
+                                events[i].evt_data.clientX +
+                                ", clientY: " +
+                                events[i].evt_data.clientY +
+                                " });"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
                         break;
@@ -199,7 +207,7 @@ function runSimulation() {
                                 ",'mouseup', { clientX: " +
                                 events[i].evt_data.clientX +
                                 ", clientY: " +
-                                events[i].evt_data.clientX +
+                                events[i].evt_data.clientY +
                                 " });"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
@@ -212,7 +220,7 @@ function runSimulation() {
                                 ",'click', { clientX: " +
                                 events[i].evt_data.clientX +
                                 ", clientY: " +
-                                events[i].evt_data.clientX +
+                                events[i].evt_data.clientY +
                                 " });"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
@@ -222,10 +230,8 @@ function runSimulation() {
                             chrome.tabs.executeScript(new_window.tabs[0].id,{
                                 code:"simulate(" +
                                 constructElementIdentifier(events[i].evt_data.path) +
-                                ",'keydown', { clientX: " +
-                                events[i].evt_data.clientX +
-                                ", clientY: " +
-                                events[i].evt_data.clientX +
+                                ",'keydown', { keyCode: " +
+                                events[i].evt_data.keyCode +
                                 " });"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
@@ -235,10 +241,8 @@ function runSimulation() {
                             chrome.tabs.executeScript(new_window.tabs[0].id,{
                                 code:"simulate(" +
                                 constructElementIdentifier(events[i].evt_data.path) +
-                                ",'keyup', { clientX: " +
-                                events[i].evt_data.clientX +
-                                ", clientY: " +
-                                events[i].evt_data.clientX +
+                                ",'keyup', { keyCode: " +
+                                events[i].evt_data.keyCode +
                                 " });"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
@@ -248,11 +252,17 @@ function runSimulation() {
                             chrome.tabs.executeScript(new_window.tabs[0].id,{
                                 code:"simulate(" +
                                 constructElementIdentifier(events[i].evt_data.path) +
-                                ",'keypress', { clientX: " +
-                                events[i].evt_data.clientX +
-                                ", clientY: " +
-                                events[i].evt_data.clientX +
+                                ",'keypress', { keyCode: " +
+                                events[i].evt_data.keyCode +
                                 " });"
+                            });
+                        }, events[i].time-recording_start_time, new_window, events, i);
+                        break;
+                    case 'dataentry':
+                        setTimeout(function(new_window, events, i) {
+                            chrome.tabs.executeScript(new_window.tabs[0].id,{
+                                code: constructElementIdentifier(events[i].evt_data.path) +
+                                ".value = '" + events[i].evt_data.value.replace("'", "\\'") + "';"
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
                         break;

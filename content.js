@@ -37,9 +37,13 @@ function simulate(element, eventName) {
     }
 
     if (!eventType)
-        throw new SyntaxError('Only HTMLEvents and MouseEvents interfaces are supported');
+        throw new SyntaxError('Only HTMLEvent, MouseEvents and KeyboardEvents interfaces are supported');
 
-    if (document.createEvent) {
+    if (eventType == 'KeyboardEvents') {
+        var oEvent = new KeyboardEvent(eventName, {bubbles : true, cancelable : true,
+            code : String.fromCharCode(options.keyCode).toLowerCase(),
+            key : String.fromCharCode(options.keyCode).toLowerCase(), shiftKey : false});
+    } else {
         oEvent = document.createEvent(eventType);
         if (eventType == 'HTMLEvents') {
             oEvent.initEvent(eventName, options.bubbles, options.cancelable);
@@ -48,12 +52,10 @@ function simulate(element, eventName) {
                 options.button, options.clientX, options.clientY, options.clientX, options.clientY,
                 options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
         }
-        element.dispatchEvent(oEvent);
-    } else {
-        var evt = document.createEventObject();
-        oEvent = extend(evt, options);
-        element.fireEvent('on' + eventName, oEvent);
     }
+
+    console.log(element.dispatchEvent(oEvent));
+
     return element;
 }
 
@@ -65,8 +67,10 @@ function extend(destination, source) {
 
 var eventMatchers = {
     'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
-    'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
+    'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/,
+    'KeyboardEvents': /^(?:key(?:down|up|press))$/
 }
+
 var defaultOptions = {
     clientX: 0,
     clientY: 0,
@@ -79,7 +83,127 @@ var defaultOptions = {
     cancelable: true
 }
 
+/*
+new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+        console.log(mutation);
+        alert('mutation');
+    });
+}).observe(document.body, {
+    attributes: true,
+    childList: false,
+    characterData: false,
+    attributeOldValue: true,
+//  characterDataOldValue: true,
+    subtree: true,
+    attributeFilter: ['value']
+});
+*/
+
+var input_elements = document.body.getElementsByTagName("input");
+for (var i=0; i<input_elements.length; i++) {
+    input_elements[i].addEventListener('change', function(e) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) { // for safety only
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'dataentry',
+                        evt_data: {
+                            path: processPath(e.path),
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: 'input',
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    });
+}
+var select_elements = document.body.getElementsByTagName("select");
+for (var i=0; i<select_elements.length; i++) {
+    select_elements[i].addEventListener('change', function(e) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) { // for safety only
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'dataentry',
+                        evt_data: {
+                            path: processPath(e.path),
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: 'select',
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    });
+}
+var textarea_elements = document.body.getElementsByTagName("textarea");
+for (var i=0; i<textarea_elements.length; i++) {
+    textarea_elements[i].addEventListener('change', function(e) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) { // for safety only
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'dataentry',
+                        evt_data: {
+                            path: processPath(e.path),
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: 'textarea',
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    });
+}
+
+/*
+document.addEventListener("DOMNodeInserted", function(e) {
+    all_elements = e.getElementsByTagName("input");
+    for (var i=0; i<all_elements.length; i++) {
+        all_elements[i].addEventListener('change', function(evt) {
+            alert('New event');
+            console.log(evt);
+        });
+    }
+}, false);
+*/
+
 if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
+//    document.addEventListener("DOMNodeInserted", function(e) {
+//        alert(e);
+//    }
+//    document.getElementsByTagName('input').addEventListener('DOMAttrModified', function(evt) {
+//        alert(evt.attrName + ' is changing from ' + evt.prevValue + ' to ' + evt.newValue);
+//    }, true);
     document.body.addEventListener("mousedown", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -110,7 +234,7 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
     document.body.addEventListener("click", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -147,7 +271,7 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
     document.body.addEventListener("mouseup", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -178,7 +302,7 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
     document.body.addEventListener("keydown", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -207,7 +331,7 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
     document.body.addEventListener("keypress", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -236,7 +360,7 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
     document.body.addEventListener("keyup", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -265,5 +389,5 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
                 });
             }
         });
-    }, true);
+    }, false);
 }
