@@ -18,7 +18,7 @@ function toggleRecording() {
             window.close();
         });
 
-        chrome.tabs.create({ url: "app.html" });
+        chrome.tabs.create({ url: "eventlog.html" });
     } else {
         chrome.storage.local.set({recording: true});
         chrome.storage.local.get('events', function (result) {
@@ -51,7 +51,7 @@ function updateButton() {
             document.getElementById('recordButton').setAttribute('class','btn btn-hover btn-danger btn-block');
         } else {
             document.getElementById('recordButton').innerHTML = "Start Recording";
-            document.getElementById('recordButton').setAttribute('class','btn btn-hover btn-info btn-block');
+            document.getElementById('recordButton').setAttribute('class','btn btn-hover btn-success btn-block');
         }
     });
 };

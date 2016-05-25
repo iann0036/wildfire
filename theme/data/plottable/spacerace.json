@@ -1,0 +1,67 @@
+[
+    {
+        "event": "Sputnik 1 Launch",
+        "date": "10-04-1957",
+        "country": "USSR"
+    },
+    {
+        "event": "Sputnik 2 Launch",
+        "date": "11-03-1957",
+        "country": "USSR"
+    },
+    {
+        "event": "Explorer 1 Launch",
+        "date": "01-31-1958",
+        "country": "USA"
+    },
+    {
+        "event": "NASA formed",
+        "date": "10-01-1958",
+        "country": "USA"
+    },
+    {
+        "event": "Luna 1 Launch",
+        "date": "01-02-1959",
+        "country": "USSR"
+    },
+    {
+        "event": "Yuri Gagarin in space",
+        "date": "04-12-1961",
+        "country": "USSR"
+    },
+    {
+        "event": "JFK Moon speech",
+        "date": "05-25-1961",
+        "country": "USSR"
+    },
+    {
+        "event": "John Glenn in space",
+        "date": "02-20-1962",
+        "country": "USA"
+    },
+    {
+        "event": "Alexei Leonov: first spacewalk",
+        "date": "03-18-1965",
+        "country": "USSR"
+    },
+    {
+        "event": "Luna 9 lands on moon",
+        "date": "02-03-1966",
+        "country": "USSR"
+    },
+    {
+        "event": "Surveyor 1 lands on moon",
+        "date": "06-02-1966",
+        "country": "USA"
+    },
+    {
+        "event": "Apollo 1 disaster",
+        "date": "01-27-1967",
+        "country": "USA"
+    },
+    {
+        "event": "First man on moon",
+        "date": "07-20-1969",
+        "country": "USA"
+    }
+]

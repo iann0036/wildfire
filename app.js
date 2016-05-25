@@ -28,7 +28,7 @@ function populateEvents() {
 
         for (var i=0; i<events.length; i++) {
             /* Event Time */
-            var event_time = ((events[i].time-recording_start_time)/1000).toFixed(1) + "s";
+            var event_time = ((events[i].time-recording_start_time)/1000).toFixed(2) + "s";
 
             /* Event Type */
             var event_type = "";
@@ -61,6 +61,15 @@ function populateEvents() {
                 case 'dataentry':
                     event_type = "Data Entry";
                     break;
+                case 'clipboard_copy':
+                    event_type = "Clipboard Copy";
+                    break;
+                case 'clipboard_cut':
+                    event_type = "Clipboard Cut";
+                    break;
+                case 'clipboard_paste':
+                    event_type = "Clipboard Paste";
+                    break;
                 case 'tabchange':
                     event_type = "Changed Tabs";
                     if (events[i].evt_data.url=="chrome://newtab/")
@@ -80,6 +89,8 @@ function populateEvents() {
 
             /* Event Details */
             var event_data = "";
+            var minorEvent = true;
+
             if (events[i].evt=="keydown") {
                 event_data = "Pressed down on the '" + String.fromCharCode(events[i].evt_data.keyCode).toLowerCase() + "' key";
             } else if (events[i].evt=="keyup") {
@@ -92,19 +103,59 @@ function populateEvents() {
                 event_data = "Finished clicking at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
             } else if (events[i].evt=="click") {
                 event_data = "Clicked at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+                minorEvent = false;
             } else if (events[i].evt=="dataentry") {
                 event_data = "Changed a &lt;" + events[i].evt_data.type + "&gt; element to the value \"" + events[i].evt_data.value + "\"";
+                minorEvent = false;
+            } else if (events[i].evt=="clipboard_copy") {
+                event_data = "Copied the text \"" + events[i].evt_data.value + "\" to the clipboard";
+            } else if (events[i].evt=="clipboard_cut") {
+                event_data = "Cut the text \"" + events[i].evt_data.value + "\" to the clipboard";
+            } else if (events[i].evt=="clipboard_paste") {
+                event_data = "Pasted the text \"" + events[i].evt_data.value + "\" from the clipboard";
+            } else if (events[i].evt=="begin_recording") {
+                minorEvent = false;
+            } else if (events[i].evt=="end_recording") {
+                minorEvent = false;
+            } else if (events[i].evt=="tabchange") {
+                minorEvent = false;
             }
 
-            var innerHTML = "<td class=\"fs15 fw600 hidden-xs\">" + event_time + "</td>" +
+            var innerHTML = "<tr>" +
+                "<td class=\"table-check\">" +
+                "<div class=\"checkbox checkbox-only\">" +
+                "<input type=\"checkbox\" id=\"event-" + i + "\">" +
+                "<label for=\"event-" + i + "\"></label>" +
+                "</div>" +
+                "</td>" +
+                "<td>" + event_type + "</td>" +
+                "<td>" + event_data + "</td>" +
+                "<td>" +
+                "<span class=\"label label-success\">Good</span>" +
+                "</td>" +
+                "<td>" +
+                "<div class=\"font-11 color-blue-grey-lighter uppercase\">Time</div> " +
+                event_time +
+                "</td>" +
+                "<td>" +
+                "<div class=\"font-11 color-blue-grey-lighter uppercase\">URL</div>" +
+                event_url +
+                "</td>" +
+                "<td></td>" +
+                "<td width=\"150\"><a href=\"#\">Delete</a></td>" +
+                "</tr>";
+            /*var innerHTML = "<td class=\"fs15 fw600 hidden-xs\">" + event_time + "</td>" +
                 "<td class=\"\">" + event_type + "</td>" +
                 "<td class=\"hidden-xs\">" + event_url + "</td>" +
                 "<td class=\"hidden-xs\">" + event_data + "</td>" +
                 "<td class=\"text-right\">" +
                 "<button type=\"button\" class=\"btn btn-xs btn-danger\"><i class=\"fa fa-times\"></i></button>" +
-                "</td>";
+                "</td>";*/
 
             var eventNode = document.createElement("tr");
+            if (minorEvent) {
+                eventNode.setAttribute('class', 'table-active');
+            }
             eventNode.innerHTML = innerHTML;
             document.getElementById('events').appendChild(eventNode);
         }
@@ -170,12 +221,24 @@ function runSimulation() {
             "width":1920,
             "height":1080
         },function(new_window) {
+            var timeoutObject = setTimeout(function() {
+                chrome.windows.remove(new_window.id, function(){});
+                chrome.notifications.create("",{
+                    type: "basic",
+                    title: "Wildfire",
+                    message: "Simulation timed out - shutting down simulation",
+                    iconUrl: "icon-128.png"
+                });
+            }, 600000); // 10 minutes
+
             for (var i = 0; i < events.length; i++) {
                 switch (events[i].evt) {
                     case 'begin_recording':
                         break;
                     case 'end_recording':
-                        setTimeout(function(new_window) {
+                        setTimeout(function(new_window, timeoutObject) {
+                            clearTimeout(timeoutObject);
+
                             chrome.windows.remove(new_window.id,function(){});
 
                             chrome.notifications.create("",{
@@ -184,7 +247,7 @@ function runSimulation() {
                                 message: "Simulation completed",
                                 iconUrl: "icon-128.png"
                             });
-                        }, events[i].time-recording_start_time, new_window);
+                        }, events[i].time-recording_start_time, new_window, timeoutObject);
                         break;
                     case 'mousedown':
                         setTimeout(function(new_window, events, i) {
@@ -266,6 +329,14 @@ function runSimulation() {
                             });
                         }, events[i].time-recording_start_time, new_window, events, i);
                         break;
+                    case 'clipboard_cut':
+                        setTimeout(function(new_window, events, i) {
+                            chrome.tabs.executeScript(new_window.tabs[0].id,{
+                                code: constructElementIdentifier(events[i].evt_data.path) +
+                                ".value = '';"
+                            });
+                        }, events[i].time-recording_start_time, new_window, events, i);
+                        break;
                     case 'tabchange':
                         setTimeout(function(events, i) {
                             chrome.tabs.update(new_window.tabs[0].id, {
@@ -277,16 +348,6 @@ function runSimulation() {
                         console.log("Unknown event type: ".events[i].evt);
                 }
             }
-
-            setTimeout(function() {
-                chrome.windows.remove(new_window.id, function(){});
-                chrome.notifications.create("",{
-                    type: "basic",
-                    title: "Wildfire",
-                    message: "Simulation timed out - shutting down simulation",
-                    iconUrl: "icon-128.png"
-                });
-            }, 600000); // 10 minutes
         });
         simulating = false;
     }

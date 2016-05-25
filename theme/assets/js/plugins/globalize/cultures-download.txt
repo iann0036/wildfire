@@ -1,2 +1,0 @@
-Refer to git branch https://github.com/jquery/globalize/tree/v0.1.0a1
-for downloading any globalize language cultures

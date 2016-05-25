@@ -1,1 +1,0 @@
-Utility.js contains many core plugins and libraries which provide helper functions and utilities to other plugins. To save on HTTP request these small core files have been compressed and combined into a single file.
