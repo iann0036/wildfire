@@ -31,11 +31,13 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <link rel="stylesheet" href="/theme/css/lib/font-awesome/font-awesome.min.css">
+    <link rel="stylesheet" href="/theme/css/lib/bootstrap-sweetalert/sweetalert.css"/>
     <link rel="stylesheet" href="/theme/css/main.css">
     <link rel="stylesheet" href="/theme/css/custom.css">
 </head>
 
 <body class="horizontal-navigation">
+<input id="eventfileContainer" accept=".WFIRE" type="file" style="display: none;" />
 
 <header class="site-header">
     <div class="container-fluid">
@@ -59,13 +61,18 @@
                     <div class="site-header-collapsed-in">
                         <div class="dropdown">
                             <button class="btn btn-rounded dropdown-toggle" id="dd-header-add" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Simulate
+                                Actions
                             </button>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-header-add">
-                                <div class="dropdown-header">Simulation Types</div>
-                                <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Realtime</a>
+                                <div class="dropdown-header">Simulation</div>
+                                <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
+                                <a class="dropdown-item" href="#" id="simulateButton2"><span class="font-icon font-icon-refresh"></span> Run Repeated Simulation</a>
+                                <div class="dropdown-header">Import/Export</div>
+                                <a class="dropdown-item" href="#" id="importEventfileButton"><span class="font-icon font-icon-upload-2"></span> Import Eventfile</a>
+                                <a class="dropdown-item" href="#" id="downloadEventfileButton2"><span class="font-icon font-icon-download-3"></span> Export Eventfile</a>
                             </div>
                         </div>
+                        <!--
                         <div class="help-dropdown">
                             <button type="button">
                                 <i class="font-icon font-icon-help"></i>
@@ -136,7 +143,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div><!--.help-dropdown-->
+                        </div>
                         <div class="dropdown dropdown-typical">
                             <a class="dropdown-toggle" id="dd-header-marketing" data-target="#" href="http://example.com" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="font-icon font-icon-cogwheel"></span>
@@ -177,6 +184,7 @@
                                 <a class="dropdown-item" href="#">Subscribtions</a>
                             </div>
                         </div>
+                        -->
                     </div><!--.site-header-collapsed-in-->
                 </div><!--.site-header-collapsed-->
             </div><!--site-header-content-in-->
@@ -207,6 +215,12 @@
                     <div class="tbl-cell tbl-cell-title">
                         <h3>Event Log</h3>
                     </div>
+                    <div class="tbl-cell tbl-cell-action-bordered">
+                        <button id="downloadEventfileButton" type="button" class="action-btn"><i class="font-icon font-icon-download-3"></i></button>
+                    </div>
+                    <div class="tbl-cell tbl-cell-action-bordered">
+                        <button type="button" class="action-btn"><i class="font-icon font-icon-trash"></i></button>
+                    </div>
                 </div>
             </header>
             <div class="box-typical-body">
@@ -222,7 +236,7 @@
                             </th>
                             <th>Type</th>
                             <th>Details</th>
-                            <th>Status</th>
+                            <th>Emulated</th>
                             <th colspan="3">Additional Data</th>
                             <th>Actions</th>
                         </tr>
@@ -241,6 +255,7 @@
     </div><!--.container-fluid-->
 </div><!--.page-content-->
 
+<script src="/theme/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
 <script src="/theme/js/lib/jquery/jquery.min.js"></script>
 <script src="/theme/js/lib/tether/tether.min.js"></script>
 <script src="/theme/js/lib/bootstrap/bootstrap.min.js"></script>

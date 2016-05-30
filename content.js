@@ -110,234 +110,6 @@ function getClipboard() {
     document.body.removeChild(input);
 }
 
-var input_elements = document.body.getElementsByTagName("input");
-for (var i=0; i<input_elements.length; i++) {
-    input_elements[i].addEventListener('change', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'dataentry',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: 'input',
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('copy', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_copy',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('cut', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_cut',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('paste', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_paste',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-}
-var select_elements = document.body.getElementsByTagName("select");
-for (var i=0; i<select_elements.length; i++) {
-    select_elements[i].addEventListener('change', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'dataentry',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: 'select',
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-}
-var textarea_elements = document.body.getElementsByTagName("textarea");
-for (var i=0; i<textarea_elements.length; i++) {
-    textarea_elements[i].addEventListener('change', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'dataentry',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: 'textarea',
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('copy', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_copy',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('cut', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_cut',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-    input_elements[i].addEventListener('paste', function(e) {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'clipboard_paste',
-                        evt_data: {
-                            path: processPath(e.path),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: getClipboard(),
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    });
-}
 
 /*
 document.addEventListener("DOMNodeInserted", function(e) {
@@ -351,13 +123,243 @@ document.addEventListener("DOMNodeInserted", function(e) {
 }, false);
 */
 
-if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
+if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
+    var input_elements = document.body.getElementsByTagName("input");
+    for (var i = 0; i < input_elements.length; i++) {
+        input_elements[i].addEventListener('change', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'dataentry',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: e.srcElement.value,
+                                type: 'input',
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('copy', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_copy',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('cut', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_cut',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('paste', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_paste',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+    }
+    var select_elements = document.body.getElementsByTagName("select");
+    for (var i = 0; i < select_elements.length; i++) {
+        select_elements[i].addEventListener('change', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'dataentry',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: e.srcElement.value,
+                                type: 'select',
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+    }
+    var textarea_elements = document.body.getElementsByTagName("textarea");
+    for (var i = 0; i < textarea_elements.length; i++) {
+        textarea_elements[i].addEventListener('change', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'dataentry',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: e.srcElement.value,
+                                type: 'textarea',
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('copy', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_copy',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('cut', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_cut',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+        input_elements[i].addEventListener('paste', function (e) {
+            chrome.storage.local.get('recording', function (isRecording) {
+                if (isRecording.recording) {
+                    chrome.storage.local.get('events', function (result) {
+                        var events = result.events;
+                        if (!Array.isArray(events)) { // for safety only
+                            events = [];
+                        }
+                        events.push({
+                            evt: 'clipboard_paste',
+                            evt_data: {
+                                path: processPath(e.path),
+                                bubbles: e.bubbles,
+                                cancelable: e.cancelable,
+                                value: getClipboard(),
+                                url: document.url
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
+                    });
+                }
+            });
+        });
+    }
+
 //    document.addEventListener("DOMNodeInserted", function(e) {
 //        alert(e);
 //    }
 //    document.getElementsByTagName('input').addEventListener('DOMAttrModified', function(evt) {
 //        alert(evt.attrName + ' is changing from ' + evt.prevValue + ' to ' + evt.newValue);
 //    }, true);
+
     document.body.addEventListener("mousedown", function(e) {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
@@ -544,4 +546,72 @@ if (window.url != "chrome-extension://" + chrome.runtime.id + "/app.html") {
             }
         });
     }, false);
+    document.body.addEventListener("input", function(e) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'input',
+                        evt_data: {
+                            path: processPath(e.path),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: e.srcElement.tagName.toLowerCase(),
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    }, false);
+    document.body.addEventListener("wfSubmit", function(e) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'submit',
+                        evt_data: {
+                            path: processPath(e.path),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    setTimeout(function(){
+                        chrome.storage.local.set({events: events});
+                    },1); // <--- WHAT THE FUCK?!?
+                });
+            }
+        });
+    }, false);
 }
+
+/* Inject JS directly in for submit intercepts */
+var s = document.createElement('script');
+s.src = chrome.extension.getURL('embedded.js');
+s.onload = function() {
+    this.parentNode.removeChild(this);
+};
+(document.head || document.documentElement).appendChild(s);
+
+
