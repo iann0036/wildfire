@@ -18,7 +18,15 @@ function toggleRecording() {
             window.close();
         });
 
-        chrome.tabs.create({ url: "eventlog.html" });
+        chrome.windows.create({
+            url: "eventlog.html",
+            type: "popup",
+            width: 1280,
+            height: 800,
+            left: screen.width/2-640,
+            top: screen.height/2-400
+        });
+        window.close();
     } else {
         chrome.storage.local.set({recording: true});
         chrome.storage.local.get('events', function (result) {
@@ -55,3 +63,17 @@ function updateButton() {
         }
     });
 };
+
+window.onload = function() {
+    document.getElementById('dashLink').onclick = function () {
+        chrome.windows.create({
+            url: "dashboard.html",
+            type: "popup",
+            width: 1280,
+            height: 800,
+            left: screen.width/2-640,
+            top: screen.height/2-400
+        });
+        window.close();
+    };
+}

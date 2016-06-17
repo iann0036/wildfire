@@ -28,6 +28,31 @@ function processPath(elementPath) {
     return path;
 }
 
+function getCSSPath(el) {
+    if (!(el instanceof Element))
+        return;
+    var path = [];
+    while (el.nodeType === Node.ELEMENT_NODE) {
+        var selector = el.nodeName.toLowerCase();
+        if (el.id) {
+            selector += '#' + el.id;
+            path.unshift(selector);
+            break;
+        } else {
+            var sib = el, nth = 1;
+            while (sib = sib.previousElementSibling) {
+                if (sib.nodeName.toLowerCase() == selector)
+                    nth++;
+            }
+            if (nth != 1)
+                selector += ":nth-of-type("+nth+")";
+        }
+        path.unshift(selector);
+        el = el.parentNode;
+    }
+    return path.join(" > ");
+}
+
 function simulate(element, eventName) {
     var options = extend(defaultOptions, arguments[2] || {});
     var oEvent, eventType = null;
@@ -123,7 +148,6 @@ document.addEventListener("DOMNodeInserted", function(e) {
 }, false);
 */
 
-if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
     var input_elements = document.body.getElementsByTagName("input");
     for (var i = 0; i < input_elements.length; i++) {
         input_elements[i].addEventListener('change', function (e) {
@@ -138,6 +162,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'dataentry',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
@@ -163,6 +188,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_copy',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -187,6 +213,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_cut',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -211,37 +238,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_paste',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
-                            },
-                            time: Date.now()
-                        });
-                        chrome.storage.local.set({events: events});
-                    });
-                }
-            });
-        });
-    }
-    var select_elements = document.body.getElementsByTagName("select");
-    for (var i = 0; i < select_elements.length; i++) {
-        select_elements[i].addEventListener('change', function (e) {
-            chrome.storage.local.get('recording', function (isRecording) {
-                if (isRecording.recording) {
-                    chrome.storage.local.get('events', function (result) {
-                        var events = result.events;
-                        if (!Array.isArray(events)) { // for safety only
-                            events = [];
-                        }
-                        events.push({
-                            evt: 'dataentry',
-                            evt_data: {
-                                path: processPath(e.path),
-                                bubbles: e.bubbles,
-                                cancelable: e.cancelable,
-                                value: e.srcElement.value,
-                                type: 'select',
                                 url: document.url
                             },
                             time: Date.now()
@@ -266,6 +266,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'dataentry',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
@@ -291,6 +292,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_copy',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -315,6 +317,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_cut',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -339,6 +342,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                             evt: 'clipboard_paste',
                             evt_data: {
                                 path: processPath(e.path),
+                                csspath: getCSSPath(e.srcElement),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -360,7 +364,81 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
 //        alert(evt.attrName + ' is changing from ' + evt.prevValue + ' to ' + evt.newValue);
 //    }, true);
 
-    document.body.addEventListener("mousedown", function(e) {
+/* Start Scroll */
+var scrollTimer = null;
+var scrollObject = null;
+var scrollStartTime;
+var scrollStartTop;
+var scrollStartLeft;
+
+function finishScrollEvent() {
+    chrome.storage.local.get('events', function (result) {
+        scrollObject = document.body; // temp fix
+
+        var events = result.events;
+        if (!Array.isArray(events)) { // for safety only
+            events = [];
+        }
+        events.push({
+            evt: 'scroll',
+            evt_data: {
+                bubbles: false, // TODO: Investigate
+                cancelable: false, // TODO: Investigate
+                scrollTopStart: scrollStartTop,
+                scrollTopEnd: scrollObject.scrollTop,
+                scrollLeftStart: scrollStartLeft,
+                scrollLeftEnd: scrollObject.scrollLeft,
+                url: document.url,
+                endtime: Date.now()
+            },
+            time: scrollStartTime
+        });
+        chrome.storage.local.set({events: events});
+
+        scrollObject = null;
+        scrollStartTop = null; // not necessary
+        scrollStartLeft = null; // not necessary
+    });
+}
+
+function updateScrollEvent(e) {
+    // Designed to support multiple element scrolling event listeners
+
+    var scrollTimeMillis = 100;
+
+    if (scrollObject == null) {
+        scrollStartTime = Date.now();
+        scrollObject = document.body; // e.srcElement; temp removed
+        scrollStartTop = scrollObject.scrollTop;
+        scrollStartLeft = scrollObject.scrollLeft;
+        scrollTimer = setTimeout(finishScrollEvent, scrollTimeMillis);
+    } else {//} if (scrollObject == e.srcElement) {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(finishScrollEvent, scrollTimeMillis);
+    }/* else { // a new element has started scrolling. 2 elements can't scroll concurrently, so the first must be
+        alert('Wildfire Exception: Detected duplicate scroll. Please inform the developers of this issue.');
+        clearTimeout(scrollTimer);
+        finishScrollEvent();
+        scrollStartTime = Date.now();
+        scrollStartTop = e.srcElement.scrollTop;
+        scrollStartLeft = e.srcElement.scrollLeft;
+        setTimeout(finishScrollEvent, scrollTimeMillis);
+    }*/
+}
+
+window.addEventListener("scroll", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                updateScrollEvent(e);
+            }
+        });
+    },1);
+}, false);
+/* End Scroll */
+
+document.body.addEventListener("mousedown", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -372,6 +450,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'mousedown',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             clientX: e.clientX,
                             clientY: e.clientY,
                             altKey: e.altKey,
@@ -390,8 +469,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("click", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("click", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 /*var el = e.target;
@@ -409,6 +490,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'click',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             clientX: e.clientX,
                             clientY: e.clientY,
                             altKey: e.altKey,
@@ -427,8 +509,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("mouseup", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("mouseup", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -440,6 +524,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'mouseup',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             clientX: e.clientX,
                             clientY: e.clientY,
                             altKey: e.altKey,
@@ -458,8 +543,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("keydown", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("keydown", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -471,6 +558,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'keydown',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             keyCode: e.keyCode,
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
@@ -487,8 +575,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("keypress", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("keypress", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -500,6 +590,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'keypress',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             keyCode: e.keyCode,
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
@@ -516,8 +607,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("keyup", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("keyup", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -529,6 +622,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'keyup',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             keyCode: e.keyCode,
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
@@ -545,8 +639,10 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("input", function(e) {
+    },1);
+}, false);
+document.body.addEventListener("input", function(e) {
+    setTimeout(function() {
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -558,6 +654,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'input',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
@@ -574,8 +671,43 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                 });
             }
         });
-    }, false);
-    document.body.addEventListener("wfSubmit", function(e) {
+    },1);
+}, false);
+
+document.body.addEventListener("change", function (e) {
+    setTimeout(function(){
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'dataentry',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: e.srcElement.tagName.toLowerCase(),
+                            url: document.url
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("wfSubmit", function(e) {
+    setTimeout(function(){
         chrome.storage.local.get('recording', function (isRecording) {
             if (isRecording.recording) {
                 chrome.storage.local.get('events', function (result) {
@@ -587,6 +719,7 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         evt: 'submit',
                         evt_data: {
                             path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
@@ -597,14 +730,12 @@ if (window.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
                         },
                         time: Date.now()
                     });
-                    setTimeout(function(){
-                        chrome.storage.local.set({events: events});
-                    },1); // <--- WHAT THE FUCK?!?
+                    chrome.storage.local.set({events: events});
                 });
             }
         });
-    }, false);
-}
+    },1);
+}, false);
 
 /* Inject JS directly in for submit intercepts */
 var s = document.createElement('script');
@@ -613,5 +744,3 @@ s.onload = function() {
     this.parentNode.removeChild(this);
 };
 (document.head || document.documentElement).appendChild(s);
-
-

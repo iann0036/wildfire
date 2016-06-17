@@ -14,8 +14,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "matches": ["http://*/*","https://*/*"],
+      "js": ["jquery-2.2.4.min.js", "content.js"]
     }
   ],
   "browser_action": {
@@ -26,7 +26,8 @@
     "storage",
     "notifications",
     "http://*/",
-    "https://*/"
+    "https://*/",
+    "<all_urls>"
   ],
   "web_accessible_resources": ["embedded.js"]
 }
