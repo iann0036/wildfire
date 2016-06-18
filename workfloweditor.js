@@ -16,9 +16,9 @@ document.getElementById('workflowgraph').oncontextmenu = function(){ return fals
 //  - reflexive edges are indicated on the node (as a bold black circle).
 //  - links are always source < target; edge directions are set by 'left' and 'right'.
 var nodes = [
-        {id: 0, reflexive: false},
-        {id: 1, reflexive: true },
-        {id: 2, reflexive: false}
+        {id: 0, fixed: true, reflexive: false, x: window.innerWidth/2, y: window.innerHeight/2-150-68},
+        {id: 1, fixed: true, reflexive: false, x: window.innerWidth/2-200, y: window.innerHeight/2-68},
+        {id: 2, fixed: true, reflexive: false, x: window.innerWidth/2, y: window.innerHeight/2+150-68}
     ],
     lastNodeId = 2,
     links = [
@@ -102,6 +102,10 @@ function tick() {
         return 'translate(' + d.x + ',' + d.y + ')';
     });
 }
+
+var drag = force.drag()
+    .on("dragstart", dragstart)
+    .on("dragend", dragend);
 
 // update graph (called when needed)
 function restart() {
@@ -228,7 +232,8 @@ function restart() {
             selected_link = link;
             selected_node = null;
             restart();
-        });
+        })
+        .call(drag);;
 
     // show node IDs
     g.append('svg:text')
@@ -242,6 +247,19 @@ function restart() {
 
     // set the graph in motion
     force.start();
+}
+
+function dragstart(d) {
+    circle.call(force.drag);
+    svg.classed('ctrl', true);
+    d3.select(this).classed("fixed", d.fixed = true);
+}
+
+function dragend(d) {
+    circle
+        .on('mousedown.drag', null)
+        .on('touchstart.drag', null);
+    svg.classed('ctrl', false);
 }
 
 function mousedown() {
