@@ -2,7 +2,7 @@
   "name": "Wildfire",
   "version": "1.0",
   "manifest_version": 2,
-  "description": "Records user actions and suggests automation.",
+  "description": "A Chrome extension to automate your life.",
   "icons": {
     "16": "icon-16.png",
     "32": "icon-32.png",
@@ -15,7 +15,9 @@
   "content_scripts": [
     {
       "matches": ["http://*/*","https://*/*"],
-      "js": ["jquery-2.2.4.min.js", "content.js"]
+      "js": ["jquery-2.2.4.min.js", "content.js"],
+      //"run_at": "document_start",
+      "all_frames": true
     }
   ],
   "browser_action": {
@@ -23,6 +25,7 @@
   },
   "permissions": [
     "tabs",
+    "webNavigation",
     "storage",
     "notifications",
     "http://*/",

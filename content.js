@@ -1,3 +1,15 @@
+function getFrameIndex() {
+    if (window.top === window.self)
+        return 0;
+    for (var i=0; i<window.top.frames.length; i++) {
+        if (window.top.frames[i] === window.self) {
+            return i+1;
+        }
+    }
+
+    return -1;
+}
+
 function processPath(elementPath) {
     var numPathElements = elementPath.length;
     var path = [];
@@ -35,7 +47,7 @@ function getCSSPath(el) {
     while (el.nodeType === Node.ELEMENT_NODE) {
         var selector = el.nodeName.toLowerCase();
         if (el.id) {
-            selector += '#' + el.id;
+            selector += '#' + el.id.replace( /(:|\.|\[|\]|,)/g, "\\$1" ); // extra regex for css chars in id
             path.unshift(selector);
             break;
         } else {
@@ -148,6 +160,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
 }, false);
 */
 
+/*
     var input_elements = document.body.getElementsByTagName("input");
     for (var i = 0; i < input_elements.length; i++) {
         input_elements[i].addEventListener('change', function (e) {
@@ -167,7 +180,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
                                 type: 'input',
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -192,7 +205,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -217,7 +230,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -242,7 +255,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -271,7 +284,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
                                 type: 'textarea',
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -296,7 +309,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -321,7 +334,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -346,7 +359,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
-                                url: document.url
+                                url: window.location.href
                             },
                             time: Date.now()
                         });
@@ -356,6 +369,7 @@ document.addEventListener("DOMNodeInserted", function(e) {
             });
         });
     }
+*/
 
 //    document.addEventListener("DOMNodeInserted", function(e) {
 //        alert(e);
@@ -388,7 +402,8 @@ function finishScrollEvent() {
                 scrollTopEnd: scrollObject.scrollTop,
                 scrollLeftStart: scrollStartLeft,
                 scrollLeftEnd: scrollObject.scrollLeft,
-                url: document.url,
+                inFrame: getFrameIndex(),
+                url: window.location.href,
                 endtime: Date.now()
             },
             time: scrollStartTime
@@ -461,7 +476,190 @@ document.body.addEventListener("mousedown", function(e) {
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
                             innerText: e.srcElement.innerText,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("mouseup", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'mouseup',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            button: e.button,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            innerText: e.srcElement.innerText,
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("open", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                /*var el = e.target;
+                 do {
+                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                 return;
+                 }
+                 } while (el = el.parentNode);*/
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'open',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            innerText: e.srcElement.innerText,
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("select", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                /*var el = e.target;
+                 do {
+                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                 return;
+                 }
+                 } while (el = el.parentNode);*/
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'select',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            innerText: e.srcElement.innerText,
+                            selectValue: e.srcElement.value,
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("focusin", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                /*var el = e.target;
+                 do {
+                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                 return;
+                 }
+                 } while (el = el.parentNode);*/
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'focusin',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            button: e.button,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            innerText: e.srcElement.innerText,
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
+document.body.addEventListener("focusout", function(e) {
+    setTimeout(function() {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                /*var el = e.target;
+                 do {
+                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                 return;
+                 }
+                 } while (el = el.parentNode);*/
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'focusout',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            button: e.button,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            innerText: e.srcElement.innerText,
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -501,41 +699,8 @@ document.body.addEventListener("click", function(e) {
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
                             innerText: e.srcElement.innerText,
-                            url: document.url
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("mouseup", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'mouseup',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -567,7 +732,8 @@ document.body.addEventListener("keydown", function(e) {
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
                             innerText: e.srcElement.innerText,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -599,7 +765,8 @@ document.body.addEventListener("keypress", function(e) {
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
                             innerText: e.srcElement.innerText,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -631,7 +798,8 @@ document.body.addEventListener("keyup", function(e) {
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
                             innerText: e.srcElement.innerText,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -663,7 +831,8 @@ document.body.addEventListener("input", function(e) {
                             cancelable: e.cancelable,
                             value: e.srcElement.value,
                             type: e.srcElement.tagName.toLowerCase(),
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -673,7 +842,39 @@ document.body.addEventListener("input", function(e) {
         });
     },1);
 }, false);
-
+document.body.addEventListener("propertychange", function (e) {
+    setTimeout(function(){
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                chrome.storage.local.get('events', function (result) {
+                    var events = result.events;
+                    if (!Array.isArray(events)) {
+                        events = [];
+                    }
+                    events.push({
+                        evt: 'propertychange',
+                        evt_data: {
+                            path: processPath(e.path),
+                            csspath: getCSSPath(e.srcElement),
+                            altKey: e.altKey,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            metaKey: e.metaKey,
+                            bubbles: e.bubbles,
+                            cancelable: e.cancelable,
+                            value: e.srcElement.value,
+                            type: e.srcElement.tagName.toLowerCase(),
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                });
+            }
+        });
+    },1);
+}, false);
 document.body.addEventListener("change", function (e) {
     setTimeout(function(){
         chrome.storage.local.get('recording', function (isRecording) {
@@ -696,7 +897,8 @@ document.body.addEventListener("change", function (e) {
                             cancelable: e.cancelable,
                             value: e.srcElement.value,
                             type: e.srcElement.tagName.toLowerCase(),
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });
@@ -726,7 +928,8 @@ document.body.addEventListener("wfSubmit", function(e) {
                             metaKey: e.metaKey,
                             bubbles: e.bubbles,
                             cancelable: e.cancelable,
-                            url: document.url
+                            inFrame: getFrameIndex(),
+                            url: window.location.href
                         },
                         time: Date.now()
                     });

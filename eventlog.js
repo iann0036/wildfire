@@ -183,6 +183,17 @@ function populateEvents() {
                     event_data = "Clicked at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
                     minorEvent = false;
                     break;
+                case 'select':
+                    event_type = "Text Selected";
+                    break;
+                case 'focusin':
+                    event_type = "Element Focus";
+                    minorEvent = false;
+                    break;
+                case 'focusout':
+                    event_type = "Element Unfocus";
+                    minorEvent = false;
+                    break;
                 case 'keydown':
                     event_type = "Key Down";
                     break;
@@ -265,6 +276,10 @@ function populateEvents() {
 
             //if (event_data.length>57)
             //    event_data = event_data.substr(0, 57) + "...";
+
+            if (events[i].evt_data.inFrame) {
+                event_type += ' <span class="hint-circle red" data-toggle="tooltip" data-placement="top" title="Detected this event within a frame">?</span>';
+            }
 
             /* Event URL */
             var event_url = false;
