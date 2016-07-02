@@ -29,28 +29,33 @@ function processPath(elementPath) {
                     childIndex = j;
                 }
             }
-            path.push({
-                uniqueId: null,
-                childIndex: childIndex,
-                tagName: elementPath[i].tagName
-            });
+            if (childIndex==null && elementPath[i]==document) {
+                ; // WTF
+            } else {
+                path.push({
+                    uniqueId: null,
+                    childIndex: childIndex,
+                    tagName: elementPath[i].tagName
+                });
+            }
         }
     }
     
     return path;
 }
 
-function getCSSPath(el) {
+function getCSSPath(el, ignoreIds) {
     if (!(el instanceof Element))
         return;
     var path = [];
     while (el.nodeType === Node.ELEMENT_NODE) {
         var selector = el.nodeName.toLowerCase();
-        if (el.id) {
+        if (el.id && !ignoreIds) {
             selector += '#' + el.id.replace( /(:|\.|\[|\]|,)/g, "\\$1" ); // extra regex for css chars in id
             path.unshift(selector);
             break;
         } else {
+            var sib = el, nth = 1;
             var sib = el, nth = 1;
             while (sib = sib.previousElementSibling) {
                 if (sib.nodeName.toLowerCase() == selector)
@@ -175,7 +180,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'dataentry',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
@@ -201,7 +207,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_copy',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -226,7 +233,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_cut',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -251,7 +259,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_paste',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -279,7 +288,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'dataentry',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: e.srcElement.value,
@@ -305,7 +315,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_copy',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -330,7 +341,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_cut',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -355,7 +367,8 @@ document.addEventListener("DOMNodeInserted", function(e) {
                             evt: 'clipboard_paste',
                             evt_data: {
                                 path: processPath(e.path),
-                                csspath: getCSSPath(e.srcElement),
+                                csspath: getCSSPath(e.srcElement, false),
+                                csspathfull: getCSSPath(e.srcElement, true),
                                 bubbles: e.bubbles,
                                 cancelable: e.cancelable,
                                 value: getClipboard(),
@@ -441,509 +454,707 @@ function updateScrollEvent(e) {
     }*/
 }
 
-window.addEventListener("scroll", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                updateScrollEvent(e);
-            }
-        });
-    },1);
-}, false);
-/* End Scroll */
+chrome.storage.local.get('recording', function (isRecording) {
+    if (isRecording.recording) {
 
-document.body.addEventListener("mousedown", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) { // for safety only
-                        events = [];
+        window.addEventListener("scroll", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        updateScrollEvent(e);
                     }
-                    events.push({
-                        evt: 'mousedown',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
                 });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("mouseup", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'mouseup',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("open", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                /*var el = e.target;
-                 do {
-                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                 return;
-                 }
-                 } while (el = el.parentNode);*/
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'open',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("select", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                /*var el = e.target;
-                 do {
-                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                 return;
-                 }
-                 } while (el = el.parentNode);*/
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'select',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            selectValue: e.srcElement.value,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("focusin", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                /*var el = e.target;
-                 do {
-                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                 return;
-                 }
-                 } while (el = el.parentNode);*/
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'focusin',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("focusout", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                /*var el = e.target;
-                 do {
-                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                 return;
-                 }
-                 } while (el = el.parentNode);*/
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'focusout',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("click", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                /*var el = e.target;
-                 do {
-                 if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                 return;
-                 }
-                 } while (el = el.parentNode);*/
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'click',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            button: e.button,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("keydown", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'keydown',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            keyCode: e.keyCode,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("keypress", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'keypress',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            keyCode: e.keyCode,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("keyup", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'keyup',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            keyCode: e.keyCode,
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            innerText: e.srcElement.innerText,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("input", function(e) {
-    setTimeout(function() {
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'input',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: e.srcElement.tagName.toLowerCase(),
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("propertychange", function (e) {
-    setTimeout(function(){
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'propertychange',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: e.srcElement.tagName.toLowerCase(),
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("change", function (e) {
-    setTimeout(function(){
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'dataentry',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            value: e.srcElement.value,
-                            type: e.srcElement.tagName.toLowerCase(),
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
-document.body.addEventListener("wfSubmit", function(e) {
-    setTimeout(function(){
-        chrome.storage.local.get('recording', function (isRecording) {
-            if (isRecording.recording) {
-                chrome.storage.local.get('events', function (result) {
-                    var events = result.events;
-                    if (!Array.isArray(events)) {
-                        events = [];
-                    }
-                    events.push({
-                        evt: 'submit',
-                        evt_data: {
-                            path: processPath(e.path),
-                            csspath: getCSSPath(e.srcElement),
-                            altKey: e.altKey,
-                            ctrlKey: e.ctrlKey,
-                            shiftKey: e.shiftKey,
-                            metaKey: e.metaKey,
-                            bubbles: e.bubbles,
-                            cancelable: e.cancelable,
-                            inFrame: getFrameIndex(),
-                            url: window.location.href
-                        },
-                        time: Date.now()
-                    });
-                    chrome.storage.local.set({events: events});
-                });
-            }
-        });
-    },1);
-}, false);
+            }, 1);
+        }, false);
+        /* End Scroll */
 
-/* Inject JS directly in for submit intercepts */
-var s = document.createElement('script');
-s.src = chrome.extension.getURL('embedded.js');
-s.onload = function() {
-    this.parentNode.removeChild(this);
-};
-(document.head || document.documentElement).appendChild(s);
+        document.body.addEventListener("mousedown", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) { // for safety only
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'mousedown',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("mouseup", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'mouseup',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        /* Temp disabled for sanity */
+        document.body.addEventListener("touchstart", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'touchstart',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("mouseover", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'mouseover',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("mouseout", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'mouseout',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("open", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        /*var el = e.target;
+                         do {
+                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                         return;
+                         }
+                         } while (el = el.parentNode);*/
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'open',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("select", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        /*var el = e.target;
+                         do {
+                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                         return;
+                         }
+                         } while (el = el.parentNode);*/
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'select',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    selectValue: e.srcElement.value,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("focusin", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        /*var el = e.target;
+                         do {
+                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                         return;
+                         }
+                         } while (el = el.parentNode);*/
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'focusin',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("focusout", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        /*var el = e.target;
+                         do {
+                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                         return;
+                         }
+                         } while (el = el.parentNode);*/
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'focusout',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("click", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        /*var el = e.target;
+                         do {
+                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
+                         return;
+                         }
+                         } while (el = el.parentNode);*/
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'click',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    clientX: e.clientX,
+                                    clientY: e.clientY,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    button: e.button,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("keydown", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'keydown',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    keyCode: e.keyCode,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("keypress", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'keypress',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    keyCode: e.keyCode,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("keyup", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'keyup',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    keyCode: e.keyCode,
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    innerText: e.srcElement.innerText,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("input", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'input',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    value: e.srcElement.value,
+                                    type: e.srcElement.tagName.toLowerCase(),
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("propertychange", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'propertychange',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    value: e.srcElement.value,
+                                    type: e.srcElement.tagName.toLowerCase(),
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("change", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'dataentry',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    value: e.srcElement.value,
+                                    type: e.srcElement.tagName.toLowerCase(),
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+        document.body.addEventListener("wfSubmit", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        chrome.storage.local.get('events', function (result) {
+                            var events = result.events;
+                            if (!Array.isArray(events)) {
+                                events = [];
+                            }
+                            events.push({
+                                evt: 'submit',
+                                evt_data: {
+                                    path: processPath(e.path),
+                                    csspath: getCSSPath(e.srcElement, false),
+                                    csspathfull: getCSSPath(e.srcElement, true),
+                                    altKey: e.altKey,
+                                    ctrlKey: e.ctrlKey,
+                                    shiftKey: e.shiftKey,
+                                    metaKey: e.metaKey,
+                                    bubbles: e.bubbles,
+                                    cancelable: e.cancelable,
+                                    inFrame: getFrameIndex(),
+                                    url: window.location.href
+                                },
+                                time: Date.now()
+                            });
+                            chrome.storage.local.set({events: events});
+                        });
+                    }
+                });
+            }, 1);
+        }, false);
+
+        /* Inject JS directly in for submit intercepts */
+        var s = document.createElement('script');
+        s.src = chrome.extension.getURL('embedded.js');
+        s.onload = function () {
+            this.parentNode.removeChild(this);
+        };
+        (document.head || document.documentElement).appendChild(s);
+
+        /* Duplicate hover CSS classes */
+        if (window.location.href.substring(0, 19) != "chrome-extension://") {
+            var styles = document.styleSheets;
+            for (var i = 0, len = styles.length; i < len; i++) {
+                var rules = styles[i].cssRules;
+                if (rules) {
+                    var newstyle = "";
+                    for (var j = 0; j < rules.length; j++) {
+                        if (rules[j].cssText.indexOf(":hover") > -1) {
+                            newstyle += rules[j].cssText.replace(/:hover/g, ".wildfire-hover") + ";";
+                        }
+                    }
+                    var style_tag = document.createElement('style');
+                    style_tag.appendChild(document.createTextNode(newstyle));
+                    document.body.appendChild(style_tag);
+                } else {
+                    loadCSSCors(styles[i].href);
+                }
+            }
+
+            function loadCSSCors(stylesheet_uri) {
+                var path_parts = stylesheet_uri.split('/');
+                path_parts.pop();
+                var relative_host_dir = path_parts.join('/') + "/";
+
+                var _xhr = XMLHttpRequest;
+                var has_cred = false;
+                try {
+                    has_cred = _xhr && ('withCredentials' in (new _xhr()));
+                } catch (e) {
+                }
+                if (!has_cred) {
+                    console.error('CORS not supported');
+                    return;
+                }
+                var xhr = new _xhr();
+                xhr.open('GET', stylesheet_uri);
+                xhr.onload = function () {
+                    xhr.onload = xhr.onerror = null;
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        console.error('style failed to load: ' + stylesheet_uri)
+                    } else if (xhr.responseText.indexOf(":hover") > -1) {
+                        var style_tag = document.createElement('style');
+                        var newstyle = xhr.responseText.replace(/:hover/g, ".wildfire-hover");
+                        newstyle = newstyle.replace(/url\((?!http|\/\/)/g, "url(" + relative_host_dir);
+                        style_tag.appendChild(document.createTextNode(newstyle));
+                        document.body.appendChild(style_tag);
+                    }
+                    xhr.onerror = function () {
+                        xhr.onload = xhr.onerror = null;
+                        console.error('XHR CORS CSS fail:' + styleURI);
+                    };
+                };
+                xhr.send();
+            }
+
+            function simulateHoverElement(el) {
+                stopSimulateHover();
+                $(el).addClass("wildfire-hover");
+                $(el).parents().addClass("wildfire-hover");
+            }
+
+            function stopSimulateHover() {
+                $("*").removeClass("wildfire-hover");
+            }
+        }
+
+        /****/
+
+    }
+});

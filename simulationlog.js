@@ -18,7 +18,7 @@ function populateSimulations() {
                 "<section class=\"box-typical task-card task\">";
 
             if (simulations[i].image) {
-                innerHTML += "<div class=\"task-card-photo\"><a href='#'><img src=\"";
+                innerHTML += "<div class=\"task-card-photo\"><a href='#'><img style=\"max-height: 120px;\" src=\"";
                 innerHTML += simulations[i].image;
                 innerHTML += "\" alt=\"\"></a></div>";
             }

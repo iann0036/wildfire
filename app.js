@@ -169,7 +169,7 @@ function runSimulation() {
                                 chrome.tabs.captureVisibleTab(new_window.id,{
                                     "format": "png"
                                 }, function(imagedata){
-                                    chrome.windows.remove(new_window.id,function(){});
+                                    //chrome.windows.remove(new_window.id,function(){});
 
                                     chrome.notifications.create("",{
                                         type: "basic",
@@ -217,7 +217,8 @@ function runSimulation() {
                                         ", clientY: " +
                                         events[i].evt_data.clientY +
                                         " });",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -240,7 +241,8 @@ function runSimulation() {
                                         "scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
                                         "scrollLeft: " + events[i].evt_data.scrollLeftEnd +
                                         "}, " + (events[i].evt_data.endtime-events[i].time) + ");",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -266,7 +268,62 @@ function runSimulation() {
                                         ", clientY: " +
                                         events[i].evt_data.clientY +
                                         " });",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
+                                    },function(results){
+                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                    });
+                                });
+                            }, events[i].time-recording_start_time, new_window, events, i);
+                            break;
+                        case 'mouseover':
+                            setTimeout(function(new_window, events, i) {
+                                var frameId = 0;
+
+                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                                    for (var j=0; j<frames.length; j++) {
+                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                                            frameId = frames[j].frameId;
+                                        }
+                                    }
+
+                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                                        code:"simulate(" +
+                                        constructElementIdentifier(events[i].evt_data.path) +
+                                        ",'mouseover', { clientX: " +
+                                        events[i].evt_data.clientX +
+                                        ", clientY: " +
+                                        events[i].evt_data.clientY +
+                                        " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
+                                        frameId: frameId,
+                                        matchAboutBlank: true
+                                    },function(results){
+                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                    });
+                                });
+                            }, events[i].time-recording_start_time, new_window, events, i);
+                            break;
+                        case 'mouseout':
+                            setTimeout(function(new_window, events, i) {
+                                var frameId = 0;
+
+                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                                    for (var j=0; j<frames.length; j++) {
+                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                                            frameId = frames[j].frameId;
+                                        }
+                                    }
+
+                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                                        code:"simulate(" +
+                                        constructElementIdentifier(events[i].evt_data.path) +
+                                        ",'mouseout', { clientX: " +
+                                        events[i].evt_data.clientX +
+                                        ", clientY: " +
+                                        events[i].evt_data.clientY +
+                                        " }); stopSimulateHover();",
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -286,7 +343,8 @@ function runSimulation() {
 
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: "$('" + events[i].evt_data.csspath + "').click();",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -306,7 +364,8 @@ function runSimulation() {
 
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: "$('" + events[i].evt_data.csspath + "').focus();",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -326,7 +385,8 @@ function runSimulation() {
 
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: "$('" + events[i].evt_data.csspath + "').blur();",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -350,7 +410,8 @@ function runSimulation() {
                                         ",'keydown', { keyCode: " +
                                         events[i].evt_data.keyCode +
                                         " });",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -374,7 +435,8 @@ function runSimulation() {
                                         ",'keyup', { keyCode: " +
                                         events[i].evt_data.keyCode +
                                         " });",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -398,7 +460,8 @@ function runSimulation() {
                                         ",'keypress', { keyCode: " +
                                         events[i].evt_data.keyCode +
                                         " });",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -420,7 +483,8 @@ function runSimulation() {
                                         code:"simulate(" +
                                         constructElementIdentifier(events[i].evt_data.path) +
                                         ",'submit', {});",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -440,7 +504,8 @@ function runSimulation() {
 
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -460,7 +525,8 @@ function runSimulation() {
 
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });
@@ -481,7 +547,8 @@ function runSimulation() {
                                     chrome.tabs.executeScript(new_window.tabs[0].id,{
                                         code: constructElementIdentifier(events[i].evt_data.path) +
                                         ".value = '';",
-                                        frameId: frameId
+                                        frameId: frameId,
+                                        matchAboutBlank: true
                                     },function(results){
                                         ; // TODO to be populated - this will have an array of results - make sure to return in code
                                     });

@@ -173,10 +173,22 @@ function populateEvents() {
                 case 'mousedown':
                     event_type = "Mouse Down";
                     event_data = "Began clicking at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+                    minorEvent = false;
                     break;
                 case 'mouseup':
                     event_type = "Mouse Up";
                     event_data = "Finished clicking at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+                    minorEvent = false;
+                    break;
+                case 'mouseover':
+                    event_type = "Mouse Over";
+                    event_data = "Moused over an element at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+                    minorEvent = false;
+                    break;
+                case 'mouseout':
+                    event_type = "Mouse Out";
+                    event_data = "Moved mouse out of element at coordinates (" + events[i].evt_data.clientX + "," + events[i].evt_data.clientY + ")";
+                    minorEvent = false;
                     break;
                 case 'click':
                     event_type = "Mouse Clicked";
@@ -279,6 +291,12 @@ function populateEvents() {
 
             if (events[i].evt_data.inFrame) {
                 event_type += ' <span class="hint-circle red" data-toggle="tooltip" data-placement="top" title="Detected this event within a frame">?</span>';
+            }
+
+            if (events[i].evt_data.csspathfull) {
+                if (events[i].evt_data.csspathfull != "html > body") {
+                    event_type += ' <span class="hint-circle grey" data-toggle="tooltip" data-placement="top" title="' + events[i].evt_data.csspathfull + '">?</span>';
+                }
             }
 
             /* Event URL */
