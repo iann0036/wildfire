@@ -89,8 +89,11 @@
     <li class="nav-item">
         <a class="nav-link" href="eventlog.html">Event Log</a>
     </li>
-    <li class="nav-item">
+    <li id="workflowEditorPrimaryLink" style="display: none;" class="nav-item">
         <a class="nav-link" href="workfloweditor.html">Workflow Editor</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="settings.html">Settings</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="about.html">About</a>
@@ -99,16 +102,44 @@
 
 <div class="page-content">
     <div class="container-fluid">
-        <div class="box-typical box-typical-full-height">
-            <div class="add-customers-screen tbl">
-                <div class="add-customers-screen-in">
-                    <img style="width: 78px; height: 78px;" src="/icon-128.png" />
-                    <h2 style="padding-top: 20px;">Wildfire</h2>
-                    <p class="lead color-blue-grey-lighter">Version 1.0</p>
-                    <a href="#" class="btn">Start Simulating</a>
-                </div>
+        <div class="row">
+            <div class="col-xl-7" style="min-width: 646px;">
+                <section class="card">
+                    <header class="card-header card-header-lg">
+                        Introduction
+                    </header>
+                    <div class="card-block" style="text-align: center;">
+                        <video width="640" controls>
+                            <source src="demo.webm" type="video/webm">
+                            <i>Loading...</i>
+                        </video>
+                    </div>
+                </section>
             </div>
-        </div><!--.box-typical-->
+            <div class="col-xl-5">
+                <section class="card">
+                    <header class="card-header card-header-lg">
+                        Contact Us
+                    </header>
+                    <div class="card-block">
+                        <p class="card-text">
+                        <form>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="E-Mail">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Subject">
+                            </div>
+                            <div class="form-group">
+                                <textarea rows="4" class="form-control" placeholder="Message"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-inline">Send</button>
+                        </form>
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
     </div><!--.container-fluid-->
 </div><!--.page-content-->
 
@@ -121,4 +152,4 @@
 <script src="/theme/js/app.js"></script>
 <script src="/app.js"></script>
 </body>
-</html>
+</html

@@ -36,7 +36,7 @@ function populateEvents() {
         events = result.events;
         document.getElementById('events').innerHTML = ""; // reset table
 
-        if (!events || events.length<1) {
+        if (!events || events == null || events.length<1) {
             var eventNode = document.createElement("tr");
             eventNode.innerHTML = '<tr><td style="text-align: center;" colspan="8">No events yet!</td></tr>';
             document.getElementById('events').appendChild(eventNode);
@@ -44,7 +44,7 @@ function populateEvents() {
             recording_start_time = events[0].time;
         }
 
-        for (var i=0; i<events.length; i++) {
+        for (var i=0; events!=null && i<events.length; i++) {
             /* Event Time */
             var event_time = ((events[i].time-recording_start_time)/1000).toFixed(2) + "s";
 

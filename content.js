@@ -1,3 +1,10 @@
+/* Wildfire Content Script */
+
+var all_settings;
+chrome.storage.local.get('settings', function (settings) {
+    all_settings = settings.settings;
+});
+
 function getFrameIndex() {
     if (window.top === window.self)
         return 0;
@@ -577,78 +584,82 @@ chrome.storage.local.get('recording', function (isRecording) {
                 });
             }, 1);
         }, false);
-        document.body.addEventListener("mouseover", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'mouseover',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
+        if (all_settings.recordmouseover) {
+            document.body.addEventListener("mouseover", function (e) {
+                setTimeout(function () {
+                    chrome.storage.local.get('recording', function (isRecording) {
+                        if (isRecording.recording) {
+                            chrome.storage.local.get('events', function (result) {
+                                var events = result.events;
+                                if (!Array.isArray(events)) {
+                                    events = [];
+                                }
+                                events.push({
+                                    evt: 'mouseover',
+                                    evt_data: {
+                                        path: processPath(e.path),
+                                        csspath: getCSSPath(e.srcElement, false),
+                                        csspathfull: getCSSPath(e.srcElement, true),
+                                        clientX: e.clientX,
+                                        clientY: e.clientY,
+                                        altKey: e.altKey,
+                                        ctrlKey: e.ctrlKey,
+                                        shiftKey: e.shiftKey,
+                                        metaKey: e.metaKey,
+                                        button: e.button,
+                                        bubbles: e.bubbles,
+                                        cancelable: e.cancelable,
+                                        innerText: e.srcElement.innerText,
+                                        inFrame: getFrameIndex(),
+                                        url: window.location.href
+                                    },
+                                    time: Date.now()
+                                });
+                                chrome.storage.local.set({events: events});
                             });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("mouseout", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'mouseout',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
+                        }
+                    });
+                }, 1);
+            }, false);
+        }
+        if (all_settings.recordmouseout) {
+            document.body.addEventListener("mouseout", function (e) {
+                setTimeout(function () {
+                    chrome.storage.local.get('recording', function (isRecording) {
+                        if (isRecording.recording) {
+                            chrome.storage.local.get('events', function (result) {
+                                var events = result.events;
+                                if (!Array.isArray(events)) {
+                                    events = [];
+                                }
+                                events.push({
+                                    evt: 'mouseout',
+                                    evt_data: {
+                                        path: processPath(e.path),
+                                        csspath: getCSSPath(e.srcElement, false),
+                                        csspathfull: getCSSPath(e.srcElement, true),
+                                        clientX: e.clientX,
+                                        clientY: e.clientY,
+                                        altKey: e.altKey,
+                                        ctrlKey: e.ctrlKey,
+                                        shiftKey: e.shiftKey,
+                                        metaKey: e.metaKey,
+                                        button: e.button,
+                                        bubbles: e.bubbles,
+                                        cancelable: e.cancelable,
+                                        innerText: e.srcElement.innerText,
+                                        inFrame: getFrameIndex(),
+                                        url: window.location.href
+                                    },
+                                    time: Date.now()
+                                });
+                                chrome.storage.local.set({events: events});
                             });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
+                        }
+                    });
+                }, 1);
+            }, false);
+        }
         document.body.addEventListener("open", function (e) {
             setTimeout(function () {
                 chrome.storage.local.get('recording', function (isRecording) {
@@ -1079,16 +1090,18 @@ chrome.storage.local.get('recording', function (isRecording) {
             }, 1);
         }, false);
 
-        /* Inject JS directly in for submit intercepts */
-        var s = document.createElement('script');
-        s.src = chrome.extension.getURL('embedded.js');
-        s.onload = function () {
-            this.parentNode.removeChild(this);
-        };
-        (document.head || document.documentElement).appendChild(s);
+        if (all_settings.customsubmit) {
+            /* Inject JS directly in for submit intercepts */
+            var s = document.createElement('script');
+            s.src = chrome.extension.getURL('embedded.js');
+            s.onload = function () {
+                this.parentNode.removeChild(this);
+            };
+            (document.head || document.documentElement).appendChild(s);
+        }
 
-        /* Duplicate hover CSS classes
-        if (window.location.href.substring(0, 19) != "chrome-extension://") {
+        /* Duplicate hover CSS classes */
+        if (window.location.href.substring(0, 19) != "chrome-extension://" && all_settings.emulatehover) {
             var styles = document.styleSheets;
             for (var i = 0, len = styles.length; i < len; i++) {
                 var rules = styles[i].cssRules;

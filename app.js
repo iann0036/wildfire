@@ -8,6 +8,27 @@ var recording_end_time = 0;
 var simulating = false;
 var simulation_log = [];
 var sim_start_time;
+var all_settings;
+
+chrome.storage.local.get('settings', function (settings) {
+    if (settings.settings != null) {
+        all_settings = settings.settings;
+        if (all_settings.activateeditor)
+            $('#workflowEditorPrimaryLink').attr('style', 'display: inline-block;');
+    } else {
+        all_settings = new Object();
+        all_settings.emulatehover = false;
+        all_settings.activateeditor = false;
+        all_settings.leavesimulationopen = false;
+        all_settings.recordmouseout = false;
+        all_settings.recordmouseover = false;
+        all_settings.simulatemouseout = false;
+        all_settings.simulatemouseover = false;
+        all_settings.customsubmit = true;
+        all_settings.runminimized = false;
+        chrome.storage.local.set({settings: all_settings});
+    }
+});
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
     updateEvents();
@@ -95,7 +116,8 @@ function constructElementIdentifier(path) {
 }
 
 function runSimulation() {
-    if (!simulating && events.length>2) {
+    if (!simulating && events!=null && events.length>2) {
+        recording_start_time = events[0].time;
         simulating = true;
         simulation_log = [];
         sim_start_time = Date.now();
@@ -121,15 +143,18 @@ function runSimulation() {
                 "height":1080
                 //"type":"popup"
             },function(new_window) {
-                chrome.windows.update(new_window.id,{ // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
-                    state:"maximized"
-                });
+                if (all_settings.runminimized) {
+                    chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
+                        state: "minimized"
+                    });
+                }
 
                 var timeoutObject = setTimeout(function() {
                     chrome.tabs.captureVisibleTab(new_window.id,{
                         "format": "png"
                     }, function(imagedata){
-                        chrome.windows.remove(new_window.id,function(){});
+                        if (!all_settings.leavesimulationopen)
+                            chrome.windows.remove(new_window.id,function(){});
 
                         chrome.notifications.create("",{
                             type: "basic",
@@ -169,7 +194,8 @@ function runSimulation() {
                                 chrome.tabs.captureVisibleTab(new_window.id,{
                                     "format": "png"
                                 }, function(imagedata){
-                                    //chrome.windows.remove(new_window.id,function(){});
+                                    if (!all_settings.leavesimulationopen)
+                                        chrome.windows.remove(new_window.id,function(){});
 
                                     chrome.notifications.create("",{
                                         type: "basic",
@@ -277,58 +303,62 @@ function runSimulation() {
                             }, events[i].time-recording_start_time, new_window, events, i);
                             break;
                         case 'mouseover':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
+                            if (all_settings.simulatemouseover) {
+                                setTimeout(function (new_window, events, i) {
+                                    var frameId = 0;
 
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
+                                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                                        for (var j = 0; j < frames.length; j++) {
+                                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
+                                                frameId = frames[j].frameId;
+                                            }
                                         }
-                                    }
 
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'mouseover', { clientX: " +
-                                        events[i].evt_data.clientX +
-                                        ", clientY: " +
-                                        events[i].evt_data.clientY +
-                                        " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                        chrome.tabs.executeScript(new_window.tabs[0].id, {
+                                            code: "simulate(" +
+                                            constructElementIdentifier(events[i].evt_data.path) +
+                                            ",'mouseover', { clientX: " +
+                                            events[i].evt_data.clientX +
+                                            ", clientY: " +
+                                            events[i].evt_data.clientY +
+                                            " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
+                                            frameId: frameId,
+                                            matchAboutBlank: true
+                                        }, function (results) {
+                                            ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                        });
                                     });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
+                                }, events[i].time - recording_start_time, new_window, events, i);
+                            }
                             break;
                         case 'mouseout':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
+                            if (all_settings.simulatemouseout) {
+                                setTimeout(function (new_window, events, i) {
+                                    var frameId = 0;
 
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
+                                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                                        for (var j = 0; j < frames.length; j++) {
+                                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
+                                                frameId = frames[j].frameId;
+                                            }
                                         }
-                                    }
 
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'mouseout', { clientX: " +
-                                        events[i].evt_data.clientX +
-                                        ", clientY: " +
-                                        events[i].evt_data.clientY +
-                                        " }); stopSimulateHover();",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                        chrome.tabs.executeScript(new_window.tabs[0].id, {
+                                            code: "simulate(" +
+                                            constructElementIdentifier(events[i].evt_data.path) +
+                                            ",'mouseout', { clientX: " +
+                                            events[i].evt_data.clientX +
+                                            ", clientY: " +
+                                            events[i].evt_data.clientY +
+                                            " }); stopSimulateHover();",
+                                            frameId: frameId,
+                                            matchAboutBlank: true
+                                        }, function (results) {
+                                            ; // TODO to be populated - this will have an array of results - make sure to return in code
+                                        });
                                     });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
+                                }, events[i].time - recording_start_time, new_window, events, i);
+                            }
                             break;
                         case 'click':
                             setTimeout(function(new_window, events, i) {
@@ -570,7 +600,7 @@ function runSimulation() {
         });
         simulating = false;
     } else {
-        if (events.length<3)
+        if (events==null || events.length<3)
             swal({
                 title: "No events found",
                 text: "You haven't recorded any actions yet!",

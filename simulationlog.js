@@ -79,3 +79,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 });
 
 populateSimulations();
+
+document.getElementById('simulateButton3').addEventListener('click', function() {
+    runSimulation();
+});
