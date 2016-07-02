@@ -1087,7 +1087,7 @@ chrome.storage.local.get('recording', function (isRecording) {
         };
         (document.head || document.documentElement).appendChild(s);
 
-        /* Duplicate hover CSS classes */
+        /* Duplicate hover CSS classes
         if (window.location.href.substring(0, 19) != "chrome-extension://") {
             var styles = document.styleSheets;
             for (var i = 0, len = styles.length; i < len; i++) {
