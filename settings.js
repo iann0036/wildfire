@@ -50,7 +50,7 @@ $('#setting-emulate-hover').change(function() {
 });
 
 $('#setting-custom-submit').change(function() {
-    all_settings.customubmit = $(this).is(":checked");
+    all_settings.customsubmit = $(this).is(":checked");
     updateSettings();
 });
 

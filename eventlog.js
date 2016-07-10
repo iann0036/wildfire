@@ -44,6 +44,8 @@ function populateEvents() {
             recording_start_time = events[0].time;
         }
 
+        var isInsideLoop = false;
+
         for (var i=0; events!=null && i<events.length; i++) {
             /* Event Time */
             var event_time = ((events[i].time-recording_start_time)/1000).toFixed(2) + "s";
@@ -222,7 +224,10 @@ function populateEvents() {
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;");
                     event_type = "Data Entry";
-                    event_data = "Changed a &lt;" + events[i].evt_data.type + "&gt; element to the value \"" + escaped_value + "\"";
+                    event_data = "Changed a";
+                    if (events[i].evt_data.type == "input")
+                        event_data += "n";
+                    event_data += " <code>&lt;" + events[i].evt_data.type + "&gt;</code> element to the value \"" + escaped_value + "\"";
                     minorEvent = false;
                     break;
                 case 'input':
@@ -232,7 +237,10 @@ function populateEvents() {
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;");
                     event_type = "Data Input";
-                    event_data = "Changed a &lt;" + events[i].evt_data.type + "&gt; element to the value \"" + escaped_value + "\"";
+                    event_data = "Changed a";
+                    if (events[i].evt_data.type == "input")
+                        event_data += "n";
+                    event_data += " <code>&lt;" + events[i].evt_data.type + "&gt;</code> element to the value \"" + escaped_value + "\"";
                     minorEvent = false;
                     break;
                 case 'clipboard_copy':
@@ -277,6 +285,17 @@ function populateEvents() {
                         event_type = "Opened New Tab";
                     minorEvent = false;
                     break;
+                case 'loopstart':
+                    event_type = "Loop Started";
+                    isInsideLoop = true;
+                    break;
+                case 'loopend':
+                    event_type = "Loop Ended";
+                    //isInsideLoop = false; Do this Later
+                    break;
+                case 'loopiterate':
+                    event_type = "Loop Iterated";
+                    break;
                 default:
                     var escaped_value = events[i].evt.replace(/&/g, "&amp;")
                         .replace(/</g, "&lt;")
@@ -307,8 +326,7 @@ function populateEvents() {
                     event_url = event_url.substr(0, 57) + "...";
             }
 
-            var innerHTML = "<tr>" +
-                "<td class=\"table-check\">" +
+            var innerHTML = "<td class=\"table-check\">" +
                 "<div class=\"checkbox checkbox-only\">" +
                 "<input type=\"checkbox\" id=\"event-" + i + "\" name=\"eventCheckboxes\">" +
                 "<label for=\"event-" + i + "\"></label>" +
@@ -336,19 +354,25 @@ function populateEvents() {
             innerHTML += "<td width=\"150\">";
             if (events[i].evt!="begin_recording" && events[i].evt!="end_recording")
                 innerHTML += "<a href=\"#\" id=\"deleteEvent" + i + "\">Delete</a>";
-            innerHTML += "</td>" +
-                "</tr>";
+            innerHTML += "</td>";
 
             var eventNode = document.createElement("tr");
             eventNode.innerHTML = innerHTML;
+            if (isInsideLoop)
+                eventNode.setAttribute('class','table-info');
             eventNode.id = "eventRow" + i;
             document.getElementById('events').appendChild(eventNode);
+
+            // Refresh table UI
 
             if (events[i].evt!="begin_recording" && events[i].evt!="end_recording") {
                 document.getElementById("deleteEvent" + i).onclick = function(e){
                     deleteEvent(e.target.id.replace("deleteEvent",""));
                 }
             }
+
+            if (events[i].evt == "loopend")
+                isInsideLoop = false;
         }
     });
 }

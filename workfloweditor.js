@@ -1,10 +1,15 @@
 var rect_width = 100;
 var rect_height = 20;
+var minor_offset = 5;
+var VERTICAL_PREFERENCE = 0.6; // log(e) lower from 1 means more preference
+
+var nodes = [];
+var links = [];
 
 // set up SVG for D3
 var width  = window.innerWidth-0, // side panel width
     height = window.innerHeight-136,
-    colors = d3.scale.category10();
+    colors = d3.scale.category20();
 
 var svg = d3.select('#workflowgraph')
     .append('svg')
@@ -25,18 +30,59 @@ chrome.storage.local.get('events', function (result) {
     //  - nodes are known by 'id', not by index in array.
     //  - reflexive edges are indicated on the node (as a bold black circle).
     //  - links are always source < target; edge directions are set by 'left' and 'right'.
-
-    var nodes = [];
-    var links = [];
+    var colorMapping = {
+        begin_recording: 5,
+        end_recording: 10,
+        mousedown: 3,
+        mouseup: 3,
+        mouseover: 5,
+        mouseout: 6,
+        click: 7,
+        select: 8,
+        focusin: 9,
+        focusout: 9,
+        keyup: 12,
+        keydown: 12,
+        keypress: 13,
+        dataentry: 14,
+        input: 2,
+        clipboard_copy: 17,
+        clipboard_cut: 17,
+        clipboard_paste: 18,
+        submit: 19,
+        scroll: 20,
+        tabchange: 21
+    };
     for (var i=0; i<events.length; i++) {
-        nodes.push({
-            id: i,
-            fixed: true,
-            reflexive: false,
-            x: window.innerWidth / 2,
-            y: (window.innerHeight / 2) - (events.length*50) + (i*100) - 68,
-            eventdata: events[i]
-        });
+        var nodeColor = colorMapping[events[i].evt];
+        if (nodeColor == null)
+            nodeColor = 5;
+
+        if (events.length < 6) {
+            nodes.push({
+                id: i,
+                color: nodeColor,
+                fixed: true,
+                reflexive: false,
+                x: window.innerWidth / 2,
+                y: (window.innerHeight / 2) - (events.length * 50) + (i * 100) - 68,
+                eventdata: events[i]
+            });
+        } else {
+            var x = 320 + (i%6) * 160;
+            if (Math.floor(i/6) % 2)
+                x = 1120 - (i%6) * 160;
+            var y = 100 + Math.floor(i/6) * 60;
+            nodes.push({
+                id: i,
+                color: nodeColor,
+                fixed: true,
+                reflexive: false,
+                x: x,
+                y: y,
+                eventdata: events[i]
+            });
+        }
         if (i>0)
             links.push({
                 source: nodes[i-1],
@@ -105,17 +151,24 @@ chrome.storage.local.get('events', function (result) {
     function tick() {
         // draw directed edges with proper padding from node centers
         path.attr('d', function (d) {
-            var deltaX = d.target.x - d.source.x,
-                deltaY = d.target.y - d.source.y,
-                dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-                normX = deltaX / dist,
-                normY = deltaY / dist,
-                sourcePadding = d.left ? 17 : 12,
-                targetPadding = d.right ? 17 : 12,
-                sourceX = d.source.x + (sourcePadding * normX),
-                sourceY = d.source.y + (sourcePadding * normY),
-                targetX = d.target.x - (targetPadding * normX),
-                targetY = d.target.y - (targetPadding * normY);
+            // initial set bottom to top
+            var sourceX = d.source.x + (rect_width/2),
+                sourceY = d.source.y + (rect_height/2),
+                targetX = d.target.x + (rect_width/2),
+                targetY = d.target.y - minor_offset;
+
+            if (sourceY > targetY) { // top to bottom
+                targetY = d.target.y + rect_height + minor_offset;
+            }
+
+            if (Math.abs(sourceY-targetY) < Math.abs(sourceX-targetX) * VERTICAL_PREFERENCE) { // if its horizontally aligned
+                targetY = d.target.y + (rect_height/2);
+                if (sourceX<targetX)
+                    targetX = d.target.x - minor_offset;
+                else
+                    targetX = d.target.x + rect_width + minor_offset;
+            }
+
             return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
         });
 
@@ -184,7 +237,7 @@ chrome.storage.local.get('events', function (result) {
         // update existing nodes (reflexive & selected visual states)
         circle.selectAll('circle')
             .style('fill', function (d) {
-                return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id);
+                return (d === selected_node) ? d3.rgb(colors(d.color)).brighter().toString() : colors(d.color);
             })
             .classed('reflexive', function (d) {
                 return d.reflexive;
@@ -200,10 +253,10 @@ chrome.storage.local.get('events', function (result) {
             .attr('rx', 4)
             .attr('ry', 4)
             .style('fill', function (d) {
-                return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id);
+                return (d === selected_node) ? d3.rgb(colors(d.color)).brighter().toString() : colors(d.color);
             })
             .style('stroke', function (d) {
-                return d3.rgb(colors(d.id)).darker().toString();
+                return d3.rgb(colors(d.color)).darker().toString();
             })
             .classed('reflexive', function (d) {
                 return d.reflexive;
@@ -383,6 +436,19 @@ chrome.storage.local.get('events', function (result) {
     // only respond once per keydown
     var lastKeyDown = -1;
 
+    function executeDelete() {
+        if (selected_node) {
+            nodes.splice(nodes.indexOf(selected_node), 1);
+            spliceLinksForNode(selected_node);
+        } else if (selected_link) {
+            links.splice(links.indexOf(selected_link), 1);
+        }
+        selected_link = null;
+        selected_node = null;
+        closeSidePanel();
+        restart();
+    }
+
     function keydown() {
         d3.event.preventDefault();
 
@@ -453,13 +519,18 @@ chrome.storage.local.get('events', function (result) {
     }
 
     function openSidePanel(d) {
-        document.getElementById('sidepanelContents').innerHTML = JSON.stringify(d);
+        if (d.source == null) {
+            document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> " + d.eventdata.evt + "<br />" +
+                "<b>Details:</b> <pre>" + JSON.stringify(d.eventdata) + "</pre><br />";
+        } else {
+            document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> Link<br />";
+        }
 
-        document.getElementById('workflowsidepanel').style = "display: block; padding-top: 136px; width: 300px;";
+        document.getElementById('workflowsidepanel').style = "display: block;";
     }
 
     function closeSidePanel() {
-        document.getElementById('workflowsidepanel').style = "display: none; padding-top: 136px; width: 300px;";
+        document.getElementById('workflowsidepanel').style = "display: none;";
     }
 
     document.getElementById('nodeLinkPanelX').addEventListener("click", function () {
@@ -467,6 +538,22 @@ chrome.storage.local.get('events', function (result) {
         selected_node = null;
         restart();
         closeSidePanel();
+    });
+
+    document.getElementById('deleteButtonSidepanel').addEventListener("click", function () {
+        executeDelete();
+    });
+
+    $('#fixedEventsCheckbox').change(function(){
+        if ($(this).is(':checked')) {
+            for (var i=0; i<nodes.length; i++) {
+                nodes[i].fixed = true;
+            }
+        } else {
+            for (var i=0; i<nodes.length; i++) {
+                nodes[i].fixed = false;
+            }
+        }
     });
 
     // app starts here

@@ -9,6 +9,11 @@ var simulating = false;
 var simulation_log = [];
 var sim_start_time;
 var all_settings;
+var timeoutObject;
+var stepIterator = 0;
+var new_window;
+var event_execution_timeout = 10000;
+var eventExecutionTimeoutCounter;
 
 chrome.storage.local.get('settings', function (settings) {
     if (settings.settings != null) {
@@ -115,6 +120,576 @@ function constructElementIdentifier(path) {
     return js_string;
 }
 
+function terminateSimulation() {
+    clearTimeout(timeoutObject);
+    simulating = false;
+    chrome.tabs.captureVisibleTab(new_window.id,{
+        "format": "png"
+    }, function(imagedata){
+        if (!all_settings.leavesimulationopen)
+            chrome.windows.remove(new_window.id,function(){});
+
+        chrome.notifications.create("",{
+            type: "basic",
+            title: "Wildfire",
+            message: "Simulation completed",
+            iconUrl: "icon-128.png"
+        });
+        chrome.storage.local.get('simulations', function (result) {
+            var simulations = result.simulations;
+            if (!Array.isArray(simulations)) { // for safety only
+                simulations = [];
+            }
+            simulations.push({
+                log: simulation_log,
+                starttime: sim_start_time,
+                endtime: Date.now(),
+                image: imagedata,
+                finished: false
+            });
+            chrome.storage.local.set({simulations: simulations});
+        });
+    });
+}
+
+function simulateNextStep() {
+    var i = stepIterator;
+    clearTimeout(eventExecutionTimeoutCounter);
+
+    switch (events[i].evt) {
+        case 'begin_recording':
+            setTimeout(function(i) {
+                simulation_log.push({
+                    index: i,
+                    error: false
+                });
+                simulateNextStep();
+            }, events[i].time-recording_start_time, i);
+            break;
+        case 'end_recording':
+            setTimeout(function(new_window, timeoutObject, i) {
+                terminateSimulation();
+            }, events[i].time-events[i-1].time, new_window, timeoutObject, i);
+            break;
+        case 'mousedown':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'mousedown', { clientX: " +
+                        events[i].evt_data.clientX +
+                        ", clientY: " +
+                        events[i].evt_data.clientY +
+                        " });",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'scroll':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    // Scrolls can take longer than timeout and I don't care if they fail
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('html, body').animate({" +
+                        "scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
+                        "scrollLeft: " + events[i].evt_data.scrollLeftEnd +
+                        "}, " + (events[i].evt_data.endtime-events[i].time) + ");",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'mouseup':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'mouseup', { clientX: " +
+                        events[i].evt_data.clientX +
+                        ", clientY: " +
+                        events[i].evt_data.clientY +
+                        " });",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'mouseover':
+            if (all_settings.simulatemouseover) {
+                setTimeout(function (new_window, events, i) {
+                    var frameId = 0;
+
+                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                        for (var j = 0; j < frames.length; j++) {
+                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
+                                frameId = frames[j].frameId;
+                            }
+                        }
+
+                        eventExecutionTimeoutCounter = setTimeout(function(i){
+                            simulation_log.push({
+                                index: i,
+                                error: true
+                            });
+                            terminateSimulation();
+                        }, event_execution_timeout, i);
+
+                        chrome.tabs.executeScript(new_window.tabs[0].id, {
+                            code: "simulate(" +
+                            constructElementIdentifier(events[i].evt_data.path) +
+                            ",'mouseover', { clientX: " +
+                            events[i].evt_data.clientX +
+                            ", clientY: " +
+                            events[i].evt_data.clientY +
+                            " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
+                            frameId: frameId,
+                            matchAboutBlank: true
+                        }, function (results) {
+                            ; // TODO to be populated - this will have an array of results - make sure to return in code
+                            simulateNextStep();
+                        });
+                    });
+                }, events[i].time - recording_start_time, new_window, events, i);
+            }
+            break;
+        case 'mouseout':
+            if (all_settings.simulatemouseout) {
+                setTimeout(function (new_window, events, i) {
+                    var frameId = 0;
+
+                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                        for (var j = 0; j < frames.length; j++) {
+                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
+                                frameId = frames[j].frameId;
+                            }
+                        }
+
+                        eventExecutionTimeoutCounter = setTimeout(function(i){
+                            simulation_log.push({
+                                index: i,
+                                error: true
+                            });
+                            terminateSimulation();
+                        }, event_execution_timeout, i);
+
+                        chrome.tabs.executeScript(new_window.tabs[0].id, {
+                            code: "simulate(" +
+                            constructElementIdentifier(events[i].evt_data.path) +
+                            ",'mouseout', { clientX: " +
+                            events[i].evt_data.clientX +
+                            ", clientY: " +
+                            events[i].evt_data.clientY +
+                            " }); stopSimulateHover();",
+                            frameId: frameId,
+                            matchAboutBlank: true
+                        }, function (results) {
+                            ; // TODO to be populated - this will have an array of results - make sure to return in code
+                            simulateNextStep();
+                        });
+                    });
+                }, events[i].time - recording_start_time, new_window, events, i);
+            }
+            break;
+        case 'click':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('" + events[i].evt_data.csspath + "').click();",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'focusin':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('" + events[i].evt_data.csspath + "').focus();",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'focusout':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('" + events[i].evt_data.csspath + "').blur();",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'keydown':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'keydown', { keyCode: " +
+                        events[i].evt_data.keyCode +
+                        " });",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'keyup':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'keyup', { keyCode: " +
+                        events[i].evt_data.keyCode +
+                        " });",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'keypress':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'keypress', { keyCode: " +
+                        events[i].evt_data.keyCode +
+                        " });",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'submit':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code:"simulate(" +
+                        constructElementIdentifier(events[i].evt_data.path) +
+                        ",'submit', {});",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'dataentry':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'input':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'clipboard_cut':
+            setTimeout(function(new_window, events, i) {
+                var frameId = 0;
+
+                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+                            frameId = frames[j].frameId;
+                        }
+                    }
+
+                    eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation();
+                    }, event_execution_timeout, i);
+
+                    chrome.tabs.executeScript(new_window.tabs[0].id,{
+                        code: constructElementIdentifier(events[i].evt_data.path) +
+                        ".value = '';",
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    },function(results){
+                        ; // TODO to be populated - this will have an array of results - make sure to return in code
+                        simulateNextStep();
+                    });
+                });
+            }, events[i].time-events[i-1].time, new_window, events, i);
+            break;
+        case 'tabchange':
+            setTimeout(function(events, i) {
+                eventExecutionTimeoutCounter = setTimeout(function(i){
+                    simulation_log.push({
+                        index: i,
+                        error: true
+                    });
+                    terminateSimulation();
+                }, event_execution_timeout, i);
+
+                chrome.tabs.update(new_window.tabs[0].id, {
+                    url: events[i].evt_data.url
+                }, function(){
+                    simulateNextStep();
+                });
+            }, events[i].time-events[i-1].time, events, i);
+            break;
+        default:
+            console.log("Unknown event type: ".events[i].evt);
+            simulation_log.push({
+                index: i,
+                error: true
+            });
+            break;
+    }
+
+    stepIterator++;
+}
+
 function runSimulation() {
     if (!simulating && events!=null && events.length>2) {
         recording_start_time = events[0].time;
@@ -142,463 +717,21 @@ function runSimulation() {
                 "width":1920,
                 "height":1080
                 //"type":"popup"
-            },function(new_window) {
+            },function(simulation_window) {
+                new_window = simulation_window;
                 if (all_settings.runminimized) {
                     chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
                         state: "minimized"
                     });
                 }
 
-                var timeoutObject = setTimeout(function() {
-                    chrome.tabs.captureVisibleTab(new_window.id,{
-                        "format": "png"
-                    }, function(imagedata){
-                        if (!all_settings.leavesimulationopen)
-                            chrome.windows.remove(new_window.id,function(){});
-
-                        chrome.notifications.create("",{
-                            type: "basic",
-                            title: "Wildfire",
-                            message: "Simulation completed",
-                            iconUrl: "icon-128.png"
-                        });
-                        chrome.storage.local.get('simulations', function (result) {
-                            var simulations = result.simulations;
-                            if (!Array.isArray(simulations)) { // for safety only
-                                simulations = [];
-                            }
-                            simulations.push({
-                                log: simulation_log,
-                                starttime: sim_start_time,
-                                endtime: Date.now(),
-                                image: imagedata,
-                                finished: false
-                            });
-                            chrome.storage.local.set({simulations: simulations});
-                        });
-                    });
+                timeoutObject = setTimeout(function() {
+                    terminateSimulation();
                 }, 600000); // 10 minutes
 
-                for (var i = 0; i < events.length; i++) {
-                    switch (events[i].evt) {
-                        case 'begin_recording':
-                            setTimeout(function(i) {
-                                simulation_log.push({
-                                    index: i
-                                });
-                            }, events[i].time-recording_start_time, i);
-                            break;
-                        case 'end_recording':
-                            setTimeout(function(new_window, timeoutObject) {
-                                clearTimeout(timeoutObject);
-                                chrome.tabs.captureVisibleTab(new_window.id,{
-                                    "format": "png"
-                                }, function(imagedata){
-                                    if (!all_settings.leavesimulationopen)
-                                        chrome.windows.remove(new_window.id,function(){});
-
-                                    chrome.notifications.create("",{
-                                        type: "basic",
-                                        title: "Wildfire",
-                                        message: "Simulation completed",
-                                        iconUrl: "icon-128.png"
-                                    });
-                                    chrome.storage.local.get('simulations', function (result) {
-                                        var simulations = result.simulations;
-                                        if (!Array.isArray(simulations)) { // for safety only
-                                            simulations = [];
-                                        }
-                                        simulations.push({
-                                            log: simulation_log,
-                                            events: events,
-                                            starttime: sim_start_time,
-                                            endtime: Date.now(),
-                                            image: imagedata,
-                                            finished: true
-                                        });
-                                        simulations = simulations.slice(-3); // restrict number of simulations for performance
-                                        chrome.storage.local.set({simulations: simulations});
-
-                                        window.location = "simulationlog.html";
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, timeoutObject);
-                            break;
-                        case 'mousedown':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'mousedown', { clientX: " +
-                                        events[i].evt_data.clientX +
-                                        ", clientY: " +
-                                        events[i].evt_data.clientY +
-                                        " });",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'scroll':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('html, body').animate({" +
-                                        "scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
-                                        "scrollLeft: " + events[i].evt_data.scrollLeftEnd +
-                                        "}, " + (events[i].evt_data.endtime-events[i].time) + ");",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'mouseup':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'mouseup', { clientX: " +
-                                        events[i].evt_data.clientX +
-                                        ", clientY: " +
-                                        events[i].evt_data.clientY +
-                                        " });",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'mouseover':
-                            if (all_settings.simulatemouseover) {
-                                setTimeout(function (new_window, events, i) {
-                                    var frameId = 0;
-
-                                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                        for (var j = 0; j < frames.length; j++) {
-                                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
-                                                frameId = frames[j].frameId;
-                                            }
-                                        }
-
-                                        chrome.tabs.executeScript(new_window.tabs[0].id, {
-                                            code: "simulate(" +
-                                            constructElementIdentifier(events[i].evt_data.path) +
-                                            ",'mouseover', { clientX: " +
-                                            events[i].evt_data.clientX +
-                                            ", clientY: " +
-                                            events[i].evt_data.clientY +
-                                            " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
-                                            frameId: frameId,
-                                            matchAboutBlank: true
-                                        }, function (results) {
-                                            ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                        });
-                                    });
-                                }, events[i].time - recording_start_time, new_window, events, i);
-                            }
-                            break;
-                        case 'mouseout':
-                            if (all_settings.simulatemouseout) {
-                                setTimeout(function (new_window, events, i) {
-                                    var frameId = 0;
-
-                                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                        for (var j = 0; j < frames.length; j++) {
-                                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
-                                                frameId = frames[j].frameId;
-                                            }
-                                        }
-
-                                        chrome.tabs.executeScript(new_window.tabs[0].id, {
-                                            code: "simulate(" +
-                                            constructElementIdentifier(events[i].evt_data.path) +
-                                            ",'mouseout', { clientX: " +
-                                            events[i].evt_data.clientX +
-                                            ", clientY: " +
-                                            events[i].evt_data.clientY +
-                                            " }); stopSimulateHover();",
-                                            frameId: frameId,
-                                            matchAboutBlank: true
-                                        }, function (results) {
-                                            ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                        });
-                                    });
-                                }, events[i].time - recording_start_time, new_window, events, i);
-                            }
-                            break;
-                        case 'click':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('" + events[i].evt_data.csspath + "').click();",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'focusin':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('" + events[i].evt_data.csspath + "').focus();",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'focusout':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('" + events[i].evt_data.csspath + "').blur();",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'keydown':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'keydown', { keyCode: " +
-                                        events[i].evt_data.keyCode +
-                                        " });",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'keyup':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'keyup', { keyCode: " +
-                                        events[i].evt_data.keyCode +
-                                        " });",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'keypress':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'keypress', { keyCode: " +
-                                        events[i].evt_data.keyCode +
-                                        " });",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'submit':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code:"simulate(" +
-                                        constructElementIdentifier(events[i].evt_data.path) +
-                                        ",'submit', {});",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'dataentry':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'input':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'clipboard_cut':
-                            setTimeout(function(new_window, events, i) {
-                                var frameId = 0;
-
-                                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                                    for (var j=0; j<frames.length; j++) {
-                                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                                            frameId = frames[j].frameId;
-                                        }
-                                    }
-
-                                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                                        code: constructElementIdentifier(events[i].evt_data.path) +
-                                        ".value = '';",
-                                        frameId: frameId,
-                                        matchAboutBlank: true
-                                    },function(results){
-                                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                                    });
-                                });
-                            }, events[i].time-recording_start_time, new_window, events, i);
-                            break;
-                        case 'tabchange':
-                            setTimeout(function(events, i) {
-                                chrome.tabs.update(new_window.tabs[0].id, {
-                                    url: events[i].evt_data.url
-                                }, function(){});
-                            }, events[i].time-recording_start_time, events, i);
-                            break;
-                        default:
-                            console.log("Unknown event type: ".events[i].evt);
-                    }
-                }
+                simulateNextStep();
             });
         });
-        simulating = false;
     } else {
         if (events==null || events.length<3)
             swal({

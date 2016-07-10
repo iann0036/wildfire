@@ -104,9 +104,9 @@
 </ul>
 
 <div id="workflowgraph" style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;"></div> <!-- padding left to be side panel width -->
-<div id="workflowsidepanel" style="padding-top: 136px; width: 300px;">
+<div style="padding-top: 136px; width: 300px;">
     <div class="container-fluid" style="padding-top: 20px;">
-        <section class="card card-default">
+        <section id="workflowsidepanel" class="card card-default">
             <header class="card-header">
                 Event Properties
                 <button id="nodeLinkPanelX" type="button" class="modal-close">
@@ -114,11 +114,24 @@
                 </button>
             </header>
             <div class="card-block" style="min-height: 200px;">
-                <p id="sidepanelContents" class="card-text" style="width: 240px; overflow: hidden;">
+                <p class="card-text">
+                    <div id="sidepanelContents" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 240px;">
                     <b>Type:</b> Mouse Click<br />
                     <b>X:</b> 123<br />
-                    <b>Y:</b> 123<br /><br />
-                    <button type="button" class="btn btn-inline btn-danger">Delete</button>
+                    <b>Y:</b> 123<br />
+                    </div>
+                    <br />
+                    <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
+                </p>
+            </div>
+        </section>
+        <section class="card card-default">
+            <div class="card-block">
+                <p class="card-text">
+                <div class="checkbox">
+                    <input id="fixedEventsCheckbox" type="checkbox" checked>
+                    <label for="fixedEventsCheckbox">Fixed Positions</label>
+                </div>
                 </p>
             </div>
         </section>

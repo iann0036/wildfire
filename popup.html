@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Wildfire</title>
-    <script src="popup.js"></script>
+    <script src="/popup.js"></script>
     <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700'>
     <link href='https://fonts.googleapis.com/css?family=Lato:400,300,300italic,400italic,700,700italic' rel='stylesheet'
           type='text/css'>
@@ -13,6 +13,21 @@
 <center>
     <div style="padding-top: 14px;">
         <button id="recordButton" type="button" class="btn btn-hover btn-success btn-block" style="width: 150px;">&nbsp;</button>
+    </div>
+    <div id="loopDiv" style="display: none;">
+        <div id="startLoopDiv" style="display: none;">
+            <p style="padding-top: 10px;">
+            <button id="triggerLoopStartButton" type="button" class="btn btn-sm btn-info-outline" style="width: 150px;">Start Loop</button>
+            </p>
+        </div>
+        <div id="endLoopDiv" style="display: none;">
+            <p style="padding-top: 10px; margin-bottom: 8px;">
+                <button id="triggerLoopIterateButton" type="button" class="btn btn-sm btn-info-outline" style="width: 150px;">Iterate Loop</button>
+            </p>
+            <p>
+                <button id="triggerLoopEndButton" type="button" class="btn btn-sm btn-info-outline" style="width: 150px;">End Loop</button>
+            </p>
+        </div>
     </div>
     <p style="padding-top: 10px;"><a id="dashLink" href="#">Go To Dashboard</a></p>
 </center>
