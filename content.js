@@ -461,6 +461,58 @@ function updateScrollEvent(e) {
     }*/
 }
 
+function addDocumentEventListener(eventName) {
+	document.body.addEventListener(eventName, function (e) {
+		var evt_data = {
+			path: processPath(e.path),
+			csspath: getCSSPath(e.srcElement, false),
+			csspathfull: getCSSPath(e.srcElement, true),
+			clientX: e.clientX,
+			clientY: e.clientY,
+			altKey: e.altKey,
+			ctrlKey: e.ctrlKey,
+			shiftKey: e.shiftKey,
+			metaKey: e.metaKey,
+			button: e.button,
+			bubbles: e.bubbles,
+			cancelable: e.cancelable,
+			innerText: e.srcElement.innerText,
+			inFrame: getFrameIndex(),
+			url: window.location.href
+		};
+		if (eventName == "select")
+			evt_data['selectValue'] = e.srcElement.value;
+		if (eventName == "keyup" || eventName == "keydown" || eventName == "keypress")
+			evt_data['keyCode'] = e.keyCode;
+		if (eventName == "input" || eventName == "propertychange" || eventName == "change") {
+			evt_data['value'] = e.srcElement.value;
+			evt_data['type'] = e.srcElement.tagName.toLowerCase();
+		}
+		
+		if (eventName=="wfSubmit")
+			eventName = "submit";
+		
+		setTimeout(function () {
+			chrome.storage.local.get('recording', function (isRecording) {
+				if (isRecording.recording) {
+					chrome.storage.local.get('events', function (result) {
+						var events = result.events;
+						if (!Array.isArray(events)) { // for safety only
+							events = [];
+						}
+						events.push({
+							evt: eventName,
+							evt_data: evt_data,
+							time: Date.now()
+						});
+						chrome.storage.local.set({events: events});
+					});
+				}
+			});
+		}, 1);
+	}, false);
+}
+
 chrome.storage.local.get('recording', function (isRecording) {
     if (isRecording.recording) {
 
@@ -473,622 +525,28 @@ chrome.storage.local.get('recording', function (isRecording) {
                 });
             }, 1);
         }, false);
-        /* End Scroll */
-
-        document.body.addEventListener("mousedown", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) { // for safety only
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'mousedown',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("mouseup", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'mouseup',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        /* Temp disabled for sanity */
-        document.body.addEventListener("touchstart", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'touchstart',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
+		
+		addDocumentEventListener("mousedown");
+		addDocumentEventListener("mouseup");
+		addDocumentEventListener("touchstart");
         if (all_settings.recordmouseover) {
-            document.body.addEventListener("mouseover", function (e) {
-                setTimeout(function () {
-                    chrome.storage.local.get('recording', function (isRecording) {
-                        if (isRecording.recording) {
-                            chrome.storage.local.get('events', function (result) {
-                                var events = result.events;
-                                if (!Array.isArray(events)) {
-                                    events = [];
-                                }
-                                events.push({
-                                    evt: 'mouseover',
-                                    evt_data: {
-                                        path: processPath(e.path),
-                                        csspath: getCSSPath(e.srcElement, false),
-                                        csspathfull: getCSSPath(e.srcElement, true),
-                                        clientX: e.clientX,
-                                        clientY: e.clientY,
-                                        altKey: e.altKey,
-                                        ctrlKey: e.ctrlKey,
-                                        shiftKey: e.shiftKey,
-                                        metaKey: e.metaKey,
-                                        button: e.button,
-                                        bubbles: e.bubbles,
-                                        cancelable: e.cancelable,
-                                        innerText: e.srcElement.innerText,
-                                        inFrame: getFrameIndex(),
-                                        url: window.location.href
-                                    },
-                                    time: Date.now()
-                                });
-                                chrome.storage.local.set({events: events});
-                            });
-                        }
-                    });
-                }, 1);
-            }, false);
+			addDocumentEventListener("mouseover");
         }
         if (all_settings.recordmouseout) {
-            document.body.addEventListener("mouseout", function (e) {
-                setTimeout(function () {
-                    chrome.storage.local.get('recording', function (isRecording) {
-                        if (isRecording.recording) {
-                            chrome.storage.local.get('events', function (result) {
-                                var events = result.events;
-                                if (!Array.isArray(events)) {
-                                    events = [];
-                                }
-                                events.push({
-                                    evt: 'mouseout',
-                                    evt_data: {
-                                        path: processPath(e.path),
-                                        csspath: getCSSPath(e.srcElement, false),
-                                        csspathfull: getCSSPath(e.srcElement, true),
-                                        clientX: e.clientX,
-                                        clientY: e.clientY,
-                                        altKey: e.altKey,
-                                        ctrlKey: e.ctrlKey,
-                                        shiftKey: e.shiftKey,
-                                        metaKey: e.metaKey,
-                                        button: e.button,
-                                        bubbles: e.bubbles,
-                                        cancelable: e.cancelable,
-                                        innerText: e.srcElement.innerText,
-                                        inFrame: getFrameIndex(),
-                                        url: window.location.href
-                                    },
-                                    time: Date.now()
-                                });
-                                chrome.storage.local.set({events: events});
-                            });
-                        }
-                    });
-                }, 1);
-            }, false);
+			addDocumentEventListener("mouseout");
         }
-        document.body.addEventListener("open", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        /*var el = e.target;
-                         do {
-                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                         return;
-                         }
-                         } while (el = el.parentNode);*/
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'open',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("select", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        /*var el = e.target;
-                         do {
-                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                         return;
-                         }
-                         } while (el = el.parentNode);*/
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'select',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    selectValue: e.srcElement.value,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("focusin", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        /*var el = e.target;
-                         do {
-                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                         return;
-                         }
-                         } while (el = el.parentNode);*/
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'focusin',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("focusout", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        /*var el = e.target;
-                         do {
-                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                         return;
-                         }
-                         } while (el = el.parentNode);*/
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'focusout',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("click", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        /*var el = e.target;
-                         do {
-                         if (el.hasAttribute && el.hasAttribute("data-nofire")) {
-                         return;
-                         }
-                         } while (el = el.parentNode);*/
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'click',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    clientX: e.clientX,
-                                    clientY: e.clientY,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    button: e.button,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("keydown", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'keydown',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    keyCode: e.keyCode,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("keypress", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'keypress',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    keyCode: e.keyCode,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("keyup", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'keyup',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    keyCode: e.keyCode,
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    innerText: e.srcElement.innerText,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("input", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'input',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    value: e.srcElement.value,
-                                    type: e.srcElement.tagName.toLowerCase(),
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("propertychange", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'propertychange',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    value: e.srcElement.value,
-                                    type: e.srcElement.tagName.toLowerCase(),
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("change", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'dataentry',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    value: e.srcElement.value,
-                                    type: e.srcElement.tagName.toLowerCase(),
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
-        document.body.addEventListener("wfSubmit", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        chrome.storage.local.get('events', function (result) {
-                            var events = result.events;
-                            if (!Array.isArray(events)) {
-                                events = [];
-                            }
-                            events.push({
-                                evt: 'submit',
-                                evt_data: {
-                                    path: processPath(e.path),
-                                    csspath: getCSSPath(e.srcElement, false),
-                                    csspathfull: getCSSPath(e.srcElement, true),
-                                    altKey: e.altKey,
-                                    ctrlKey: e.ctrlKey,
-                                    shiftKey: e.shiftKey,
-                                    metaKey: e.metaKey,
-                                    bubbles: e.bubbles,
-                                    cancelable: e.cancelable,
-                                    inFrame: getFrameIndex(),
-                                    url: window.location.href
-                                },
-                                time: Date.now()
-                            });
-                            chrome.storage.local.set({events: events});
-                        });
-                    }
-                });
-            }, 1);
-        }, false);
+		addDocumentEventListener("open");
+		addDocumentEventListener("select");
+		addDocumentEventListener("focusin");
+		addDocumentEventListener("focusout");
+		addDocumentEventListener("click");
+		addDocumentEventListener("keydown");
+		addDocumentEventListener("keypress");
+		addDocumentEventListener("keyup");
+		addDocumentEventListener("input");
+		addDocumentEventListener("propertychange");
+		addDocumentEventListener("change");
+		addDocumentEventListener("wfSubmit");
 
         if (all_settings.customsubmit) {
             /* Inject JS directly in for submit intercepts */
@@ -1166,8 +624,6 @@ chrome.storage.local.get('recording', function (isRecording) {
                 $("*").removeClass("wildfire-hover");
             }
         }
-
-        /****/
 
     }
 });

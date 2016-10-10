@@ -1,5 +1,5 @@
 /**
- * Created by ian on 24/04/2016.
+ * Created by ian.mckay on 24/04/2016.
  */
 
 var events = [];
@@ -46,22 +46,6 @@ function updateEvents() {
 }
 
 updateEvents();
-
-function downloadEventfile() {
-    var text = JSON.stringify(events);
-    var filename = "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire";
-
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}
 
 function downloadEventfile() {
     var text = JSON.stringify(events);
@@ -152,6 +136,37 @@ function terminateSimulation() {
     });
 }
 
+function simulateEvent(code, i) {
+	setTimeout(function(new_window, events, i, code) {
+		var frameId = 0;
+
+		chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
+			for (var j=0; j<frames.length; j++) {
+				if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
+					frameId = frames[j].frameId;
+				}
+			}
+			
+			eventExecutionTimeoutCounter = setTimeout(function(i){
+				simulation_log.push({
+					index: i,
+					error: true
+				});
+				terminateSimulation();
+			}, event_execution_timeout, i);
+
+			chrome.tabs.executeScript(new_window.tabs[0].id,{
+				code: code,
+				frameId: frameId,
+				matchAboutBlank: true
+			},function(results){
+				; // TODO to be populated - this will have an array of results - make sure to return in code
+				simulateNextStep();
+			});
+		});
+	}, events[i].time-events[i-1].time, new_window, events, i, code);
+}
+
 function simulateNextStep() {
     var i = stepIterator;
     clearTimeout(eventExecutionTimeoutCounter);
@@ -172,494 +187,97 @@ function simulateNextStep() {
             }, events[i].time-events[i-1].time, new_window, timeoutObject, i);
             break;
         case 'mousedown':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'mousedown', { clientX: " +
-                        events[i].evt_data.clientX +
-                        ", clientY: " +
-                        events[i].evt_data.clientY +
-                        " });",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'mousedown', { clientX: " +
+				events[i].evt_data.clientX +
+				", clientY: " +
+				events[i].evt_data.clientY +
+				" });", i);
             break;
         case 'scroll':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    // Scrolls can take longer than timeout and I don't care if they fail
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('html, body').animate({" +
-                        "scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
-                        "scrollLeft: " + events[i].evt_data.scrollLeftEnd +
-                        "}, " + (events[i].evt_data.endtime-events[i].time) + ");",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("$('html, body').animate({" +
+				"scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
+				"scrollLeft: " + events[i].evt_data.scrollLeftEnd +
+				"}, " + (events[i].evt_data.endtime-events[i].time) + ");", i);
             break;
         case 'mouseup':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'mouseup', { clientX: " +
-                        events[i].evt_data.clientX +
-                        ", clientY: " +
-                        events[i].evt_data.clientY +
-                        " });",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'mouseup', { clientX: " +
+				events[i].evt_data.clientX +
+				", clientY: " +
+				events[i].evt_data.clientY +
+				" });", i);
             break;
         case 'mouseover':
             if (all_settings.simulatemouseover) {
-                setTimeout(function (new_window, events, i) {
-                    var frameId = 0;
-
-                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                        for (var j = 0; j < frames.length; j++) {
-                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
-                                frameId = frames[j].frameId;
-                            }
-                        }
-
-                        eventExecutionTimeoutCounter = setTimeout(function(i){
-                            simulation_log.push({
-                                index: i,
-                                error: true
-                            });
-                            terminateSimulation();
-                        }, event_execution_timeout, i);
-
-                        chrome.tabs.executeScript(new_window.tabs[0].id, {
-                            code: "simulate(" +
-                            constructElementIdentifier(events[i].evt_data.path) +
-                            ",'mouseover', { clientX: " +
-                            events[i].evt_data.clientX +
-                            ", clientY: " +
-                            events[i].evt_data.clientY +
-                            " }); simulateHoverElement('" + events[i].evt_data.csspath + "');",
-                            frameId: frameId,
-                            matchAboutBlank: true
-                        }, function (results) {
-                            ; // TODO to be populated - this will have an array of results - make sure to return in code
-                            simulateNextStep();
-                        });
-                    });
-                }, events[i].time - recording_start_time, new_window, events, i);
-            }
+				simulateEvent("simulate(" +
+					constructElementIdentifier(events[i].evt_data.path) +
+					",'mouseover', { clientX: " +
+					events[i].evt_data.clientX +
+					", clientY: " +
+					events[i].evt_data.clientY +
+					" }); simulateHoverElement('" + events[i].evt_data.csspath + "');", i);
+			}
             break;
         case 'mouseout':
             if (all_settings.simulatemouseout) {
-                setTimeout(function (new_window, events, i) {
-                    var frameId = 0;
-
-                    chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                        for (var j = 0; j < frames.length; j++) {
-                            if (frames[j].frameId != 0 && frames[j].url == events[i].evt_data.url) {
-                                frameId = frames[j].frameId;
-                            }
-                        }
-
-                        eventExecutionTimeoutCounter = setTimeout(function(i){
-                            simulation_log.push({
-                                index: i,
-                                error: true
-                            });
-                            terminateSimulation();
-                        }, event_execution_timeout, i);
-
-                        chrome.tabs.executeScript(new_window.tabs[0].id, {
-                            code: "simulate(" +
-                            constructElementIdentifier(events[i].evt_data.path) +
-                            ",'mouseout', { clientX: " +
-                            events[i].evt_data.clientX +
-                            ", clientY: " +
-                            events[i].evt_data.clientY +
-                            " }); stopSimulateHover();",
-                            frameId: frameId,
-                            matchAboutBlank: true
-                        }, function (results) {
-                            ; // TODO to be populated - this will have an array of results - make sure to return in code
-                            simulateNextStep();
-                        });
-                    });
-                }, events[i].time - recording_start_time, new_window, events, i);
-            }
+				simulateEvent("simulate(" +
+					constructElementIdentifier(events[i].evt_data.path) +
+					",'mouseout', { clientX: " +
+					events[i].evt_data.clientX +
+					", clientY: " +
+					events[i].evt_data.clientY +
+					" }); stopSimulateHover();", i);
+			}
             break;
         case 'click':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('" + events[i].evt_data.csspath + "').click();",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("$('" + events[i].evt_data.csspath + "').click();", i);
             break;
         case 'focusin':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('" + events[i].evt_data.csspath + "').focus();",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("$('" + events[i].evt_data.csspath + "').focus();", i);
             break;
         case 'focusout':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('" + events[i].evt_data.csspath + "').blur();",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("$('" + events[i].evt_data.csspath + "').blur();", i);
             break;
         case 'keydown':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'keydown', { keyCode: " +
-                        events[i].evt_data.keyCode +
-                        " });",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+            simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'keydown', { keyCode: " +
+				events[i].evt_data.keyCode +
+				" });", i);
             break;
         case 'keyup':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'keyup', { keyCode: " +
-                        events[i].evt_data.keyCode +
-                        " });",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'keyup', { keyCode: " +
+				events[i].evt_data.keyCode +
+				" });", i);
             break;
         case 'keypress':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'keypress', { keyCode: " +
-                        events[i].evt_data.keyCode +
-                        " });",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'keypress', { keyCode: " +
+				events[i].evt_data.keyCode +
+				" });", i);
             break;
         case 'submit':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code:"simulate(" +
-                        constructElementIdentifier(events[i].evt_data.path) +
-                        ",'submit', {});",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent("simulate(" +
+				constructElementIdentifier(events[i].evt_data.path) +
+				",'submit', {});", i);
             break;
         case 'dataentry':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
+				events[i].evt_data.value.replace("'", "\\'") + "');", i);
             break;
         case 'input':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: "$('" + events[i].evt_data.csspath + "').val('" + events[i].evt_data.value.replace("'", "\\'") + "');",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
+				events[i].evt_data.value.replace("'", "\\'") + "');", i);
             break;
         case 'clipboard_cut':
-            setTimeout(function(new_window, events, i) {
-                var frameId = 0;
-
-                chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                    for (var j=0; j<frames.length; j++) {
-                        if (frames[j].frameId!=0 && frames[j].url == events[i].evt_data.url) {
-                            frameId = frames[j].frameId;
-                        }
-                    }
-
-                    eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation();
-                    }, event_execution_timeout, i);
-
-                    chrome.tabs.executeScript(new_window.tabs[0].id,{
-                        code: constructElementIdentifier(events[i].evt_data.path) +
-                        ".value = '';",
-                        frameId: frameId,
-                        matchAboutBlank: true
-                    },function(results){
-                        ; // TODO to be populated - this will have an array of results - make sure to return in code
-                        simulateNextStep();
-                    });
-                });
-            }, events[i].time-events[i-1].time, new_window, events, i);
+			simulateEvent(constructElementIdentifier(events[i].evt_data.path) +
+                        ".value = '';", i);
             break;
         case 'tabchange':
             setTimeout(function(events, i) {
@@ -679,11 +297,12 @@ function simulateNextStep() {
             }, events[i].time-events[i-1].time, events, i);
             break;
         default:
-            console.log("Unknown event type: ".events[i].evt);
+            console.log("Unknown event type: " + events[i].evt);
             simulation_log.push({
                 index: i,
                 error: true
             });
+			terminateSimulation();
             break;
     }
 
