@@ -125,16 +125,16 @@ chrome.storage.local.get('events', function (result) {
         .attr('d', 'M10,-5L0,0L10,5')
         .attr('fill', '#000');
 
-// line displayed when dragging new nodes
+	// line displayed when dragging new nodes
     var drag_line = svg.append('svg:path')
         .attr('class', 'link dragline hidden')
         .attr('d', 'M0,0L0,0');
 
-// handles to link and node element groups
+	// handles to link and node element groups
     var path = svg.append('svg:g').selectAll('path'),
         circle = svg.append('svg:g').selectAll('g');
 
-// mouse event vars
+	// mouse event vars
     var selected_node = null,
         selected_link = null,
         mousedown_link = null,

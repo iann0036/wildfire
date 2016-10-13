@@ -2,13 +2,45 @@
  * Created by ian on 31/05/2016.
  */
 
+function formatDate(date) {
+	var seconds = Math.floor((new Date() - date) / 1000);
+    var interval = Math.floor(seconds / 31536000);
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+        return date.toString();
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+        return interval + " days ago";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+        return interval + " hours ago";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 2) {
+        return interval + " minutes ago";
+    }
+	if (interval > 0.85) {
+		return "a minute ago";
+	}
+    return "just now";
+}
+
 function populateSimulations() {
     chrome.storage.local.get('simulations', function (result) {
         var simulations = result.simulations.reverse();
+		if (!Array.isArray(simulations))
+			simulations = [];
 
         document.getElementById('simulationGrid').innerHTML = "";
 
-        for (var i=0; i<simulations.length; i++) {
+        for (var i=0; i<simulations.length && i<3; i++) {
+			var stepcount = simulations[i].events.length - 2;
+			var logcount = simulations[i].log.length - 2;
+			var percentile = Math.max(0,Math.floor(logcount*100/stepcount));
+			
             var innerHTML = "<div class=\"tasks-grid-col ";
             if (simulations[i].finished)
                 innerHTML += "green";
@@ -34,22 +66,22 @@ function populateSimulations() {
                 "</div>" +
                 "</div>" +
                 "<div class=\"task-card-title\">" +
-                "<a href=\"#\">Simulation Log for ";
+                "<a href=\"#\">Simulation Log from ";
             var starttime = new Date(simulations[i].starttime);
-            innerHTML += starttime.toString();
+            innerHTML += formatDate(starttime);
             innerHTML += "</a><br />";
             if (!simulations[i].finished)
-                innerHTML += "<span class=\"task-card-title-label\">(Timed Out)</span>";
+                innerHTML += "<span class=\"task-card-title-label\">(" + simulations[i].terminate_reason + ")</span>";
             else
                 innerHTML += "<span class=\"task-card-title-label\">&nbsp;</span>";
             innerHTML += "</div>" +
                 "<div class=\"progress-compact-style\">" +
-                "<progress class=\"progress\" value=\"100\" max=\"100\">" +
+                "<progress class=\"progress\" value=\"" + percentile + "\" max=\"100\">" +
                 "<div class=\"progress\">" +
-                "<span class=\"progress-bar\" style=\"width: 100%;\">100%</span>" +
+                "<span class=\"progress-bar\" style=\"width: 100%;\">" + percentile + "%</span>" +
                 "</div>" +
                 "</progress>" +
-                "<div class=\"progress-compact-style-label\">100% completed</div>" +
+                "<div class=\"progress-compact-style-label\">" + percentile + "% completed</div>" +
                 "</div>" +
                 "<div class=\"task-card-tags\">" +
                 "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>" +
@@ -57,7 +89,7 @@ function populateSimulations() {
                 "</div>" +
                 "<div class=\"task-card-footer\">" +
                 "<div class=\"task-card-meta-item\"><i style=\"color: #adb7be;\" class=\"font-icon font-icon-list-square\"></i>";
-            var stepcount = simulations[i].events.length - 2;
+			console.log(simulations); // DEBUG TODO
             if (stepcount<2)
                 innerHTML += "1 step";
             else

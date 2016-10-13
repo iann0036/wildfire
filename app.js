@@ -14,6 +14,7 @@ var stepIterator = 0;
 var new_window;
 var event_execution_timeout = 10000;
 var eventExecutionTimeoutCounter;
+var closeListener;
 
 chrome.storage.local.get('settings', function (settings) {
     if (settings.settings != null) {
@@ -48,7 +49,7 @@ function updateEvents() {
 updateEvents();
 
 function downloadEventfile() {
-    var text = JSON.stringify(events);
+    var text = JSON.stringify(events,null,2);
     var filename = "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire";
 
     var element = document.createElement('a');
@@ -104,14 +105,21 @@ function constructElementIdentifier(path) {
     return js_string;
 }
 
-function terminateSimulation() {
+function terminateSimulation(finished, reason) {
     clearTimeout(timeoutObject);
+	//chrome.windows.onRemoved.removeListener(closeListener);   TO-DO FIX THIS
+	
     simulating = false;
     chrome.tabs.captureVisibleTab(new_window.id,{
         "format": "png"
     }, function(imagedata){
         if (!all_settings.leavesimulationopen)
             chrome.windows.remove(new_window.id,function(){});
+		
+		if (simulation_log.length < events.length && finished) { // No errors but missing events
+			finished = false;
+			reason = "Missed events";
+		}
 
         chrome.notifications.create("",{
             type: "basic",
@@ -129,8 +137,11 @@ function terminateSimulation() {
                 starttime: sim_start_time,
                 endtime: Date.now(),
                 image: imagedata,
-                finished: false
+                finished: finished,
+				events: events,
+				terminate_reason: reason
             });
+			console.log(simulations);
             chrome.storage.local.set({simulations: simulations});
         });
     });
@@ -152,7 +163,7 @@ function simulateEvent(code, i) {
 					index: i,
 					error: true
 				});
-				terminateSimulation();
+				terminateSimulation(false, "Event timeout");
 			}, event_execution_timeout, i);
 
 			chrome.tabs.executeScript(new_window.tabs[0].id,{
@@ -160,7 +171,13 @@ function simulateEvent(code, i) {
 				frameId: frameId,
 				matchAboutBlank: true
 			},function(results){
-				; // TODO to be populated - this will have an array of results - make sure to return in code
+				// TODO to be populated - this will have an array of results - make sure to return in code
+				
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+				
 				simulateNextStep();
 			});
 		});
@@ -183,7 +200,11 @@ function simulateNextStep() {
             break;
         case 'end_recording':
             setTimeout(function(new_window, timeoutObject, i) {
-                terminateSimulation();
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+                terminateSimulation(true, "");
             }, events[i].time-events[i-1].time, new_window, timeoutObject, i);
             break;
         case 'mousedown':
@@ -219,6 +240,11 @@ function simulateNextStep() {
 					", clientY: " +
 					events[i].evt_data.clientY +
 					" }); simulateHoverElement('" + events[i].evt_data.csspath + "');", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
 			}
             break;
         case 'mouseout':
@@ -230,6 +256,11 @@ function simulateNextStep() {
 					", clientY: " +
 					events[i].evt_data.clientY +
 					" }); stopSimulateHover();", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
 			}
             break;
         case 'click':
@@ -286,12 +317,16 @@ function simulateNextStep() {
                         index: i,
                         error: true
                     });
-                    terminateSimulation();
+                    terminateSimulation(false, "Tab change timeout");
                 }, event_execution_timeout, i);
 
                 chrome.tabs.update(new_window.tabs[0].id, {
                     url: events[i].evt_data.url
                 }, function(){
+					simulation_log.push({
+						index: i,
+						error: false
+					});
                     simulateNextStep();
                 });
             }, events[i].time-events[i-1].time, events, i);
@@ -302,7 +337,7 @@ function simulateNextStep() {
                 index: i,
                 error: true
             });
-			terminateSimulation();
+			terminateSimulation(false, "Unknown event type: " + events[i].evt);
             break;
     }
 
@@ -345,8 +380,14 @@ function runSimulation() {
                 }
 
                 timeoutObject = setTimeout(function() {
-                    terminateSimulation();
+                    terminateSimulation(false, "Global run timeout");
                 }, 600000); // 10 minutes
+				
+				closeListener = chrome.windows.onRemoved.addListener(function(closed_window_id){
+					if (closed_window_id == new_window.id) {
+						terminateSimulation(false, "Simulation terminated");
+					}
+				});
 
                 simulateNextStep();
             });

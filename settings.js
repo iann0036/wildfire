@@ -72,3 +72,9 @@ $('#setting-run-minimized').change(function() {
     all_settings.runminimized = $(this).is(":checked");
     updateSettings();
 });
+
+$('#setting-flush-database').click(function(e) {
+	e.preventDefault();
+	$(this).attr('disabled','disabled');
+    chrome.storage.local.set({simulations: []});
+});
