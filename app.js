@@ -15,6 +15,7 @@ var new_window;
 var event_execution_timeout = 10000;
 var eventExecutionTimeoutCounter;
 var closeListener;
+var terminated;
 
 chrome.storage.local.get('settings', function (settings) {
     if (settings.settings != null) {
@@ -39,6 +40,12 @@ chrome.storage.local.get('settings', function (settings) {
 chrome.storage.onChanged.addListener(function(changes, namespace) {
     updateEvents();
 });
+
+function closeListenerCallback(closed_window_id) {
+	if (closed_window_id == new_window.id) {
+		terminateSimulation(false, "Simulation terminated");
+	}
+}
 
 function updateEvents() {
     chrome.storage.local.get('events', function (result) {
@@ -106,8 +113,12 @@ function constructElementIdentifier(path) {
 }
 
 function terminateSimulation(finished, reason) {
+	if (terminated)
+		return;
+	terminated = true; // prevent race against close listener
+	
+	chrome.windows.onRemoved.removeListener(closeListenerCallback);
     clearTimeout(timeoutObject);
-	//chrome.windows.onRemoved.removeListener(closeListener);   TO-DO FIX THIS
 	
     simulating = false;
     chrome.tabs.captureVisibleTab(new_window.id,{
@@ -350,6 +361,8 @@ function runSimulation() {
         simulating = true;
         simulation_log = [];
         sim_start_time = Date.now();
+		stepIterator = 0;
+		terminated = false;
 
         chrome.storage.local.get('events', function (result) {
             events = result.events;
@@ -378,16 +391,18 @@ function runSimulation() {
                         state: "minimized"
                     });
                 }
+				
+				chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+					for (var i=1; i<tabs.length; i++) {
+						chrome.tabs.remove(tabs[i].id);
+					}
+				});
 
                 timeoutObject = setTimeout(function() {
                     terminateSimulation(false, "Global run timeout");
                 }, 600000); // 10 minutes
 				
-				closeListener = chrome.windows.onRemoved.addListener(function(closed_window_id){
-					if (closed_window_id == new_window.id) {
-						terminateSimulation(false, "Simulation terminated");
-					}
-				});
+				chrome.windows.onRemoved.addListener(closeListenerCallback);
 
                 simulateNextStep();
             });

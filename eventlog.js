@@ -20,7 +20,9 @@ function deleteEvent(i) {
                 events = [];
             }
             events.splice(i,1);
-            chrome.storage.local.set({events: events});
+            chrome.storage.local.set({events: events}, function(){
+				location.reload();
+			});
         });
     });
 }
