@@ -6,6 +6,8 @@ var VERTICAL_PREFERENCE = 0.6; // log(e) lower from 1 means more preference
 var nodes = [];
 var links = [];
 
+var path;
+
 // set up SVG for D3
 var width  = window.innerWidth-0, // side panel width
     height = window.innerHeight-136,
@@ -131,8 +133,8 @@ chrome.storage.local.get('events', function (result) {
         .attr('d', 'M0,0L0,0');
 
 	// handles to link and node element groups
-    var path = svg.append('svg:g').selectAll('path'),
-        circle = svg.append('svg:g').selectAll('g');
+    path = svg.append('svg:g').selectAll('path');
+    var circle = svg.append('svg:g').selectAll('g');
 
 	// mouse event vars
     var selected_node = null,
@@ -151,25 +153,48 @@ chrome.storage.local.get('events', function (result) {
     function tick() {
         // draw directed edges with proper padding from node centers
         path.attr('d', function (d) {
-            // initial set bottom to top
-            var sourceX = d.source.x + (rect_width/2),
-                sourceY = d.source.y + (rect_height/2),
-                targetX = d.target.x + (rect_width/2),
-                targetY = d.target.y - minor_offset;
 
-            if (sourceY > targetY) { // top to bottom
-                targetY = d.target.y + rect_height + minor_offset;
-            }
+			if (d.left && !d.right) { // 1st == unnormmal
+				// initial set bottom to top
+				var sourceX = d.source.x + (rect_width/2),
+					sourceY = d.source.y + rect_height + minor_offset,
+					targetX = d.target.x + (rect_width/2),
+					targetY = d.target.y + (rect_height/2);
+				
+				if (sourceY > targetY) { // top to bottom
+					sourceY = d.source.y - minor_offset;
+				}
 
-            if (Math.abs(sourceY-targetY) < Math.abs(sourceX-targetX) * VERTICAL_PREFERENCE) { // if its horizontally aligned
-                targetY = d.target.y + (rect_height/2);
-                if (sourceX<targetX)
-                    targetX = d.target.x - minor_offset;
-                else
-                    targetX = d.target.x + rect_width + minor_offset;
-            }
+				if (Math.abs(sourceY-targetY) < Math.abs(sourceX-targetX) * VERTICAL_PREFERENCE) { // if its horizontally aligned
+					sourceY = d.source.y + (rect_height/2);
+					if (sourceX>targetX)
+						sourceX = d.source.x - minor_offset;
+					else
+						sourceX = d.source.x + rect_width + minor_offset;
+				}
 
-            return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+				return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+			} else {
+				// initial set bottom to top
+				var sourceX = d.source.x + (rect_width/2),
+					sourceY = d.source.y + (rect_height/2),
+					targetX = d.target.x + (rect_width/2),
+					targetY = d.target.y - minor_offset;
+				
+				if (sourceY > targetY) { // top to bottom
+					targetY = d.target.y + rect_height + minor_offset;
+				}
+
+				if (Math.abs(sourceY-targetY) < Math.abs(sourceX-targetX) * VERTICAL_PREFERENCE) { // if its horizontally aligned
+					targetY = d.target.y + (rect_height/2);
+					if (sourceX<targetX)
+						targetX = d.target.x - minor_offset;
+					else
+						targetX = d.target.x + rect_width + minor_offset;
+				}
+
+				return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+			}
         });
 
         circle.attr('transform', function (d) {
@@ -286,7 +311,7 @@ chrome.storage.local.get('events', function (result) {
                     drag_line
                         .style('marker-end', 'url(#end-arrow)')
                         .classed('hidden', false)
-                        .attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + mousedown_node.x + ',' + mousedown_node.y);
+                        .attr('d', 'M' + (mousedown_node.x+(rect_width/2)) + ',' + (mousedown_node.y+(rect_height/2)) + 'L' + (mousedown_node.x+(rect_width/2)) + ',' + (mousedown_node.y+(rect_height/2)));
 
                 restart();
             })
@@ -404,7 +429,7 @@ chrome.storage.local.get('events', function (result) {
         if (!mousedown_node) return;
 
         // update drag line
-        drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
+        drag_line.attr('d', 'M' + (mousedown_node.x+(rect_width/2)) + ',' + (mousedown_node.y+(rect_height/2)) + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
 
         restart();
     }
