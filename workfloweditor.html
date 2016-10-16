@@ -37,6 +37,7 @@
 
     <!-- Workflow Editor Specific -->
     <link rel="stylesheet" href="/workfloweditor.css">
+    <link rel="stylesheet" href="/theme/css/separate/vendor/context_menu.min.css">
 </head>
 
 <body class="horizontal-navigation" style="overflow:hidden;">
@@ -106,19 +107,16 @@
 <div id="workflowgraph" style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;"></div> <!-- padding left to be side panel width -->
 <div style="padding-top: 136px; width: 300px;">
     <div class="container-fluid" style="padding-top: 20px;">
-        <section id="workflowsidepanel" class="card card-default">
+        <section id="workflowsidepanel" class="card card-default" style="display: none;">
             <header class="card-header">
-                Event Properties
+                <span id="sidePanelTitle">Event Properties</span>
                 <button id="nodeLinkPanelX" type="button" class="modal-close">
                     <i class="font-icon-close-2"></i>
                 </button>
             </header>
-            <div class="card-block" style="min-height: 200px;">
+            <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
                     <div id="sidepanelContents" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 240px;">
-                    <b>Type:</b> Mouse Click<br />
-                    <b>X:</b> 123<br />
-                    <b>Y:</b> 123<br />
                     </div>
                     <br />
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
@@ -149,6 +147,8 @@
 
 <script src="/d3.v3.min.js"></script>
 <script src="/workfloweditor.js"></script>
+<script type="text/javascript" src="/theme/js/lib/jquery-contextmenu/jquery.contextMenu.min.js"></script>
+<script type="text/javascript" src="/theme/js/lib/jquery-contextmenu/jquery.ui.position.min.js"></script>
 
 <script src="/app.js"></script>
 </body>

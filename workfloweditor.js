@@ -1,16 +1,17 @@
 var rect_width = 100;
 var rect_height = 20;
 var minor_offset = 5;
+var header_bar_height = 136;
 var VERTICAL_PREFERENCE = 0.6; // log(e) lower from 1 means more preference
 
 var nodes = [];
 var links = [];
-
 var path;
+var newLinkJustCreated = false;
 
 // set up SVG for D3
-var width  = window.innerWidth-0, // side panel width
-    height = window.innerHeight-136,
+var width  = window.innerWidth-0, // non-floating side panel width
+    height = window.innerHeight-header_bar_height,
     colors = d3.scale.category20();
 
 var svg = d3.select('#workflowgraph')
@@ -18,7 +19,10 @@ var svg = d3.select('#workflowgraph')
     .attr('width', width)
     .attr('height', height);
 
-document.getElementById('workflowgraph').oncontextmenu = function(){ return false; }; // disable right click
+document.getElementById('workflowgraph').oncontextmenu = function(){
+	
+	return false;
+}; // custom right click
 
 chrome.storage.local.get('events', function (result) {
     events = result.events;
@@ -67,7 +71,7 @@ chrome.storage.local.get('events', function (result) {
                 fixed: true,
                 reflexive: false,
                 x: window.innerWidth / 2,
-                y: (window.innerHeight / 2) - (events.length * 50) + (i * 100) - 68,
+                y: (window.innerHeight / 2) - (events.length * 50) + (i * 100) - (header_bar_height/2),
                 eventdata: events[i]
             });
         } else {
@@ -148,12 +152,40 @@ chrome.storage.local.get('events', function (result) {
         mouseup_node = null;
         mousedown_link = null;
     }
+	
+	$(function(){
+		$.contextMenu({
+			selector: '#workflowgraph',
+			trigger: 'none',
+			callback: function(key, options) {
+				if (key=="addquestion") {
+					var node = {
+						id: ++lastNodeId,
+						reflexive: false,
+						x: $('.context-menu-list').position().left-(rect_width/2),
+						y: $('.context-menu-list').position().top-header_bar_height,
+						fixed: true,
+						eventdata: {
+							evt: 'new'
+						}
+					};
+					
+					nodes.push(node);
+					restart();
+				}
+			},
+			items: {
+				"addquestion": {name: "Add Question", icon: "question"},
+				"sep1": "---------",
+				"delete": {name: "Delete", icon: "delete"}
+			}
+		});
+	});
 
     // update force layout (called automatically each iteration)
     function tick() {
         // draw directed edges with proper padding from node centers
         path.attr('d', function (d) {
-
 			if (d.left && !d.right) { // 1st == unnormmal
 				// initial set bottom to top
 				var sourceX = d.source.x + (rect_width/2),
@@ -288,13 +320,14 @@ chrome.storage.local.get('events', function (result) {
             })
             .on('mouseover', function (d) {
                 if (!mousedown_node || d === mousedown_node) return;
+				
                 // enlarge target node
-                d3.select(this).attr('transform', 'scale(1.1)');
+                //d3.select(this).attr('transform', 'scale(1.1)');
             })
             .on('mouseout', function (d) {
                 if (!mousedown_node || d === mousedown_node) return;
                 // unenlarge target node
-                d3.select(this).attr('transform', '');
+                //d3.select(this).attr('transform', '');
             })
             .on('mousedown', function (d) {
                 if (d3.event.ctrlKey) return;
@@ -333,7 +366,7 @@ chrome.storage.local.get('events', function (result) {
                 }
 
                 // unenlarge target node
-                d3.select(this).attr('transform', '');
+                //d3.select(this).attr('transform', '');
 
                 // add link to graph (update if exists)
                 // NB: links are strictly source < target; arrows separately specified by booleans
@@ -360,6 +393,9 @@ chrome.storage.local.get('events', function (result) {
                     link[direction] = true;
                     links.push(link);
                 }
+				
+				newLinkJustCreated = true;
+				setTimeout(function(){newLinkJustCreated = false; },1); // temp flag to indicate link created (so to ignore context menu)
 
                 // select new link
                 selected_link = link;
@@ -411,17 +447,6 @@ chrome.storage.local.get('events', function (result) {
 
         if (d3.event.ctrlKey || mousedown_node || mousedown_link) return;
 
-        // Clicked nothing
-        closeSidePanel();
-
-        /* insert new node at point
-         var point = d3.mouse(this),
-         node = {id: ++lastNodeId, reflexive: false};
-         node.x = point[0];
-         node.y = point[1];
-         nodes.push(node);
-         */
-
         restart();
     }
 
@@ -441,12 +466,18 @@ chrome.storage.local.get('events', function (result) {
                 .classed('hidden', true)
                 .style('marker-end', '');
         }
-
-        // because :active only works in WebKit?
-        svg.classed('active', false);
-
-        // clear mouse event vars
-        resetMouseVars();
+		
+		// Custom context menu activate
+		if (d3.event.which == 3) {
+			if (d3.event.ctrlKey) return;
+			
+			if (!newLinkJustCreated) {
+				$('#workflowgraph').contextMenu({
+					x: event.clientX,
+					y: event.clientY
+				});
+			}
+		}
     }
 
     function spliceLinksForNode(node) {
@@ -545,10 +576,16 @@ chrome.storage.local.get('events', function (result) {
 
     function openSidePanel(d) {
         if (d.source == null) {
-            document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> " + d.eventdata.evt + "<br />" +
-                "<b>Details:</b> <pre>" + JSON.stringify(d.eventdata) + "</pre><br />";
+			document.getElementById('sidePanelTitle').innerHTML = "Event Properties";
+			if (d.eventdata.evt == "begin_recording")
+				document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> Begin Recording<br />";
+			else if (d.eventdata.evt == "end_recording")
+				document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> End Recording<br />";
+			else
+				document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> " + d.eventdata.evt + " (Unknown)<br /><b>Details:</b> <pre>" + JSON.stringify(d.eventdata) + "</pre><br />";
         } else {
-            document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> Link<br />";
+			document.getElementById('sidePanelTitle').innerHTML = "Link Properties";
+            document.getElementById('sidepanelContents').innerHTML = "<b>Type:</b> Standard Link<br />";
         }
 
         document.getElementById('workflowsidepanel').style = "display: block;";
@@ -579,6 +616,8 @@ chrome.storage.local.get('events', function (result) {
                 nodes[i].fixed = false;
             }
         }
+		
+		restart();
     });
 
     // app starts here
