@@ -382,7 +382,8 @@ function runSimulation() {
                 "left":0,
                 "top":0,
                 "width":1920,
-                "height":1080
+                "height":1080,
+                "incognito":true
                 //"type":"popup"
             },function(simulation_window) {
                 new_window = simulation_window;
