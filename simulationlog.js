@@ -50,7 +50,7 @@ function populateSimulations() {
                 "<section class=\"box-typical task-card task\">";
 
             if (simulations[i].image) {
-                innerHTML += "<div class=\"task-card-photo\"><a href='#'><img style=\"max-height: 120px;\" src=\"";
+                innerHTML += "<div class=\"task-card-photo\"><a href='simulations.html#" + i + "'><img style=\"max-height: 120px;\" src=\"";
                 innerHTML += simulations[i].image;
                 innerHTML += "\" alt=\"\"></a></div>";
             }
@@ -61,12 +61,12 @@ function populateSimulations() {
                 "<i class=\"font-icon-dots-vert-square\"></i>" +
                 "</button>" +
                 "<div class=\"dropdown-menu dropdown-menu-right\">" +
-                "<a class=\"dropdown-item\" href=\"#\"><i class=\"font-icon font-icon-eye\"></i>View</a>" +
-                "<a class=\"dropdown-item\" href=\"#\"><i class=\"font-icon font-icon-trash\"></i>Delete</a>" +
+                "<a class=\"dropdown-item\" href=\"simulations.html#" + i + "\"><i class=\"font-icon font-icon-eye\"></i>View</a>" +
+                "<a id=\"deleteSimulationButton" + i + "\" class=\"dropdown-item\" href=\"#\"><i class=\"font-icon font-icon-trash\"></i>Delete</a>" +
                 "</div>" +
                 "</div>" +
                 "<div class=\"task-card-title\">" +
-                "<a href=\"#\">Simulation Log from ";
+                "<a href=\"simulations.html#" + i + "\">Simulation Log from ";
             var starttime = new Date(simulations[i].starttime);
             innerHTML += formatDate(starttime);
             innerHTML += "</a><br />";
@@ -89,7 +89,6 @@ function populateSimulations() {
                 "</div>" +
                 "<div class=\"task-card-footer\">" +
                 "<div class=\"task-card-meta-item\"><i style=\"color: #adb7be;\" class=\"font-icon font-icon-list-square\"></i>";
-			console.log(simulations); // DEBUG TODO
             if (stepcount<2)
                 innerHTML += "1 step";
             else
@@ -103,6 +102,36 @@ function populateSimulations() {
                 "</div>";
             document.getElementById('simulationGrid').innerHTML += innerHTML;
         }
+        for (var i=0; i<simulations.length && i<3; i++)
+            $('#deleteSimulationButton' + i).click(deleteSimulation);
+    });
+}
+
+function deleteSimulation() {
+    var i = parseInt($(this).attr('id').replace("deleteSimulationButton",""));
+
+    swal({
+        title: "Are you sure?",
+        text: "The simulation will be deleted.",
+        type: "warning",
+        showCancelButton: true,
+        cancelButtonClass: "btn-default",
+        confirmButtonClass: "btn-danger",
+        confirmButtonText: "Delete",
+        closeOnConfirm: true
+    },
+    function(){
+        chrome.storage.local.get('simulations', function (result) {
+            simulations = result.simulations.reverse();
+            if (!Array.isArray(events)) { // for safety only
+                events = [];
+            }
+            simulations.splice(i,1);
+            simulations = result.simulations.reverse();
+            chrome.storage.local.set({simulations: simulations}, function(){
+                location.reload();
+            });
+        });
     });
 }
 

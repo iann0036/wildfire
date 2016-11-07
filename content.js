@@ -63,7 +63,6 @@ function getCSSPath(el, ignoreIds) {
             break;
         } else {
             var sib = el, nth = 1;
-            var sib = el, nth = 1;
             while (sib = sib.previousElementSibling) {
                 if (sib.nodeName.toLowerCase() == selector)
                     nth++;
@@ -73,6 +72,8 @@ function getCSSPath(el, ignoreIds) {
         }
         path.unshift(selector);
         el = el.parentNode;
+        if (el == null)
+            return;
     }
     return path.join(" > ");
 }
@@ -485,8 +486,11 @@ function addDocumentEventListener(eventName) {
 		if (eventName == "keyup" || eventName == "keydown" || eventName == "keypress")
 			evt_data['keyCode'] = e.keyCode;
 		if (eventName == "input" || eventName == "propertychange" || eventName == "change") {
-			evt_data['value'] = e.srcElement.value;
-			evt_data['type'] = e.srcElement.tagName.toLowerCase();
+            evt_data['type'] = e.srcElement.tagName.toLowerCase();
+            if (evt_data['type']=="input" || evt_data['type']=="textarea")
+                evt_data['value'] = e.srcElement.value;
+            else
+    			evt_data['value'] = e.srcElement.innerText;
 		}
 		
 		if (eventName=="wfSubmit")

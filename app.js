@@ -152,7 +152,6 @@ function terminateSimulation(finished, reason) {
 				events: events,
 				terminate_reason: reason
             });
-			console.log(simulations);
             chrome.storage.local.set({simulations: simulations});
         });
     });
@@ -177,16 +176,20 @@ function simulateEvent(code, i) {
 				terminateSimulation(false, "Event timeout");
 			}, event_execution_timeout, i);
 
+            code = "try { " + code + "; } catch(err) { new Object({error: err.message}); }";
+
 			chrome.tabs.executeScript(new_window.tabs[0].id,{
 				code: code,
 				frameId: frameId,
 				matchAboutBlank: true
 			},function(results){
-				// TODO to be populated - this will have an array of results - make sure to return in code
-				
+                error = true;
+                if (results && results.length==1 && !results[0].error)
+                    error = false;
 				simulation_log.push({
                     index: i,
-                    error: false
+                    error: error,
+                    results: results
                 });
 				
 				simulateNextStep();
@@ -316,6 +319,8 @@ function simulateNextStep() {
         case 'input':
 			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);
+			/*simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
+				events[i].evt_data.value.replace("'", "\\'") + "');", i);*/
             break;
         case 'clipboard_cut':
 			simulateEvent(constructElementIdentifier(events[i].evt_data.path) +
@@ -341,6 +346,9 @@ function simulateNextStep() {
                     simulateNextStep();
                 });
             }, events[i].time-events[i-1].time, events, i);
+            break;
+        case 'select':
+            simulateEvent(";", i); // TODO - emulate Text Select
             break;
         default:
             console.log("Unknown event type: " + events[i].evt);
@@ -382,8 +390,7 @@ function runSimulation() {
                 "left":0,
                 "top":0,
                 "width":1920,
-                "height":1080,
-                "incognito":true
+                "height":1080
                 //"type":"popup"
             },function(simulation_window) {
                 new_window = simulation_window;
