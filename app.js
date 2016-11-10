@@ -56,7 +56,7 @@ function updateEvents() {
 updateEvents();
 
 function downloadEventfile() {
-    var text = JSON.stringify(events,null,2);
+    var text = encrypt(JSON.stringify(events));
     var filename = "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire";
 
     var element = document.createElement('a');
@@ -441,6 +441,19 @@ function runSimulation() {
     }
 }
 
+function generatePassphrase() {
+  var ret = "3ur9";
+  ret += "480tvb4";
+  ret += "39f83r8";
+  return ret;
+}
+function encrypt(str) {
+  return CryptoJS.AES.encrypt(str, generatePassphrase()).toString();
+}
+function decrypt(str) {
+  return CryptoJS.AES.decrypt(str, generatePassphrase()).toString(CryptoJS.enc.Utf8);
+}
+
 document.getElementById('simulateButton').addEventListener('click', function() {
     runSimulation();
 });
@@ -454,7 +467,7 @@ document.getElementById('eventfileContainer').addEventListener('change', functio
     var reader = new FileReader();
 
     reader.onload = function(e) {
-        var new_events = JSON.parse(e.target.result);
+        var new_events = JSON.parse(decrypt(e.target.result));
         chrome.storage.local.set({events: new_events});
         chrome.storage.local.set({recording: false});
         chrome.notifications.create("",{

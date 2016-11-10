@@ -34,14 +34,11 @@
     <link rel="stylesheet" href="/theme/css/lib/bootstrap-sweetalert/sweetalert.css"/>
     <link rel="stylesheet" href="/theme/css/main.css">
     <link rel="stylesheet" href="/theme/css/custom.css">
-
-    <!-- Workflow Editor Specific -->
-    <link rel="stylesheet" href="/workfloweditor.css">
-    <link rel="stylesheet" href="/theme/css/separate/vendor/context_menu.min.css">
 </head>
 
-<body class="horizontal-navigation" style="overflow:hidden;">
+<body class="horizontal-navigation">
 <input id="eventfileContainer" accept=".WFIRE" type="file" style="display: none;" />
+<input id="simfileContainer" accept=".WFSIM" type="file" style="display: none;" />
 
 <header class="site-header">
     <div class="container-fluid">
@@ -104,8 +101,27 @@
     </li>
 </ul>
 
-<div id="workflowgraph" style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;"></div> <!-- padding left to be side panel width -->
-<div style="padding-top: 136px; width: 300px;">
+<div style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;">
+    <div id="graph"></div>
+</div>
+<div class="form-group" style="right: 0px; padding-top: 136px; margin: 16px; float: right; position: absolute;">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar">
+        <div class="btn-group" role="group" aria-label="Event Actions">
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-plus-square-o"></i></button>
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-copy"></i></button>
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-trash-o"></i></button>
+        </div>
+        <div class="btn-group" role="group" aria-label="Workflow Actions">
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-play-circle-o"></i></button>
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-file-o"></i></button>
+            <button id="workflowToolbarImport" type="button" class="btn btn-default-outline"><i class="fa fa-folder-open-o"></i></button>
+            <button id="workflowToolbarSave" type="button" class="btn btn-default-outline"><i class="fa fa-save"></i></button>
+            <button id="workflowToolbarExportImage" type="button" class="btn btn-default-outline"><i class="fa fa-picture-o"></i></button>
+            <button type="button" class="btn btn-default-outline"><i class="fa fa-cog"></i></button>
+        </div>
+    </div>
+</div>
+<div style="padding-top: 136px; width: 300px; float: left; position: absolute;">
     <div class="container-fluid" style="padding-top: 20px;">
         <section id="workflowsidepanel" class="card card-default" style="display: none;">
             <header class="card-header">
@@ -116,26 +132,15 @@
             </header>
             <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
-                    <div id="sidepanelContents" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 240px;">
-                    </div>
+                    <pre id="sidepanelContents" style="white-space: pre-wrap; width: 240px;">
+                    </pre>
                     <br />
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
                 </p>
             </div>
         </section>
-        <section class="card card-default">
-            <div class="card-block">
-                <p class="card-text">
-                <div class="checkbox">
-                    <input id="fixedEventsCheckbox" type="checkbox" checked>
-                    <label for="fixedEventsCheckbox">Fixed Positions</label>
-                </div>
-                </p>
-            </div>
-        </section>
     </div>
 </div>
-
 
 <script src="/theme/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
 <script src="/theme/js/lib/jquery/jquery.min.js"></script>
@@ -144,11 +149,22 @@
 <script src="/theme/js/plugins.js"></script>
 
 <script src="/theme/js/app.js"></script>
+<script src="/aes.js"></script>
 
-<script src="/d3.v3.min.js"></script>
+<script src="/draw2d/lib/shifty.js"></script>
+<script src="/draw2d/lib/raphael.js"></script>
+<script src="/draw2d/jquery-ui-1.10.4.custom.js"></script>
+<script src="/draw2d/lib/jquery.autoresize.js"></script>
+<script src="/draw2d/lib/jquery-touch_punch.js"></script>
+<script src="/draw2d/lib/jquery.contextmenu.js"></script>
+<script src="/draw2d/lib/rgbcolor.js"></script>
+<script src="/draw2d/lib/canvg.js"></script>
+<script src="/draw2d/lib/Class.js"></script>
+<script src="/draw2d/lib/json2.js"></script>
+<script src="/draw2d/lib/pathfinding-browser.min.js"></script>
+<script src="/draw2d/src/draw2d.js"></script>
+
 <script src="/workfloweditor.js"></script>
-<script type="text/javascript" src="/theme/js/lib/jquery-contextmenu/jquery.contextMenu.min.js"></script>
-<script type="text/javascript" src="/theme/js/lib/jquery-contextmenu/jquery.ui.position.min.js"></script>
 
 <script src="/app.js"></script>
 </body>
