@@ -122,7 +122,7 @@ $(window).load(function () {
  });
 
   var nodes = [];
-  for (var i=0; i<3; i++) {
+  for (var i=0; i<84; i++) {
     var rect = new draw2d.shape.basic.Rectangle({
       radius: 10,
       stroke:3,
@@ -139,14 +139,30 @@ $(window).load(function () {
     rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
     rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
     rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
-    canvas.add(rect, window.innerWidth/2 + 80*i, window.innerHeight/2-90);
+    var nodex = 350 + Math.min(80*(i%24), 80*12);
+    var nodey = 80 + 160*Math.floor(i/24);
+    if (i%24 > 11) {
+      nodey += 80;
+      nodex -= 80*(i%12)+80;
+    }
+    canvas.add(rect, nodex, nodey);
     nodes.push(rect);
   }
   for (var i=1; i<nodes.length; i++) {
     console.log(nodes[i-1]);
+    var fromPort = 0;
+    var toPort = 2;
+    if (i%24 > 11) {
+      fromPort = 2;
+      toPort = 0;
+    }
+    if (i%24==12)
+      fromPort = 0;
+    if (i%24==0)
+      fromPort = 2;
     var c = connCreate(
-        nodes[i-1].getHybridPort(0),
-        nodes[i].getHybridPort(2)
+        nodes[i-1].getHybridPort(fromPort),
+        nodes[i].getHybridPort(toPort)
     );
     canvas.add(c);
   }
