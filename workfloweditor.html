@@ -113,7 +113,7 @@
         </div>
         <div class="btn-group" role="group" aria-label="Workflow Actions">
             <button type="button" class="btn btn-default-outline"><i class="fa fa-play-circle-o"></i></button>
-            <button type="button" class="btn btn-default-outline"><i class="fa fa-file-o"></i></button>
+            <button id="workflowToolbarNew" type="button" class="btn btn-default-outline"><i class="fa fa-file-o"></i></button>
             <button id="workflowToolbarImport" type="button" class="btn btn-default-outline"><i class="fa fa-folder-open-o"></i></button>
             <button id="workflowToolbarSave" type="button" class="btn btn-default-outline"><i class="fa fa-save"></i></button>
             <button id="workflowToolbarExportImage" type="button" class="btn btn-default-outline"><i class="fa fa-picture-o"></i></button>
@@ -132,9 +132,8 @@
             </header>
             <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
-                    <pre id="sidepanelContents" style="white-space: pre-wrap; width: 240px;">
-                    </pre>
-                    <br />
+                    <b>Type: </b><span id="sidePanelEvent"></span>
+                    <br /><br /><br />
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
                 </p>
             </div>
@@ -164,6 +163,7 @@
 <script src="/draw2d/lib/pathfinding-browser.min.js"></script>
 <script src="/draw2d/src/draw2d.js"></script>
 
+<script src="/log_helper.js"></script>
 <script src="/workfloweditor.js"></script>
 
 <script src="/app.js"></script>

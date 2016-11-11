@@ -3,8 +3,13 @@ var conn;
 
 function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
-  $('#sidepanelContents').html(JSON.stringify([figure.id,figure.userData,figure.x,figure.y], undefined, 2));
-  
+  if (figure.userData.evt !== undefined) {
+    $('#sidePanelTitle').text("Event Properties");
+    $('#sidePanelEvent').text(mappingData[figure.userData.evt].event_type);
+  } else {
+    $('#sidePanelTitle').text("Link Properties");
+    $('#sidePanelEvent').text("Standard Link");
+  }
 }
 
 function deselectedFigure(figure) {
@@ -19,20 +24,30 @@ function exportCanvasImage() {
         xCoords.push(b.x, b.x+b.w);
         yCoords.push(b.y, b.y+b.h);
     });
-    var minX   = Math.min.apply(Math, xCoords);
-    var minY   = Math.min.apply(Math, yCoords);
-    var width  = Math.max.apply(Math, xCoords)-minX;
-    var height = Math.max.apply(Math, yCoords)-minY;
+    var minX   = Math.min.apply(Math, xCoords) - 10;
+    var minY   = Math.min.apply(Math, yCoords) - 10;
+    var width  = Math.max.apply(Math, xCoords)-minX + 10;
+    var height = Math.max.apply(Math, yCoords)-minY + 10;
     console.log(canvas);
     
     var writer = new draw2d.io.png.Writer();
     writer.marshal(canvas,function(png){
-      console.log(png);
+      var filename = "WildfireWorkflowImage_" + Math.floor(Date.now() / 1000) + ".png";
+
+      var element = document.createElement('a');
+      element.setAttribute('href', png);
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
     }, new draw2d.geo.Rectangle(minX,minY,width,height));
 }
 $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
 
 function importJSON(json) {
+  canvas.clear();
   var reader = new draw2d.io.json.Reader();
   reader.unmarshal(canvas, decrypt(json));
 }
@@ -54,6 +69,8 @@ function exportJSON() {
       document.body.removeChild(element);
   });
 }
+
+$('#workflowToolbarNew').click(function(){location.reload();});
 $('#workflowToolbarSave').click(function(){exportJSON();});
 $('#workflowToolbarImport').click(function() {
     $('#simfileContainer').click();
@@ -103,70 +120,86 @@ function connCreate(sourcePort, targetPort) {
 }
 
 $(window).load(function () {
-  /* Init Page */
-  var width = window.innerWidth;
-  var height = window.innerHeight-136;
-  $('#graph').attr('style','width: ' + width + 'px; height: ' + height + 'px; background-color: #ffffff;');
-  window.addEventListener("contextmenu", function(e) { e.preventDefault(); });
 
-  canvas = new draw2d.Canvas("graph");
-  canvas.installEditPolicy(  new draw2d.policy.connection.DragConnectionCreatePolicy({
-    createConnection: connCreate
-  }));
-  canvas.on("select", function(emitter,event) {
-     if (event.figure!==null) {
-         selectedFigure(event.figure);
-     } else {
-         deselectedFigure(event.figure);
-     }
- });
+  chrome.storage.local.get('events', function (result) {
+      /* Init Page */
+      var width = window.innerWidth;
+      var height = window.innerHeight-136 + Math.max(0,Math.floor((result.events.length-60)/12)*80);
 
-  var nodes = [];
-  for (var i=0; i<84; i++) {
-    var rect = new draw2d.shape.basic.Rectangle({
-      radius: 10,
-      stroke:3,
-      color: "#888888",
-      resizeable: false,
-      bgColor: "#00B5CB"
-    });
-    var portConfig = {
-      diameter: 7,
-      bgColor: "#1E90FF"
-    };
-    /* Order is important */
-    rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
-    rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
-    rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
-    rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
-    var nodex = 350 + Math.min(80*(i%24), 80*12);
-    var nodey = 80 + 160*Math.floor(i/24);
-    if (i%24 > 11) {
-      nodey += 80;
-      nodex -= 80*(i%12)+80;
-    }
-    canvas.add(rect, nodex, nodey);
-    nodes.push(rect);
-  }
-  for (var i=1; i<nodes.length; i++) {
-    console.log(nodes[i-1]);
-    var fromPort = 0;
-    var toPort = 2;
-    if (i%24 > 11) {
-      fromPort = 2;
-      toPort = 0;
-    }
-    if (i%24==12)
-      fromPort = 0;
-    if (i%24==0)
-      fromPort = 2;
-    var c = connCreate(
-        nodes[i-1].getHybridPort(fromPort),
-        nodes[i].getHybridPort(toPort)
-    );
-    canvas.add(c);
-  }
+      if (result.events.length>60)
+        $('body').attr('style','overflow-y: scroll; overflow-x: hidden;');
 
+      $('#graph').attr('style','width: ' + width + 'px; height: ' + height + 'px; background-color: #ffffff;');
+      window.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+
+      canvas = new draw2d.Canvas("graph");
+      canvas.installEditPolicy( new draw2d.policy.connection.DragConnectionCreatePolicy({
+        createConnection: connCreate
+      }));
+      canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy());
+      
+      canvas.on("select", function(emitter,event) {
+        if (event.figure!==null) {
+            selectedFigure(event.figure);
+        } else {
+            deselectedFigure(event.figure);
+        }
+      });
+
+      var nodes = [];
+
+      for (var i=0; i<result.events.length; i++) {
+        var bgColor = "#999999";
+        if (mappingData[result.events[i].evt] !== undefined)
+          bgColor = mappingData[result.events[i].evt].bgColor;
+        var rect = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
+          radius: 10,
+          stroke:3,
+          color: "#888888",
+          resizeable: false,
+          bgColor: bgColor,
+          userData: result.events[i]
+        });
+        var portConfig = {
+          diameter: 7,
+          bgColor: "#1E90FF"
+        };
+        /* Order is important */
+        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
+        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
+        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
+        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
+        var nodex = 296 + Math.min(80*(i%24), 80*12);
+        var nodey = 80 + 160*Math.floor(i/24);
+        if (i%24 > 11) {
+          nodey += 80;
+          nodex -= 80*(i%12)+80;
+        }
+        canvas.add(rect, nodex, nodey);
+        nodes.push(rect);
+      }
+      for (var i=1; i<nodes.length; i++) {
+        var fromPort = 0;
+        var toPort = 2;
+        if (i%24 > 11) {
+          fromPort = 2;
+          toPort = 0;
+        }
+        if (i%24==12) {
+          fromPort = 1;
+          toPort = 3;
+        }
+        if (i%24==0) {
+          fromPort = 1;
+          toPort = 3;
+        }
+        var c = connCreate(
+            nodes[i-1].getHybridPort(fromPort),
+            nodes[i].getHybridPort(toPort)
+        );
+        canvas.add(c);
+      }
+  });
 });
 
 $('#nodeLinkPanelX').click(function(){

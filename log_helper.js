@@ -1,3 +1,90 @@
+var mappingData = {
+    begin_recording: {
+        bgColor: '#56B558',
+        event_type: 'Begun Recording'
+    },
+    end_recording: {
+        bgColor: '#FF6B6B',
+        event_type: 'Ended Recording'
+    },
+    focusin: {
+        bgColor: '#4ECDC4',
+        event_type: 'Element Focus'
+    },
+    click: {
+        bgColor: '#556270',
+        event_type: 'Mouse Clicked'
+    },
+    focusout: {
+        bgColor: '#F0A900',
+        event_type: 'Element Unfocus'
+    },
+    tabchange: {
+        bgColor: '#9265C6',
+        event_type: 'Changed Tabs'
+    },
+    mousedown: {
+        bgColor: '#F9E666',
+        event_type: 'Mouse Down'
+    },
+    mouseup: {
+        bgColor: '#76B8C9',
+        event_type: 'Mouse Up'
+    },
+    keydown: {
+        bgColor: '#5D97AF',
+        event_type: 'Key Down'
+    },
+    keyup: {
+        bgColor: '#FC9D9A',
+        event_type: 'Key Up'
+    },
+    input: {
+        bgColor: '#CBE86B',
+        event_type: 'Data Input'
+    },
+    select: {
+        bgColor: '#D95B43',
+        event_type: 'Text Selected'
+    },
+    scroll: {
+        bgColor: '#D9CEB2',
+        event_type: 'Page Scroll'
+    },
+    keypress: {
+        bgColor: '#C5E0DC',
+        event_type: 'Key Pressed'
+    },
+    mouseover: {
+        bgColor: '#E0DFB1',
+        event_type: 'Mouse Over'
+    },
+    mouseout: {
+        bgColor: '#A5A36C',
+        event_type: 'Mouse Out'
+    },
+    dataentry: {
+        bgColor: '#EEE9E5',
+        event_type: 'Data Entry'
+    },
+    clipboard_copy: {
+        bgColor: '#005F6B',
+        event_type: 'Clipboard Copy'
+    },
+    clipboard_cut: {
+        bgColor: '#008C9E',
+        event_type: 'Clipboard Cut'
+    },
+    clipboard_paste: {
+        bgColor: '#00B4CC',
+        event_type: 'Clipboard Paste'
+    },
+    submit: {
+        bgColor: '#A46583',
+        event_type: 'Form Submit'
+    }
+};
+
 function formatDate(date) {
 	var seconds = Math.floor((new Date() - date) / 1000);
     var interval = Math.floor(seconds / 31536000);
