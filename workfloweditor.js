@@ -5,10 +5,30 @@ function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
   if (figure.userData.evt !== undefined) {
     $('#sidePanelTitle').text("Event Properties");
-    $('#sidePanelEvent').text(mappingData[figure.userData.evt].event_type);
+    $('#sidePanelTypeSelect').removeAttr('disabled');
+    if (figure.userData.evt == "begin_recording") {
+      $('#sidePanelTypeSelect').attr('disabled','disabled');
+      $('#sidePanelTypeSelect').html(
+        '<option value="begin_recording" data-content=\'<span class="user-item"><img src="/icons/dark-runner.png"/>Begin Recording</span>\'>Begin Recording</option>'
+      ).selectpicker('refresh');
+      $('#sidePanelTypeSelect').attr('disabled','disabled');
+    } else {
+      var selecthtml = "";
+      for (event in mappingData) {
+        if (event != "begin_recording")
+          selecthtml += '<option ';
+          if (figure.userData.evt == event)
+            selecthtml += 'selected="selected" ';
+          selecthtml += 'value="' + event + '" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-' + mappingData[event].icon + '"/>' + mappingData[event].event_type + '</span>\'>' + mappingData[event].event_type + '</option>';
+      }
+      $('#sidePanelTypeSelect').html(selecthtml).selectpicker('refresh');
+    }
   } else {
     $('#sidePanelTitle').text("Link Properties");
-    $('#sidePanelEvent').text("Standard Link");
+    $('#sidePanelTypeSelect').removeAttr('disabled');
+    $('#sidePanelTypeSelect').html(
+      '<option value="timer" data-content=\'<span class="user-item"><img src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>'
+    ).selectpicker('refresh');
   }
 }
 
@@ -92,7 +112,10 @@ $('#simfileContainer').bind('change', function() {
     reader.readAsText(file);
 });
 
-function connCreate(sourcePort, targetPort) {
+function connCreate(sourcePort, targetPort, userData) {
+    if (userData === undefined)
+      userData = {};
+
     var router = new draw2d.layout.connection.ManhattanBridgedConnectionRouter();
     conn = new draw2d.Connection({
         router: router,
@@ -103,7 +126,7 @@ function connCreate(sourcePort, targetPort) {
         radius: 8,
         source: sourcePort,
         target: targetPort,
-        userData: {some: "value"}
+        userData: userData
     });
     var arrow = new draw2d.decoration.connection.ArrowDecorator(10,10);
     arrow.setBackgroundColor("#888888");
@@ -160,6 +183,18 @@ $(window).load(function () {
           bgColor: bgColor,
           userData: result.events[i]
         });
+        var CustomIcon = draw2d.SetFigure.extend({
+          init : function(){ this._super(); },
+          createSet: function(){
+              this.canvas.paper.setStart();
+              this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
+                  stroke: 0
+              });
+              this.canvas.paper.image("icons/" + mappingData[result.events[i].evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
+              return this.canvas.paper.setFinish();
+          }
+        })
+        rect.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(rect));
         var portConfig = {
           diameter: 7,
           bgColor: "#1E90FF"
@@ -193,9 +228,14 @@ $(window).load(function () {
           fromPort = 1;
           toPort = 3;
         }
+        var userData = {
+          condition_type: 'timer',
+          wait_time: result.events[i].time - result.events[i-1].time
+        };
         var c = connCreate(
             nodes[i-1].getHybridPort(fromPort),
-            nodes[i].getHybridPort(toPort)
+            nodes[i].getHybridPort(toPort),
+            userData
         );
         canvas.add(c);
       }
@@ -204,4 +244,5 @@ $(window).load(function () {
 
 $('#nodeLinkPanelX').click(function(){
   $('#workflowsidepanel').attr('style','display: none;');
+  // TODO: Deselect node/link
 });

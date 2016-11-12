@@ -32,6 +32,7 @@
     <![endif]-->
     <link rel="stylesheet" href="/theme/css/lib/font-awesome/font-awesome.min.css">
     <link rel="stylesheet" href="/theme/css/lib/bootstrap-sweetalert/sweetalert.css"/>
+    <link rel="stylesheet" href="/theme/css/separate/vendor/bootstrap-select/bootstrap-select.min.css">
     <link rel="stylesheet" href="/theme/css/main.css">
     <link rel="stylesheet" href="/theme/css/custom.css">
 </head>
@@ -132,8 +133,9 @@
             </header>
             <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
-                    <b>Type: </b><span id="sidePanelEvent"></span>
-                    <br /><br /><br />
+                    <!-- 86929E -->
+                    <b>Type</b><br /><select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
+                    </select><br /><br />
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
                 </p>
             </div>
@@ -163,6 +165,7 @@
 <script src="/draw2d/lib/pathfinding-browser.min.js"></script>
 <script src="/draw2d/src/draw2d.js"></script>
 
+<script src="/theme/js/lib/bootstrap-select/bootstrap-select.min.js"></script>
 <script src="/log_helper.js"></script>
 <script src="/workfloweditor.js"></script>
 

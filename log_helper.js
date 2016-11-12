@@ -1,87 +1,108 @@
 var mappingData = {
     begin_recording: {
         bgColor: '#56B558',
-        event_type: 'Begun Recording'
+        event_type: 'Begin Recording',
+        icon: 'runner.png'
     },
     end_recording: {
         bgColor: '#FF6B6B',
-        event_type: 'Ended Recording'
-    },
-    focusin: {
-        bgColor: '#4ECDC4',
-        event_type: 'Element Focus'
+        event_type: 'End Recording',
+        icon: 'winner-runner-arriving-to-end-line.png'
     },
     click: {
         bgColor: '#556270',
-        event_type: 'Mouse Clicked'
-    },
-    focusout: {
-        bgColor: '#F0A900',
-        event_type: 'Element Unfocus'
+        event_type: 'Mouse Click',
+        icon: 'cursor-1.png'
     },
     tabchange: {
         bgColor: '#9265C6',
-        event_type: 'Changed Tabs'
-    },
-    mousedown: {
-        bgColor: '#F9E666',
-        event_type: 'Mouse Down'
-    },
-    mouseup: {
-        bgColor: '#76B8C9',
-        event_type: 'Mouse Up'
-    },
-    keydown: {
-        bgColor: '#5D97AF',
-        event_type: 'Key Down'
-    },
-    keyup: {
-        bgColor: '#FC9D9A',
-        event_type: 'Key Up'
+        event_type: 'Change Tabs',
+        icon: 'web-tabs.png'
     },
     input: {
         bgColor: '#CBE86B',
-        event_type: 'Data Input'
-    },
-    select: {
-        bgColor: '#D95B43',
-        event_type: 'Text Selected'
-    },
-    scroll: {
-        bgColor: '#D9CEB2',
-        event_type: 'Page Scroll'
-    },
-    keypress: {
-        bgColor: '#C5E0DC',
-        event_type: 'Key Pressed'
-    },
-    mouseover: {
-        bgColor: '#E0DFB1',
-        event_type: 'Mouse Over'
-    },
-    mouseout: {
-        bgColor: '#A5A36C',
-        event_type: 'Mouse Out'
+        event_type: 'Data Input',
+        icon: 'text-entry-box.png'
     },
     dataentry: {
         bgColor: '#EEE9E5',
-        event_type: 'Data Entry'
+        event_type: 'Data Entry',
+        icon: 'edit-line.png'
     },
-    clipboard_copy: {
-        bgColor: '#005F6B',
-        event_type: 'Clipboard Copy'
+    focusin: {
+        bgColor: '#4ECDC4',
+        event_type: 'Element Focus',
+        icon: 'focus.png'
     },
-    clipboard_cut: {
-        bgColor: '#008C9E',
-        event_type: 'Clipboard Cut'
+    focusout: {
+        bgColor: '#F0A900',
+        event_type: 'Element Unfocus',
+        icon: 'unfocus-wfcustom.png'
     },
-    clipboard_paste: {
-        bgColor: '#00B4CC',
-        event_type: 'Clipboard Paste'
+    keydown: {
+        bgColor: '#5D97AF',
+        event_type: 'Key Down',
+        icon: 'key-arrow-down.png'
+    },
+    keyup: {
+        bgColor: '#FC9D9A',
+        event_type: 'Key Up',
+        icon: 'square-arrow-up.png'
+    },
+    keypress: {
+        bgColor: '#C5E0DC',
+        event_type: 'Key Press',
+        icon: 'keyboard-key-a.png'
     },
     submit: {
         bgColor: '#A46583',
-        event_type: 'Form Submit'
+        event_type: 'Form Submit',
+        icon: 'clicking-cursor.png'
+    },
+    select: {
+        bgColor: '#D95B43',
+        event_type: 'Text Select',
+        icon: 'edit-line.png'
+    },
+    scroll: {
+        bgColor: '#D9CEB2',
+        event_type: 'Page Scroll',
+        icon: 'scroll-bar.png'
+    },
+    mousedown: {
+        bgColor: '#F9E666',
+        event_type: 'Mouse Down',
+        icon: 'mouse-pointer.png'
+    },
+    mouseup: {
+        bgColor: '#76B8C9',
+        event_type: 'Mouse Up',
+        icon: 'mouse-pointer.png'
+    },
+    mouseover: {
+        bgColor: '#E0DFB1',
+        event_type: 'Mouse Over',
+        icon: 'mouse-pointer.png'
+    },
+    mouseout: {
+        bgColor: '#A5A36C',
+        event_type: 'Mouse Out',
+        icon: 'mouse-pointer.png'
+    },
+    clipboard_copy: {
+        bgColor: '#005F6B',
+        event_type: 'Clipboard Copy',
+        icon: 'copy-document.png'
+    },
+    clipboard_cut: {
+        bgColor: '#008C9E',
+        event_type: 'Clipboard Cut',
+        icon: 'cut.png'
+    },
+    clipboard_paste: {
+        bgColor: '#00B4CC',
+        event_type: 'Clipboard Paste',
+        icon: 'paste-from-clipboard.png'
     }
 };
 
