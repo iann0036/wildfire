@@ -1,5 +1,39 @@
 var canvas;
 var conn;
+var nodes = [];
+
+function getEventOptionsHtml(userdata) {
+  if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
+    "    <div class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">x</div>" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_x\" value=\"" + userdata.evt_data.clientX + "\">" +
+    "    </div>" +
+    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">y</div>" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_y\" value=\"" + userdata.evt_data.clientY + "\">" +
+    "    </div><br />" +
+    "    <label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_css_selector\" value=\"" + userdata.evt_data.csspath + "\">" +
+    "</div>";
+  } else if (userdata.evt == "tabchange") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"url\" value=\"" + userdata.evt_data.url + "\">" +
+    "    <br />" +
+    "</div>";
+  } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
+    return "";
+  } else if (userdata.evt === undefined) {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"timer\">Timer</label>" +
+    "    <div class=\"input-group\">" +
+    "        <input type=\"text\" class=\"form-control\" id=\"timer\" value=\"" + (userdata.wait_time/1000) + "\">" +
+    "        <div class=\"input-group-addon\">secs</div>" +
+    "    </div><br />" +
+    "</div>";
+  }
+
+  return "<i>Event Properties Unavailable</i><br /><br />";
+}
 
 function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
@@ -9,7 +43,7 @@ function selectedFigure(figure) {
     if (figure.userData.evt == "begin_recording") {
       $('#sidePanelTypeSelect').attr('disabled','disabled');
       $('#sidePanelTypeSelect').html(
-        '<option value="begin_recording" data-content=\'<span class="user-item"><img src="/icons/dark-runner.png"/>Begin Recording</span>\'>Begin Recording</option>'
+        '<option value="begin_recording" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-runner.png"/>Begin Recording</span>\'>Begin Recording</option>'
       ).selectpicker('refresh');
       $('#sidePanelTypeSelect').attr('disabled','disabled');
     } else {
@@ -22,14 +56,54 @@ function selectedFigure(figure) {
           selecthtml += 'value="' + event + '" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-' + mappingData[event].icon + '"/>' + mappingData[event].event_type + '</span>\'>' + mappingData[event].event_type + '</option>';
       }
       $('#sidePanelTypeSelect').html(selecthtml).selectpicker('refresh');
+      $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
     }
   } else {
     $('#sidePanelTitle').text("Link Properties");
     $('#sidePanelTypeSelect').removeAttr('disabled');
     $('#sidePanelTypeSelect').html(
-      '<option value="timer" data-content=\'<span class="user-item"><img src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>'
+      '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
+      '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
     ).selectpicker('refresh');
+    $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
   }
+}
+
+function addNode(event) {
+  var bgColor = "#999999";
+  if (mappingData[event.evt] !== undefined)
+    bgColor = mappingData[event.evt].bgColor;
+  var rect = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
+    radius: 10,
+    stroke:3,
+    color: "#888888",
+    resizeable: false,
+    bgColor: bgColor,
+    userData: event
+  });
+  var CustomIcon = draw2d.SetFigure.extend({
+    init : function(){ this._super(); },
+    createSet: function(){
+        this.canvas.paper.setStart();
+        this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
+            stroke: 0
+        });
+        this.canvas.paper.image("icons/" + mappingData[event.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
+        return this.canvas.paper.setFinish();
+    }
+  })
+  rect.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(rect));
+  var portConfig = {
+    diameter: 7,
+    bgColor: "#1E90FF"
+  };
+  /* Order is important */
+  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
+  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
+  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
+  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
+  
+  return rect;
 }
 
 function deselectedFigure(figure) {
@@ -169,49 +243,16 @@ $(window).load(function () {
         }
       });
 
-      var nodes = [];
-
       for (var i=0; i<result.events.length; i++) {
-        var bgColor = "#999999";
-        if (mappingData[result.events[i].evt] !== undefined)
-          bgColor = mappingData[result.events[i].evt].bgColor;
-        var rect = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
-          radius: 10,
-          stroke:3,
-          color: "#888888",
-          resizeable: false,
-          bgColor: bgColor,
-          userData: result.events[i]
-        });
-        var CustomIcon = draw2d.SetFigure.extend({
-          init : function(){ this._super(); },
-          createSet: function(){
-              this.canvas.paper.setStart();
-              this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
-                  stroke: 0
-              });
-              this.canvas.paper.image("icons/" + mappingData[result.events[i].evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
-              return this.canvas.paper.setFinish();
-          }
-        })
-        rect.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(rect));
-        var portConfig = {
-          diameter: 7,
-          bgColor: "#1E90FF"
-        };
-        /* Order is important */
-        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
-        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
-        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
-        rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
+        var node = addNode(result.events[i]);
         var nodex = 296 + Math.min(80*(i%24), 80*12);
         var nodey = 80 + 160*Math.floor(i/24);
         if (i%24 > 11) {
           nodey += 80;
           nodex -= 80*(i%12)+80;
         }
-        canvas.add(rect, nodex, nodey);
-        nodes.push(rect);
+        canvas.add(node, nodex, nodey);
+        nodes.push(node);
       }
       for (var i=1; i<nodes.length; i++) {
         var fromPort = 0;
@@ -245,4 +286,11 @@ $(window).load(function () {
 $('#nodeLinkPanelX').click(function(){
   $('#workflowsidepanel').attr('style','display: none;');
   // TODO: Deselect node/link
+});
+
+$('#workflowToolbarAddNode').click(function(){
+  canvas.add(addNode({
+    evt: 'end_recording'
+  }), window.innerWidth/2, window.innerHeight/3);
+  nodes.push(node);
 });

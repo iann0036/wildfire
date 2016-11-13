@@ -108,7 +108,7 @@
 <div class="form-group" style="right: 0px; padding-top: 136px; margin: 16px; float: right; position: absolute;">
     <div class="btn-toolbar" role="toolbar" aria-label="Toolbar">
         <div class="btn-group" role="group" aria-label="Event Actions">
-            <button type="button" class="btn btn-default-outline"><i class="fa fa-plus-square-o"></i></button>
+            <button id="workflowToolbarAddNode" type="button" class="btn btn-default-outline"><i class="fa fa-plus-square-o"></i></button>
             <button type="button" class="btn btn-default-outline"><i class="fa fa-copy"></i></button>
             <button type="button" class="btn btn-default-outline"><i class="fa fa-trash-o"></i></button>
         </div>
@@ -134,8 +134,10 @@
             <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
                     <!-- 86929E -->
-                    <b>Type</b><br /><select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
+                    <label class="form-label semibold" for="sidePanelTypeSelect">Type</label>
+                    <select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
                     </select><br /><br />
+                    <span id="sidePanelEventDetails"></span>
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
                 </p>
             </div>
