@@ -188,7 +188,10 @@ $('#simfileContainer').bind('change', function() {
 
 function connCreate(sourcePort, targetPort, userData) {
     if (userData === undefined)
-      userData = {};
+      userData = {
+        condition_type: 'timer',
+        wait_time: 0
+      };
 
     var router = new draw2d.layout.connection.ManhattanBridgedConnectionRouter();
     conn = new draw2d.Connection({

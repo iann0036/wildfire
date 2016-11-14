@@ -32,7 +32,8 @@
     "notifications",
     "http://*/",
     "https://*/",
-    "<all_urls>"
+    "<all_urls>",
+    "unlimitedStorage"
   ],
   "web_accessible_resources": ["embedded.js"]
 }
