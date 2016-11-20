@@ -33,6 +33,7 @@ function populateSimulations() {
         var simulations = result.simulations.reverse();
 		if (!Array.isArray(simulations))
 			simulations = [];
+        console.log(simulations);
 
         document.getElementById('simulationGrid').innerHTML = "";
 
@@ -40,6 +41,7 @@ function populateSimulations() {
 			var stepcount = simulations[i].events.length - 2;
 			var logcount = simulations[i].log.length - 2;
 			var percentile = Math.max(0,Math.floor(logcount*100/stepcount));
+            percentile = Math.min(percentile, 100);
 			
             var innerHTML = "<div class=\"tasks-grid-col ";
             if (simulations[i].finished)
@@ -83,9 +85,12 @@ function populateSimulations() {
                 "</progress>" +
                 "<div class=\"progress-compact-style-label\">" + percentile + "% completed</div>" +
                 "</div>" +
-                "<div class=\"task-card-tags\">" +
-                "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>" +
-                "</div>" +
+                "<div class=\"task-card-tags\">";
+            if (simulations[i].node_details !== undefined)
+                innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Workflow</a>";
+            else
+                innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>";
+            innerHTML += "</div>" +
                 "</div>" +
                 "<div class=\"task-card-footer\">" +
                 "<div class=\"task-card-meta-item\"><i style=\"color: #adb7be;\" class=\"font-icon font-icon-list-square\"></i>";

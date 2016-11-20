@@ -14,8 +14,6 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-simulate-mouse-out').click();
     if (all_settings.emulatehover)
         $('#setting-emulate-hover').click();
-    if (all_settings.activateeditor)
-        $('#setting-activate-editor').click();
     if (all_settings.leavesimulationopen)
         $('#setting-leave-simulation-open').click();
     if (all_settings.customsubmit)
@@ -51,15 +49,6 @@ $('#setting-emulate-hover').change(function() {
 
 $('#setting-custom-submit').change(function() {
     all_settings.customsubmit = $(this).is(":checked");
-    updateSettings();
-});
-
-$('#setting-activate-editor').change(function() {
-    all_settings.activateeditor = $(this).is(":checked");
-    if (all_settings.activateeditor)
-        $('#workflowEditorPrimaryLink').attr('style','display: inline-block;');
-    else
-        $('#workflowEditorPrimaryLink').attr('style','display: none;');
     updateSettings();
 });
 

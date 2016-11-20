@@ -17,15 +17,14 @@ var eventExecutionTimeoutCounter;
 var closeListener;
 var terminated;
 
+var node_details = [];
+
 chrome.storage.local.get('settings', function (settings) {
     if (settings.settings != null) {
         all_settings = settings.settings;
-        if (all_settings.activateeditor)
-            $('#workflowEditorPrimaryLink').attr('style', 'display: inline-block;');
     } else {
         all_settings = new Object();
         all_settings.emulatehover = false;
-        all_settings.activateeditor = false;
         all_settings.leavesimulationopen = false;
         all_settings.recordmouseout = false;
         all_settings.recordmouseover = false;
@@ -118,6 +117,7 @@ function terminateSimulation(finished, reason) {
 	terminated = true; // prevent race against close listener
 	
 	chrome.windows.onRemoved.removeListener(closeListenerCallback);
+    chrome.windows.onRemoved.removeListener(closeListenerCallbackWorkflow);
     clearTimeout(timeoutObject);
 	
     simulating = false;
@@ -150,7 +150,8 @@ function terminateSimulation(finished, reason) {
                 image: imagedata,
                 finished: finished,
 				events: events,
-				terminate_reason: reason
+				terminate_reason: reason,
+                node_details: node_details
             });
             chrome.storage.local.set({simulations: simulations});
         });

@@ -25,7 +25,7 @@ function populateSimulation() {
             $('#screenshot').attr('src','/unavailable.png');
             $('#screenshot').parent().append("<h5 style='margin-bottom: 80px;'>No Screenshot Available</h5>");
         }
-        $('#progressBar').val(percentile);
+        $('#progressBar').val(Math.min(percentile, 100));
         $('#progressBar').html(percentile + "%");
         if (percentile != 100) {
             $('#progressBar').removeClass('progress-success');
@@ -36,6 +36,11 @@ function populateSimulation() {
         $('#recordTime').html(formatDiffDate(simulations[i].events[1].time,simulations[i].events[simulations[i].events.length-1].time));
         $('#simulationTime').html(formatDiffDate(simulations[i].starttime+1000,simulations[i].endtime));
 
+        if (simulations[i].node_details !== undefined)
+            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Workflow</a>");
+        else
+            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Real-time</a>");
+
         if (!simulations[i].finished) {
             $('#terminationReason').html(simulations[i].terminate_reason);
             $('#terminationReason').attr('style','');
@@ -43,7 +48,10 @@ function populateSimulation() {
         }
 
         //$('#simDetails').html(JSON.stringify(simulations[i].log, null, 2));
-        populateEvents(simulations[i]);
+        if (simulations[i].node_details !== undefined)
+            populateSimulationEvents(simulations[i]);
+        else
+            populateEvents(simulations[i]);
     });
 }
 

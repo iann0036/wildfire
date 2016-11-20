@@ -1,43 +1,107 @@
 var canvas;
 var conn;
 var nodes = [];
+var figure;
+
+function deleteSelection() {
+  figure.resetPorts();
+  canvas.remove(figure);
+}
+$('#workflowToolbarDelete').click(function(){deleteSelection();});
+$('#deleteButtonSidepanel').click(function(){deleteSelection();});
 
 function getEventOptionsHtml(userdata) {
-  if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown") {
+  if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown" || userdata.evt == "mouseover" || userdata.evt == "mouseout") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control\" id=\"event_x\" value=\"" + userdata.evt_data.clientX + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + (userdata.evt_data.clientX || "0") + "\">" +
     "    </div>" +
     "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control\" id=\"event_y\" value=\"" + userdata.evt_data.clientY + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + (userdata.evt_data.clientY || "0") + "\">" +
     "    </div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control\" id=\"event_css_selector\" value=\"" + userdata.evt_data.csspath + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "focusin" || userdata.evt == "focusout") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "    <br />" +
+    "</div>";
+  } else if (userdata.evt == "input" || userdata.evt == "dataentry") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + (userdata.evt_data.value || "") + "\">" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "keydown" || userdata.evt == "keyup" || userdata.evt == "keypress") {
+    var chars = "";
+    for (var i=48; i<127; i++) {
+      if (userdata.evt_data.keyCode == i)
+        chars += "      <option selected=\"selected\" value=\"" + i + "\">" + String.fromCharCode(i) + "</option>";
+      else
+        chars += "      <option value=\"" + i + "\">" + String.fromCharCode(i) + "</option>";
+    }
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_keyCode\">Key</label>" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"keyCode\" id=\"event_keyCode\">" +
+    "      <option value=\"0\">&nbsp;</option>" +
+    "      <option value=\"8\">Backspace</option>" +
+    "      <option value=\"9\">Tab</option>" +
+    "      <option value=\"13\">Enter</option>" +
+    "      <option value=\"16\">Shift</option>" +
+    "      <option value=\"17\">Control</option>" +
+    "      <option value=\"18\">Alt</option>" +
+    "      <option value=\"20\">Caps Lock</option>" +
+    "      <option value=\"27\">Escape</option>" +
+    "      <option value=\"32\">Space</option>" +
+    "      <option value=\"33\">Page Up</option>" +
+    "      <option value=\"34\">Page Down</option>" +
+    "      <option value=\"35\">End</option>" +
+    "      <option value=\"36\">Home</option>" +
+    "      <option value=\"37\">Left Arrow</option>" +
+    "      <option value=\"38\">Up Arrow</option>" +
+    "      <option value=\"39\">Right Arrow</option>" +
+    "      <option value=\"40\">Down Arrow</option>" +
+    "      <option value=\"45\">Insert</option>" +
+    "      <option value=\"46\">Delete</option>" +
+    chars +
+    "    </select>" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
     "</div>";
   } else if (userdata.evt == "tabchange") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
-    "    <input type=\"text\" class=\"form-control\" id=\"url\" value=\"" + userdata.evt_data.url + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + (userdata.evt_data.url || "about:blank") + "\">" +
     "    <br />" +
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
     return "";
-  } else if (userdata.evt === undefined) {
-    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"timer\">Timer</label>" +
+  } else if (userdata.evt == "timer" || userdata.evt === undefined) {
+    if (userdata.wait_time === undefined)
+      userdata.wait_time = 0;
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_timer\">Timer</label>" +
     "    <div class=\"input-group\">" +
-    "        <input type=\"text\" class=\"form-control\" id=\"timer\" value=\"" + (userdata.wait_time/1000) + "\">" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + (userdata.wait_time/1000) + "\">" +
     "        <div class=\"input-group-addon\">secs</div>" +
-    "    </div><br />" +
+    "    </div>" +
+    "</div>";
+  } else if (userdata.evt == "wait_for_element") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_csspath\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_csspath\" value=\"" + (userdata.csspath || "") + "\">" +
     "</div>";
   }
+
+  console.log(userdata.evt);
 
   return "<i>Event Properties Unavailable</i><br /><br />";
 }
 
 function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
-  if (figure.userData.evt !== undefined) {
+  $('#sidePanelTypeSelect').html('');
+
+  if (figure.userData.evt != "timer" && figure.userData.evt != "wait_for_element") {
     $('#sidePanelTitle').text("Event Properties");
     $('#sidePanelTypeSelect').removeAttr('disabled');
     if (figure.userData.evt == "begin_recording") {
@@ -56,24 +120,58 @@ function selectedFigure(figure) {
           selecthtml += 'value="' + event + '" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-' + mappingData[event].icon + '"/>' + mappingData[event].event_type + '</span>\'>' + mappingData[event].event_type + '</option>';
       }
       $('#sidePanelTypeSelect').html(selecthtml).selectpicker('refresh');
-      $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
     }
   } else {
     $('#sidePanelTitle').text("Link Properties");
     $('#sidePanelTypeSelect').removeAttr('disabled');
-    $('#sidePanelTypeSelect').html(
-      '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-      '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
-    ).selectpicker('refresh');
-    $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
+    if (figure.userData.evt == "wait_for_element")
+      $('#sidePanelTypeSelect').html(
+        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
+        '<option selected="selected" value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
+      ).selectpicker('refresh');
+    else if (figure.userData.evt == "timer")
+      $('#sidePanelTypeSelect').html(
+        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
+        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
+      ).selectpicker('refresh');
   }
+
+  // Set details call and listen for select changes
+  $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
+  $('#sidePanelTypeSelect').change(function(){
+    var userData = figure.userData;
+    userData.evt = $('#sidePanelTypeSelect').val();
+    figure.setUserData(userData);
+    $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
+    setDetailListeners();
+  });
+
+  setDetailListeners();
+}
+
+function setDetailListeners() {
+  $('#event_detail_timer').change(function(){
+    var userData = figure.userData;
+    userData['wait_time'] = $('#event_detail_timer').val() * 1000;
+    figure.setUserData(userData);
+  });
+  $('#event_detail_csspath').change(function(){
+    var userData = figure.userData;
+    userData['csspath'] = $('#event_detail_csspath').val();
+    figure.setUserData(userData);
+  });
+  $('.event-detail').change(function(){
+    var userData = figure.userData;
+    userData.evt_data[$(this).attr('data-event-detail')] = $(this).val();
+    figure.setUserData(userData);
+  });
 }
 
 function addNode(event) {
   var bgColor = "#999999";
   if (mappingData[event.evt] !== undefined)
     bgColor = mappingData[event.evt].bgColor;
-  var rect = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
+  var node = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
     radius: 10,
     stroke:3,
     color: "#888888",
@@ -81,6 +179,8 @@ function addNode(event) {
     bgColor: bgColor,
     userData: event
   });
+  if (event.evt == "begin_recording")
+    node.setDeleteable(false);
   var CustomIcon = draw2d.SetFigure.extend({
     init : function(){ this._super(); },
     createSet: function(){
@@ -92,18 +192,18 @@ function addNode(event) {
         return this.canvas.paper.setFinish();
     }
   })
-  rect.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(rect));
+  node.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
   var portConfig = {
     diameter: 7,
     bgColor: "#1E90FF"
   };
   /* Order is important */
-  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
-  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
-  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
-  rect.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
+  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
+  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
+  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
+  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
   
-  return rect;
+  return node;
 }
 
 function deselectedFigure(figure) {
@@ -189,6 +289,7 @@ $('#simfileContainer').bind('change', function() {
 function connCreate(sourcePort, targetPort, userData) {
     if (userData === undefined)
       userData = {
+        evt: 'timer',
         condition_type: 'timer',
         wait_time: 0
       };
@@ -240,6 +341,7 @@ $(window).load(function () {
       
       canvas.on("select", function(emitter,event) {
         if (event.figure!==null) {
+            figure = event.figure;
             selectedFigure(event.figure);
         } else {
             deselectedFigure(event.figure);
@@ -273,6 +375,7 @@ $(window).load(function () {
           toPort = 3;
         }
         var userData = {
+          evt: 'timer',
           condition_type: 'timer',
           wait_time: result.events[i].time - result.events[i-1].time
         };
@@ -282,6 +385,10 @@ $(window).load(function () {
             userData
         );
         canvas.add(c);
+      }
+
+      if (window.location.hash == "#launch") {
+        initWorkflowSimulation();
       }
   });
 });
@@ -296,4 +403,8 @@ $('#workflowToolbarAddNode').click(function(){
     evt: 'end_recording'
   }), window.innerWidth/2, window.innerHeight/3);
   nodes.push(node);
+});
+
+$('#workflowToolbarInitSimulation').click(function(){
+  initWorkflowSimulation();
 });
