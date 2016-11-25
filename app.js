@@ -317,6 +317,10 @@ function simulateNextStep() {
 			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);
             break;
+        case 'change':
+			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
+				events[i].evt_data.value.replace("'", "\\'") + "');", i);
+            break;
         case 'input':
 			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);

@@ -5,7 +5,7 @@ $('#submit').click(function(e){
 	
 	$.ajax({
 		method: "POST",
-		url: "https://ianmckay.com.au/wp-content/themes/empathy/send-mail.php",
+		url: "https://api.wildfire.ai/contact",
 		data: {
 			subject: "Wildfire Contact",
 			name: $('#name').val(),

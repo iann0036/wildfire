@@ -1,3 +1,5 @@
+// 86929E
+
 var mappingData = {
     begin_recording: {
         bgColor: '#56B558',
@@ -28,6 +30,11 @@ var mappingData = {
         bgColor: '#EEE9E5',
         event_type: 'Data Entry',
         icon: 'edit-line.png'
+    },
+    change: {
+        bgColor: '#98462A',
+        event_type: 'Change',
+        icon: 'change.png'
     },
     focusin: {
         bgColor: '#4ECDC4',
@@ -355,6 +362,22 @@ function readableEventDetail(event) {
             event_data += " <code>&lt;" + event.evt_data.type + "&gt;</code> element to the value \"" + escaped_value + "\"";
             minorEvent = false;
             break;
+        case 'change':
+            if (event.evt_data.value)
+                var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            else
+                var escaped_value = "<i>Unknown</i>";
+            event_type = "Change";
+            event_data = "Changed a";
+            if (event.evt_data.type == "input")
+                event_data += "n";
+            event_data += " <code>&lt;" + event.evt_data.type + "&gt;</code> element to the value \"" + escaped_value + "\"";
+            minorEvent = false;
+            break;
         case 'clipboard_copy':
             if (event.evt_data.value)
                 var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
@@ -464,7 +487,8 @@ function populateEvents(result) {
     for (var i=0; events!=null && i<events.length; i++) {
         event_details = readableEventDetail(events[i]);
 
-        var innerHTML = "<td class=\"table-check\">" +
+        var innerHTML = "<!--" + JSON.stringify(events[i]) + "-->";
+        innerHTML += "<td class=\"table-check\">" +
             "<div class=\"checkbox checkbox-only\">" +
             "<input type=\"checkbox\" id=\"event-" + i + "\" name=\"eventCheckboxes\">" +
             "<label for=\"event-" + i + "\"></label>" +

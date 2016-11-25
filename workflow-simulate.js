@@ -6,7 +6,14 @@ var CustomPending;
 var CustomStop;
 var node;
 
+var waitForElementInterval;
+var CustomTracker = [];
+
 $(window).load(function () {
+    defineCustoms();
+});
+
+function defineCustoms() {
     CustomTick = draw2d.SetFigure.extend({
         init : function(){ this._super(); },
         createSet: function(){
@@ -51,7 +58,7 @@ $(window).load(function () {
             return this.canvas.paper.setFinish();
         }
     });
-});
+}
 
 function initWorkflowSimulation() {
     var writer = new draw2d.io.json.Writer();
@@ -59,9 +66,11 @@ function initWorkflowSimulation() {
         for (var i=0; i<canvas_elements.length; i++) {
             if (canvas_elements[i].type == "draw2d.Connection")
                 links.push(canvas_elements[i]);
-            else if (canvas_elements[i].type == "draw2d.shape.basic.Oval" && typeof canvas_elements[i].type === 'object')
+            else if (canvas_elements[i].type == "draw2d.shape.basic.Oval" && typeof canvas_elements[i].type === 'object') {
                 nodes.push(canvas_elements[i]);
+            }
         }
+        console.log(nodes);
 
         beginWorkflowSimulation();
 
@@ -71,6 +80,12 @@ function initWorkflowSimulation() {
             nodes[i].userData['id'] = nodes[i].getId();
             node_details.push(nodes[i].userData);
         }
+
+        for (var i=0; i<CustomTracker.length; i++) { // TODO BROKEN
+            canvas.remove(CustomTracker[i]);
+        }
+        CustomTracker = [];
+        //defineCustoms();
     });
 }
 
@@ -261,34 +276,41 @@ function execEvent() {
 
 function closeListenerCallbackWorkflow(closed_window_id) {
 	if (closed_window_id == new_window.id) {
-        node.add(new CustomStop(), new draw2d.layout.locator.CenterLocator(node));
+        var custom = new CustomStop();
+        CustomTracker.push(custom);
+        node.add(custom, new draw2d.layout.locator.CenterLocator(node));
 		terminateSimulation(false, "Simulation terminated");
 	}
 }
 
 function waitForElement(resolve, csspath, returnvar) {
-    setInterval(function(){
+    waitForElementInterval = setInterval(function(){
         chrome.tabs.executeScript(new_window.tabs[0].id,{
             code: "$('" + csspath + "').length",
             frameId: 0, // TODO - frame support
             matchAboutBlank: true
         }, function(results){
-            console.log(results);
-//            resolve(returnvar);
+            if (results[0])
+                resolve(returnvar);
         });
     }, 100);
 }
 
 function processEvent() {
-    if (!terminated)
-        node.add(new CustomPending(), new draw2d.layout.locator.CenterLocator(node));
+    if (!terminated) {
+        var custom = new CustomPending();
+        CustomTracker.push(custom);
+        node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+    }
 
     execEvent().then(function(result){
         // Process result
         simulation_log.push(result);
 
         if (node.userData.evt == "end_recording") {
-            node.add(new CustomTick(), new draw2d.layout.locator.CenterLocator(node));
+            var custom = new CustomTick();
+            CustomTracker.push(custom);
+            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
             terminateSimulation(true, "");
             return;
         }
@@ -300,9 +322,9 @@ function processEvent() {
             if (node.getPorts().indexOf(nodeConnections[i].getSource()) != -1) { // ignore inbound connections
                 nodeConnectionPromises.push(
                     new Promise(function(resolve, reject) {
-                        if (nodeConnections[i].userData.condition_type == "timer") {
+                        if (nodeConnections[i].userData.evt == "timer") {
                             setTimeout(resolve, nodeConnections[i].userData.wait_time, nodeConnections[i]);
-                        } else if (nodeConnections[i].userData.condition_type == "wait_for_element") {
+                        } else if (nodeConnections[i].userData.evt == "wait_for_element") {
                             waitForElement(resolve, nodeConnections[i].userData.csspath, nodeConnections[i]);
                         } else {
                             reject();
@@ -312,15 +334,21 @@ function processEvent() {
             }
         }
         if (nodeConnectionPromises.length == 0) {
-            node.add(new CustomTick(), new draw2d.layout.locator.CenterLocator(node));
+            var custom = new CustomTick();
+            CustomTracker.push(custom);
+            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
             terminateSimulation(false, "No links from event");
             return;
         }
 
         Promise.race(nodeConnectionPromises)
         .then(function(winning_link) {
-            if (!terminated)
-                node.add(new CustomTick(), new draw2d.layout.locator.CenterLocator(node));
+            clearInterval(waitForElementInterval);
+            if (!terminated) {
+                var custom = new CustomTick();
+                CustomTracker.push(custom);
+                node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+            }
 
             node = winning_link.getTarget().getParent();
             processEvent();
@@ -330,7 +358,9 @@ function processEvent() {
         simulation_log.push(result);
 
         if (node.userData.evt == "end_recording") {
-            node.add(new CustomTick(), new draw2d.layout.locator.CenterLocator(node));
+            var custom = new CustomTick();
+            CustomTracker.push(custom);
+            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
             terminateSimulation(true, "");
             return;
         }
@@ -342,9 +372,9 @@ function processEvent() {
             if (node.getPorts().indexOf(nodeConnections[i].getSource()) != -1) { // ignore inbound connections
                 nodeConnectionPromises.push(
                     new Promise(function(resolve, reject) {
-                        if (nodeConnections[i].userData.condition_type == "timer") {
+                        if (nodeConnections[i].userData.evt == "timer") {
                             setTimeout(resolve, nodeConnections[i].userData.wait_time, nodeConnections[i]);
-                        } else if (nodeConnections[i].userData.condition_type == "wait_for_element") {
+                        } else if (nodeConnections[i].userData.evt == "wait_for_element") {
                             waitForElement(resolve, nodeConnections[i].userData.csspath, nodeConnections[i]);
                         } else {
                             reject();
@@ -354,15 +384,21 @@ function processEvent() {
             }
         }
         if (nodeConnectionPromises.length == 0) {
-            node.add(new CustomCross(), new draw2d.layout.locator.CenterLocator(node));
+            var custom = new CustomCross();
+            CustomTracker.push(custom);
+            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
             terminateSimulation(false, "No links from event");
             return;
         }
 
         Promise.race(nodeConnectionPromises)
         .then(function(winning_link) {
-            if (!terminated)
-                node.add(new CustomCross(), new draw2d.layout.locator.CenterLocator(node));
+            clearInterval(waitForElementInterval);
+            if (!terminated) {
+                var custom = new CustomCross();
+                CustomTracker.push(custom);
+                node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+            }
 
             node = winning_link.getTarget().getParent();
             processEvent();
@@ -397,7 +433,9 @@ function beginWorkflowSimulation() {
         });
 
         timeoutObject = setTimeout(function() {
-            node.add(new CustomStop(), new draw2d.layout.locator.CenterLocator(node));
+            var custom = new CustomStop();
+            CustomTracker.push(custom);
+            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
             terminateSimulation(false, "Global run timeout"); // TODO: Check
         }, 600000); // 10 minutes
         
