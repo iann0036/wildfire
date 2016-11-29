@@ -72,8 +72,6 @@ function initWorkflowSimulation() {
         }
         console.log(nodes);
 
-        beginWorkflowSimulation();
-
         // Populate node_details
         node_details = [];
         for (var i=0; i<nodes.length; i++) {
@@ -85,143 +83,16 @@ function initWorkflowSimulation() {
             canvas.remove(CustomTracker[i]);
         }
         CustomTracker = [];
-        //defineCustoms();
+        
+        defineCustoms();
+
+        beginWorkflowSimulation();
     });
 }
 
-function execEvent() {
+function runCode(code) {
     return new Promise(function(resolve, reject) {
         try {
-            var code = ";";
-
-            switch (node.userData.evt) {
-                case 'begin_recording':
-                    resolve({
-                        error: false,
-                        results: null,
-                        id: node.getId()
-                    });
-                    break;
-                case 'end_recording':
-                    resolve({
-                        error: false,
-                        results: null,
-                        id: node.getId()
-                    });
-                    break;
-                case 'mousedown':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'mousedown', { clientX: " +
-                        node.userData.evt_data.clientX +
-                        ", clientY: " +
-                        node.userData.evt_data.clientY +
-                        " });";
-                    break;
-                case 'scroll':
-                    code = "$('html, body').animate({" +
-                        "scrollTop: " + node.userData.evt_data.scrollTopEnd + "," +
-                        "scrollLeft: " + node.userData.evt_data.scrollLeftEnd +
-                        "}, " + (node.userData.evt_data.endtime-node.userData.time) + ");";
-                    break;
-                case 'mouseup':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'mouseup', { clientX: " +
-                        node.userData.evt_data.clientX +
-                        ", clientY: " +
-                        node.userData.evt_data.clientY +
-                        " });";
-                    break;
-                case 'mouseover':
-                    if (all_settings.simulatemouseover) {
-                        code = "simulate(" +
-                            constructElementIdentifier(node.userData.evt_data.path) +
-                            ",'mouseover', { clientX: " +
-                            node.userData.evt_data.clientX +
-                            ", clientY: " +
-                            node.userData.evt_data.clientY +
-                            " }); simulateHoverElement('" + node.userData.evt_data.csspath + "');";
-                    }
-                    break;
-                case 'mouseout':
-                    if (all_settings.simulatemouseout) {
-                        code = "simulate(" +
-                            constructElementIdentifier(node.userData.evt_data.path) +
-                            ",'mouseout', { clientX: " +
-                            node.userData.evt_data.clientX +
-                            ", clientY: " +
-                            node.userData.evt_data.clientY +
-                            " }); stopSimulateHover();";
-                    }
-                    break;
-                case 'click':
-                    code = "$('" + node.userData.evt_data.csspath + "').click();";
-                    break;
-                case 'focusin':
-                    code = "$('" + node.userData.evt_data.csspath + "').focus();";
-                    break;
-                case 'focusout':
-                    code = "$('" + node.userData.evt_data.csspath + "').blur();";
-                    break;
-                case 'keydown':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'keydown', { keyCode: " +
-                        node.userData.evt_data.keyCode +
-                        " });";
-                    break;
-                case 'keyup':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'keyup', { keyCode: " +
-                        node.userData.evt_data.keyCode +
-                        " });";
-                    break;
-                case 'keypress':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'keypress', { keyCode: " +
-                        node.userData.evt_data.keyCode +
-                        " });";
-                    break;
-                case 'submit':
-                    code = "simulate(" +
-                        constructElementIdentifier(node.userData.evt_data.path) +
-                        ",'submit', {});";
-                    break;
-                case 'dataentry':
-                    code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                        node.userData.evt_data.value.replace("'", "\\'") + "');";
-                    break;
-                case 'input':
-                    code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                        node.userData.evt_data.value.replace("'", "\\'") + "');";
-                    /*code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                        node.userData.evt_data.value.replace("'", "\\'") + "');";*/
-                    break;
-                case 'clipboard_cut':
-                    code = constructElementIdentifier(node.userData.evt_data.path) +
-                                ".value = '';";
-                    break;
-                case 'tabchange':
-                    chrome.tabs.update(new_window.tabs[0].id, {
-                        url: node.userData.evt_data.url
-                    });
-                    resolve({
-                        error: false,
-                        results: null,
-                        id: node.getId()
-                    });
-                    break;
-                case 'select':
-                    code = ";"; // TODO - emulate Text Select
-                    break;
-                default:
-                    terminateSimulation(false, "Unknown event type: " + node.userData.evt); // TODO - check
-                    break;
-            }
-        
             var frameId = 0;
 
             chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
@@ -274,13 +145,169 @@ function execEvent() {
     });
 }
 
-function closeListenerCallbackWorkflow(closed_window_id) {
-	if (closed_window_id == new_window.id) {
-        var custom = new CustomStop();
-        CustomTracker.push(custom);
-        node.add(custom, new draw2d.layout.locator.CenterLocator(node));
-		terminateSimulation(false, "Simulation terminated");
-	}
+function execEvent() {
+    var code = ";";
+
+    switch (node.userData.evt) {
+        case 'begin_recording':
+            return new Promise(function(resolve, reject) {
+                resolve({
+                    error: false,
+                    results: null,
+                    id: node.getId()
+                });
+            });
+        case 'end_recording':
+            return new Promise(function(resolve, reject) {
+                resolve({
+                    error: false,
+                    results: null,
+                    id: node.getId()
+                });
+            });
+        case 'mousedown':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'mousedown', { clientX: " +
+                node.userData.evt_data.clientX +
+                ", clientY: " +
+                node.userData.evt_data.clientY +
+                " });";
+            break;
+        case 'scroll':
+            code = "$('html, body').animate({" +
+                "scrollTop: " + node.userData.evt_data.scrollTopEnd + "," +
+                "scrollLeft: " + node.userData.evt_data.scrollLeftEnd +
+                "}, " + (node.userData.evt_data.endtime-node.userData.time) + ");";
+            break;
+        case 'mouseup':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'mouseup', { clientX: " +
+                node.userData.evt_data.clientX +
+                ", clientY: " +
+                node.userData.evt_data.clientY +
+                " });";
+            break;
+        case 'mouseover':
+            if (all_settings.simulatemouseover) {
+                code = "simulate(" +
+                    constructElementIdentifier(node.userData.evt_data.path) +
+                    ",'mouseover', { clientX: " +
+                    node.userData.evt_data.clientX +
+                    ", clientY: " +
+                    node.userData.evt_data.clientY +
+                    " }); simulateHoverElement('" + node.userData.evt_data.csspath + "');";
+            }
+            break;
+        case 'mouseout':
+            if (all_settings.simulatemouseout) {
+                code = "simulate(" +
+                    constructElementIdentifier(node.userData.evt_data.path) +
+                    ",'mouseout', { clientX: " +
+                    node.userData.evt_data.clientX +
+                    ", clientY: " +
+                    node.userData.evt_data.clientY +
+                    " }); stopSimulateHover();";
+            }
+            break;
+        case 'click':
+            code = "$('" + node.userData.evt_data.csspath + "').click();";
+            break;
+        case 'focusin':
+            code = "$('" + node.userData.evt_data.csspath + "').focus();";
+            break;
+        case 'focusout':
+            code = "$('" + node.userData.evt_data.csspath + "').blur();";
+            break;
+        case 'keydown':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'keydown', { keyCode: " +
+                node.userData.evt_data.keyCode +
+                " });";
+            break;
+        case 'keyup':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'keyup', { keyCode: " +
+                node.userData.evt_data.keyCode +
+                " });";
+            break;
+        case 'keypress':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'keypress', { keyCode: " +
+                node.userData.evt_data.keyCode +
+                " });";
+            break;
+        case 'submit':
+            code = "simulate(" +
+                constructElementIdentifier(node.userData.evt_data.path) +
+                ",'submit', {});";
+            break;
+        case 'dataentry':
+            code = "$('" + node.userData.evt_data.csspath + "').val('" +
+                node.userData.evt_data.value.replace("'", "\\'") + "');";
+            break;
+        case 'input':
+            code = "$('" + node.userData.evt_data.csspath + "').val('" +
+                node.userData.evt_data.value.replace("'", "\\'") + "');";
+            /*code = "$('" + node.userData.evt_data.csspath + "').val('" +
+                node.userData.evt_data.value.replace("'", "\\'") + "');";*/
+            break;
+        case 'clipboard_cut':
+            code = constructElementIdentifier(node.userData.evt_data.path) +
+                        ".value = '';";
+            break;
+        case 'tabchange':
+            chrome.tabs.update(new_window.tabs[0].id, {
+                url: node.userData.evt_data.url
+            });
+            return new Promise(function(resolve, reject) {
+                resolve({
+                    error: false,
+                    results: null,
+                    id: node.getId()
+                });
+            });
+        case 'select':
+            code = ";"; // TODO - emulate Text Select
+            break;
+        case 'recaptcha':
+            return new Promise(function(resolve, reject) {
+                code = 'if ($(".g-recaptcha").length > 0) { var sitekey = $(".g-recaptcha").attr("data-sitekey"); var url = location.host; sitekey; } else { throw "NOCAPTCHAFOUND"; }';
+                runCode(code).then(function(result){
+                    var sitekey = result.results[0];
+                    runCode("location.host").then(function(result) {
+                        $.ajax({
+                            method: "POST",
+                            url: "https://api.wildfire.ai/v1/premium-recaptcha",
+                            data: sitekey + "," + result.results[0] + "," + all_settings.cloudapikey || ""
+                        }).always(function(resp) {
+                            runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');").then(function(result){
+                                resolve({
+                                    error: false,
+                                    results: [resp.responseText],
+                                    id: node.getId()
+                                });
+                            });
+                        });
+                    });
+                }).catch(function(result){
+                    reject({
+                        error: true,
+                        results: null,
+                        id: node.getId()
+                    });
+                });
+            });
+        default:
+            terminateSimulation(false, "Unknown event type: " + node.userData.evt); // TODO - check
+            break;
+    }
+        
+    return runCode(code);
 }
 
 function waitForElement(resolve, csspath, returnvar) {
@@ -408,6 +435,7 @@ function processEvent() {
 
 function beginWorkflowSimulation() {
     sim_start_time = Date.now();
+    terminated = false;
 
     chrome.windows.create({
         "url":"chrome-extension://" + chrome.runtime.id + "/new.html",

@@ -24,6 +24,8 @@ chrome.storage.local.get('settings', function (settings) {
         all_settings = settings.settings;
     } else {
         all_settings = new Object();
+        all_settings.account = "";
+        all_settings.cloudapikey = "";
         all_settings.emulatehover = false;
         all_settings.leavesimulationopen = false;
         all_settings.recordmouseout = false;
@@ -109,6 +111,15 @@ function constructElementIdentifier(path) {
     }
 
     return js_string;
+}
+
+function closeListenerCallbackWorkflow(closed_window_id) {
+	if (closed_window_id == new_window.id) {
+        var custom = new CustomStop();
+        CustomTracker.push(custom);
+        node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+		terminateSimulation(false, "Simulation terminated");
+	}
 }
 
 function terminateSimulation(finished, reason) {

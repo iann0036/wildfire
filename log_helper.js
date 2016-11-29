@@ -110,6 +110,11 @@ var mappingData = {
         bgColor: '#00B4CC',
         event_type: 'Clipboard Paste',
         icon: 'paste-from-clipboard.png'
+    },
+    recaptcha: {
+        bgColor: '#CBD8DE',
+        event_type: 'Solve reCAPTCHA <i style="color: #f29824;" class="fa fa-star"></i>',
+        icon: 'tiles-view.png'
     }
 };
 
@@ -423,6 +428,11 @@ function readableEventDetail(event) {
             event_data = "Scrolled for " + (event.evt_data.endtime-event.time) + " ms";
             minorEvent = false;
             break;
+        case 'recaptcha':
+            event_type = "reCAPTCHA Solve";
+            event_data = "&nbsp;";
+            minorEvent = false;
+            break;
         case 'tabchange':
             event_type = "Changed Tabs";
             if (event.evt_data.url=="chrome://newtab/")
@@ -560,9 +570,7 @@ function populateSimulationEvents(result) {
     console.log(result);
 
     for (var i=0; simulation_log!=null && i<simulation_log.length; i++) {
-        console.log(result.node_details);
         for (var j=0; j<result.node_details.length; j++) {
-            console.log("Comparing " + result.node_details[j].id + " to " + simulation_log[i].id);
             if (result.node_details[j].id == simulation_log[i].id) {
                 event_details = readableEventDetail(result.node_details[j]);
                 break;

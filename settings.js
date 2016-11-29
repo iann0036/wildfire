@@ -20,6 +20,8 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-custom-submit').click();
     if (all_settings.runminimized)
         $('#setting-run-minimized').click();
+    if (all_settings.account != "" && all_settings.account !== undefined)
+        $('#setting-account').html(all_settings.account);
 });
 
 $('#setting-record-mouse-over').change(function() {

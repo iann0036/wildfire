@@ -5,7 +5,7 @@ $('#submit').click(function(e){
 	
 	$.ajax({
 		method: "POST",
-		url: "https://api.wildfire.ai/contact",
+		url: "https://api.wildfire.ai/v1/contact",
 		data: {
 			subject: "Wildfire Contact",
 			name: $('#name').val(),
@@ -14,7 +14,7 @@ $('#submit').click(function(e){
 			url: ''
 		}
 	})
-	.done(function(msg) {
+	.always(function(msg) {
 		$('#submit').removeAttr('disabled');
 		new PNotify({
             title: 'Message Sent',

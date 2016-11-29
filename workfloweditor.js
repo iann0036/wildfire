@@ -77,6 +77,8 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
     return "";
+  } else if (userdata.evt == "recaptcha") {
+    return "";
   } else if (userdata.evt == "timer" || userdata.evt === undefined) {
     if (userdata.wait_time === undefined)
       userdata.wait_time = 0;
@@ -139,14 +141,36 @@ function selectedFigure(figure) {
   // Set details call and listen for select changes
   $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
   $('#sidePanelTypeSelect').change(function(){
-    var userData = figure.userData;
-    userData.evt = $('#sidePanelTypeSelect').val();
-    figure.setUserData(userData);
-    $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
-    setDetailListeners();
+    changeType();
   });
 
   setDetailListeners();
+}
+
+function changeType() {
+    var userData = figure.userData;
+    userData.evt = $('#sidePanelTypeSelect').val();
+
+    figure.resetChildren();
+    figure.setBackgroundColor(mappingData[userData.evt].bgColor);
+    var CustomIcon = draw2d.SetFigure.extend({
+      init : function(){ this._super(); },
+      createSet: function(){
+          this.canvas.paper.setStart();
+          this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
+              stroke: 0
+          });
+          this.canvas.paper.image("icons/" + mappingData[userData.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
+          return this.canvas.paper.setFinish();
+      }
+    });
+    figure.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+
+    if (userData.evt_data === undefined)
+      userData.evt_data = {};
+    figure.setUserData(userData);
+    $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
+    setDetailListeners();
 }
 
 function setDetailListeners() {
@@ -191,7 +215,7 @@ function addNode(event) {
         this.canvas.paper.image("icons/" + mappingData[event.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
         return this.canvas.paper.setFinish();
     }
-  })
+  });
   node.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
   var portConfig = {
     diameter: 7,
