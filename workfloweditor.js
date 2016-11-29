@@ -277,13 +277,19 @@ $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
 function importJSON(json) {
   canvas.clear();
   var reader = new draw2d.io.json.Reader();
-  reader.unmarshal(canvas, decrypt(json));
+  var importedjson = JSON.parse(decrypt(json));
+  reader.unmarshal(canvas, importedjson.canvas);
+
+  // TODO insert more imported data here
 }
 
 function exportJSON() {
   var writer = new draw2d.io.json.Writer();
   writer.marshal(canvas, function(json){
-      var jsonTxt = JSON.stringify(json);
+      var jsonTxt = JSON.stringify({
+        canvas: json
+        // TODO insert more data to be exported
+      });
       console.log(json);
       var text = encrypt(jsonTxt);
       var filename = "WildfireSimulationExport_" + Math.floor(Date.now() / 1000) + ".wfsim";

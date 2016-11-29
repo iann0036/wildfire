@@ -132,17 +132,43 @@ function terminateSimulation(finished, reason) {
     clearTimeout(timeoutObject);
 	
     simulating = false;
-    chrome.tabs.captureVisibleTab(new_window.id,{
-        "format": "png"
-    }, function(imagedata){
-        if (!all_settings.leavesimulationopen)
-            chrome.windows.remove(new_window.id,function(){});
-		
-		if (simulation_log.length < events.length && finished) { // No errors but missing events
-			finished = false;
-			reason = "Missed events";
-		}
+    try {
+        chrome.tabs.captureVisibleTab(new_window.id,{
+            "format": "png"
+        }, function(imagedata){
+            if (!all_settings.leavesimulationopen)
+                chrome.windows.remove(new_window.id,function(){});
+            
+            if (simulation_log.length < events.length && finished) { // No errors but missing events
+                finished = false;
+                reason = "Missed events";
+            }
 
+            chrome.notifications.create("",{
+                type: "basic",
+                title: "Wildfire",
+                message: "Simulation completed",
+                iconUrl: "icon-128.png"
+            });
+            chrome.storage.local.get('simulations', function (result) {
+                var simulations = result.simulations;
+                if (!Array.isArray(simulations)) { // for safety only
+                    simulations = [];
+                }
+                simulations.push({
+                    log: simulation_log,
+                    starttime: sim_start_time,
+                    endtime: Date.now(),
+                    image: imagedata,
+                    finished: finished,
+                    events: events,
+                    terminate_reason: reason,
+                    node_details: node_details
+                });
+                chrome.storage.local.set({simulations: simulations});
+            });
+        });
+    } catch(err) {
         chrome.notifications.create("",{
             type: "basic",
             title: "Wildfire",
@@ -158,15 +184,15 @@ function terminateSimulation(finished, reason) {
                 log: simulation_log,
                 starttime: sim_start_time,
                 endtime: Date.now(),
-                image: imagedata,
+                image: null,
                 finished: finished,
-				events: events,
-				terminate_reason: reason,
+                events: events,
+                terminate_reason: reason,
                 node_details: node_details
             });
             chrome.storage.local.set({simulations: simulations});
         });
-    });
+    }
 }
 
 function simulateEvent(code, i) {
