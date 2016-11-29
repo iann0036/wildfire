@@ -203,6 +203,7 @@ function addNode(event) {
     bgColor: bgColor,
     userData: event
   });
+  /*
   if (event.evt == "begin_recording")
     node.setDeleteable(false);
   var CustomIcon = draw2d.SetFigure.extend({
@@ -217,6 +218,7 @@ function addNode(event) {
     }
   });
   node.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+  */
   var portConfig = {
     diameter: 7,
     bgColor: "#1E90FF"
@@ -339,7 +341,7 @@ function connCreate(sourcePort, targetPort, userData) {
         target: targetPort,
         userData: userData
     });
-    
+
     var arrow = new CustomArrow(10,10);
     conn.setTargetDecorator(arrow);
     conn.on("dragEnter", function(emitter, event){

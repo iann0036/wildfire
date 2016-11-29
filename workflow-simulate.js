@@ -16,8 +16,28 @@ function defineCustoms() {
         NAME: "CustomNode",
         init: function (attr) {
             this._super(attr);
+
+            setTimeout(function(self) { // need the timeout, some weird loss of scope issue
+                var event = self.userData.evt;
+
+                if (event == "begin_recording")
+                    self.setDeleteable(false);
+                var CustomIcon = draw2d.SetFigure.extend({
+                    init : function(){ this._super(); },
+                    createSet: function(){
+                        this.canvas.paper.setStart();
+                        this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
+                            stroke: 0
+                        });
+                        this.canvas.paper.image("icons/" + mappingData[event].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
+                        return this.canvas.paper.setFinish();
+                    }
+                });
+                self.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+            }, 1, this);
         }
     });
+
     CustomArrow = draw2d.decoration.connection.ArrowDecorator.extend({
         NAME: "CustomArrow",
         init: function (width, height) {
