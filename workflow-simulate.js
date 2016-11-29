@@ -9,11 +9,25 @@ var node;
 var waitForElementInterval;
 var CustomTracker = [];
 
-$(window).load(function () {
-    defineCustoms();
-});
+var CustomNode, CustomArrow;
 
 function defineCustoms() {
+    CustomNode = draw2d.shape.basic.Oval.extend({
+        NAME: "CustomNode",
+        init: function (attr) {
+            this._super(attr);
+        }
+    });
+    CustomArrow = draw2d.decoration.connection.ArrowDecorator.extend({
+        NAME: "CustomArrow",
+        init: function (width, height) {
+            this._super(10, 10);
+
+            this.color = new draw2d.util.Color("#303030");
+            this.backgroundColor = new draw2d.util.Color("#888888");
+        }
+    });
+
     CustomTick = draw2d.SetFigure.extend({
         init : function(){ this._super(); },
         createSet: function(){

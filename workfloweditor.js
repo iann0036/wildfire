@@ -195,7 +195,7 @@ function addNode(event) {
   var bgColor = "#999999";
   if (mappingData[event.evt] !== undefined)
     bgColor = mappingData[event.evt].bgColor;
-  var node = new draw2d.shape.basic.Oval({ // can change Oval to Rectangle
+  var node = new CustomNode({ // can change Oval to Rectangle
     radius: 10,
     stroke:3,
     color: "#888888",
@@ -222,10 +222,18 @@ function addNode(event) {
     bgColor: "#1E90FF"
   };
   /* Order is important */
-  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.RightLocator());
-  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.BottomLocator());
-  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.LeftLocator());
-  node.addPort(new draw2d.HybridPort(portConfig),new draw2d.layout.locator.TopLocator());
+  var rightPort = new draw2d.HybridPort(portConfig);
+  rightPort.setName("Right");
+  node.addPort(rightPort,new draw2d.layout.locator.RightLocator());
+  var bottomPort = new draw2d.HybridPort(portConfig);
+  bottomPort.setName("Bottom");
+  node.addPort(bottomPort,new draw2d.layout.locator.BottomLocator());
+  var leftPort = new draw2d.HybridPort(portConfig);
+  leftPort.setName("Left");
+  node.addPort(leftPort,new draw2d.layout.locator.LeftLocator());
+  var topPort = new draw2d.HybridPort(portConfig);
+  topPort.setName("Top");
+  node.addPort(topPort,new draw2d.layout.locator.TopLocator());
   
   return node;
 }
@@ -274,6 +282,7 @@ function exportJSON() {
   var writer = new draw2d.io.json.Writer();
   writer.marshal(canvas, function(json){
       var jsonTxt = JSON.stringify(json);
+      console.log(json);
       var text = encrypt(jsonTxt);
       var filename = "WildfireSimulationExport_" + Math.floor(Date.now() / 1000) + ".wfsim";
 
@@ -330,9 +339,8 @@ function connCreate(sourcePort, targetPort, userData) {
         target: targetPort,
         userData: userData
     });
-    var arrow = new draw2d.decoration.connection.ArrowDecorator(10,10);
-    arrow.setBackgroundColor("#888888");
-    arrow.setColor("#303030");
+    
+    var arrow = new CustomArrow(10,10);
     conn.setTargetDecorator(arrow);
     conn.on("dragEnter", function(emitter, event){
         conn.attr({outlineColor:"#30ff30"});
@@ -350,6 +358,8 @@ $(window).load(function () {
       /* Init Page */
       var width = window.innerWidth;
       var height = window.innerHeight-136 + Math.max(0,Math.floor((result.events.length-60)/12)*80);
+
+      defineCustoms();
 
       if (result.events.length>60)
         $('body').attr('style','overflow-y: scroll; overflow-x: hidden;');
