@@ -279,8 +279,17 @@ function importJSON(json) {
   var reader = new draw2d.io.json.Reader();
   var importedjson = JSON.parse(decrypt(json));
   reader.unmarshal(canvas, importedjson.canvas);
-
   // TODO insert more imported data here
+
+  nodes = [];
+  for (var i=0; i<canvas.figures.data.length; i++) {
+    nodes.push(canvas.figures.data[i]);
+  }
+
+  if (canvas.figures.data.length>60)
+    $('body').attr('style','overflow-y: scroll; overflow-x: hidden;');
+  else
+    $('body').attr('style','');
 }
 
 function exportJSON() {
@@ -288,7 +297,6 @@ function exportJSON() {
   writer.marshal(canvas, function(json){
       var jsonTxt = JSON.stringify({
         canvas: json
-        // TODO insert more data to be exported
       });
       console.log(json);
       var text = encrypt(jsonTxt);

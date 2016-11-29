@@ -35,7 +35,52 @@ function defineCustoms() {
                 });
                 self.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
             }, 1, this);
-        }
+        }/*,
+        getPersistentAttributes: function () {
+            var memento = this._super();
+
+            memento.labels = [];
+            memento.ports = [];
+
+            this.getPorts().each(function(i,port){
+                memento.ports.push({
+                name   : port.getName(),
+                port   : port.NAME,
+                locator: port.getLocator().NAME
+                });
+            });
+
+            this.children.each(function (i, e) {
+                memento.labels.push({
+                    id: e.figure.getId(),
+                    label: e.figure.getText(),
+                    locator: e.locator.NAME
+                });
+            });
+            return memento;
+        },
+        setPersistentAttributes: function (memento) {
+            this._super(memento);
+
+            this.resetChildren();
+
+            if(typeof memento.ports !=="undefined"){
+                this.resetPorts();
+                $.each(memento.ports, $.proxy(function(i,e){
+                    var port    =  eval("new "+e.port+"()");
+                    var locator =  eval("new "+e.locator+"()");
+                    this.add(port, locator);
+                    port.setName(e.name);
+                },this));
+            }
+
+            $.each(memento.labels, $.proxy(function (i, e) {
+                var label = new draw2d.shape.basic.Label(e.label);
+                var locator = eval("new " + e.locator + "()");
+                locator.setParent(this);
+                this.add(label, locator);
+            }, this));
+        }*/
     });
 
     CustomArrow = draw2d.decoration.connection.ArrowDecorator.extend({
@@ -395,6 +440,8 @@ function processEvent() {
             }
         }
         if (nodeConnectionPromises.length == 0) {
+            //console.log(node.getPorts());
+            //node.setBackgroundColor("#000000");
             var custom = new CustomTick();
             CustomTracker.push(custom);
             node.add(custom, new draw2d.layout.locator.CenterLocator(node));
@@ -511,6 +558,8 @@ function beginWorkflowSimulation() {
             }
         }
 
-        processEvent();
+        setTimeout(function(){ // allow time for simulation window to open
+            processEvent();
+        }, 1000);
     });
 }
