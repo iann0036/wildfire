@@ -5,6 +5,7 @@
 var recording = false;
 
 function toggleRecording() {
+    chrome.storage.local.set({workflow: null});
     if (recording) {
         chrome.storage.local.set({recording: false});
         chrome.storage.local.get('events', function (result) {

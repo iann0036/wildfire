@@ -498,12 +498,13 @@ function populateEvents(result) {
         event_details = readableEventDetail(events[i]);
 
         var innerHTML = "<!--" + JSON.stringify(events[i]) + "-->";
-        innerHTML += "<td class=\"table-check\">" +
-            "<div class=\"checkbox checkbox-only\">" +
+        innerHTML += "<td class=\"table-check\">";
+        if (events[i].evt != "begin_recording" && events[i].evt != "end_recording")
+            innerHTML += "<div class=\"checkbox checkbox-only\">" +
             "<input type=\"checkbox\" id=\"event-" + i + "\" name=\"eventCheckboxes\">" +
             "<label for=\"event-" + i + "\"></label>" +
-            "</div>" +
-            "</td>";
+            "</div>";
+        innerHTML += "</td>";
         if (simulation_log) { // Result in simulation log
             if (simulation_log.length > i) {
                 if (!simulation_log[i].results || simulation_log[i].results.length==1) {

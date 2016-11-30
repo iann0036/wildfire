@@ -2,10 +2,14 @@ var canvas;
 var conn;
 var nodes = [];
 var figure;
+var saveFlag;
 
 function deleteSelection() {
+  if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
+    return;
   figure.resetPorts();
   canvas.remove(figure);
+  canvas.setCurrentSelection(null);
 }
 $('#workflowToolbarDelete').click(function(){deleteSelection();});
 $('#deleteButtonSidepanel').click(function(){deleteSelection();});
@@ -245,6 +249,7 @@ function deselectedFigure(figure) {
 }
 
 function exportCanvasImage() {
+    canvas.setCurrentSelection(null);
     var xCoords = [];
     var yCoords = [];
     canvas.getFigures().each(function(i,f){
@@ -256,20 +261,19 @@ function exportCanvasImage() {
     var minY   = Math.min.apply(Math, yCoords) - 10;
     var width  = Math.max.apply(Math, xCoords)-minX + 10;
     var height = Math.max.apply(Math, yCoords)-minY + 10;
-    console.log(canvas);
     
     var writer = new draw2d.io.png.Writer();
     writer.marshal(canvas,function(png){
-      var filename = "WildfireWorkflowImage_" + Math.floor(Date.now() / 1000) + ".png";
+        var filename = "WildfireWorkflowImage_" + Math.floor(Date.now() / 1000) + ".png";
 
-      var element = document.createElement('a');
-      element.setAttribute('href', png);
-      element.setAttribute('download', filename);
+        var element = document.createElement('a');
+        element.setAttribute('href', png);
+        element.setAttribute('download', filename);
 
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     }, new draw2d.geo.Rectangle(minX,minY,width,height));
 }
 $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
@@ -286,11 +290,48 @@ function importJSON(json) {
   }
 
   if (canvas.figures.data.length>60)
-    $('body').attr('style','overflow-y: scroll; overflow-x: hidden;');
+    $('body').attr('style','background-color: #ffffff; overflow-y: scroll; overflow-x: hidden;');
   else
-    $('body').attr('style','');
+    $('body').attr('style','background-color: #ffffff;');
 
   chrome.storage.local.set({events: importedjson.events});
+}
+
+function loadFromLocalStorageOrCreateNew(eventresult) {
+  chrome.storage.local.get('workflow', function (result) {
+    if (result.workflow === undefined || result.workflow == null)
+      createNewWorkflowFromEvents(eventresult);
+    else
+      importJSON(result.workflow);
+  });
+}
+
+function saveToLocalStorage() {
+  var writer = new draw2d.io.json.Writer();
+  writer.marshal(canvas, function(json){
+      var jsonTxt = JSON.stringify({
+        canvas: json,
+        events: events
+      });
+      var text = encrypt(jsonTxt);
+      chrome.storage.local.set({workflow: text}, function(){
+        saveFlag = true;
+      });
+  });
+}
+
+$(window).unload(function() {
+  saveFlag = false;
+  saveToLocalStorage();
+  for (var i=0; i<99999 && !saveFlag; i++) { ; } // processing time waiting for async
+  return;
+});
+
+function flushWorkflow() {
+  chrome.storage.local.set({workflow: null},function(){
+    $(window).unbind("unload");
+    location.reload();
+  });
 }
 
 function exportJSON() {
@@ -300,7 +341,6 @@ function exportJSON() {
         canvas: json,
         events: events
       });
-      console.log(json);
       var text = encrypt(jsonTxt);
       var filename = "WildfireSimulationExport_" + Math.floor(Date.now() / 1000) + ".wfsim";
 
@@ -315,7 +355,7 @@ function exportJSON() {
   });
 }
 
-$('#workflowToolbarNew').click(function(){location.reload();});
+$('#workflowToolbarNew').click(function(){flushWorkflow();});
 $('#workflowToolbarSave').click(function(){exportJSON();});
 $('#workflowToolbarImport').click(function() {
     $('#simfileContainer').click();
@@ -373,6 +413,8 @@ function connCreate(sourcePort, targetPort, userData) {
 $(window).load(function () {
 
   chrome.storage.local.get('events', function (result) {
+      if (!result.events)
+          result.events = [];
       /* Init Page */
       var width = window.innerWidth;
       var height = window.innerHeight-136 + Math.max(0,Math.floor((result.events.length-60)/12)*80);
@@ -380,7 +422,7 @@ $(window).load(function () {
       defineCustoms();
 
       if (result.events.length>60)
-        $('body').attr('style','overflow-y: scroll; overflow-x: hidden;');
+        $('body').attr('style','background-color: #ffffff; overflow-y: scroll; overflow-x: hidden;');
 
       $('#graph').attr('style','width: ' + width + 'px; height: ' + height + 'px; background-color: #ffffff;');
       window.addEventListener("contextmenu", function(e) { e.preventDefault(); });
@@ -400,36 +442,45 @@ $(window).load(function () {
         }
       });
 
-      for (var i=0; i<result.events.length; i++) {
+      loadFromLocalStorageOrCreateNew(result);
+
+      if (window.location.hash == "#launch") {
+        initWorkflowSimulation();
+      }
+  });
+});
+
+function createNewWorkflowFromEvents(result) {
+    for (var i=0; i<result.events.length; i++) {
         var node = addNode(result.events[i]);
         var nodex = 296 + Math.min(80*(i%24), 80*12);
         var nodey = 80 + 160*Math.floor(i/24);
         if (i%24 > 11) {
-          nodey += 80;
-          nodex -= 80*(i%12)+80;
+            nodey += 80;
+            nodex -= 80*(i%12)+80;
         }
         canvas.add(node, nodex, nodey);
         nodes.push(node);
-      }
-      for (var i=1; i<nodes.length; i++) {
+    }
+    for (var i=1; i<nodes.length; i++) {
         var fromPort = 0;
         var toPort = 2;
         if (i%24 > 11) {
-          fromPort = 2;
-          toPort = 0;
+            fromPort = 2;
+            toPort = 0;
         }
         if (i%24==12) {
-          fromPort = 1;
-          toPort = 3;
+            fromPort = 1;
+            toPort = 3;
         }
         if (i%24==0) {
-          fromPort = 1;
-          toPort = 3;
+            fromPort = 1;
+            toPort = 3;
         }
         var userData = {
-          evt: 'timer',
-          condition_type: 'timer',
-          wait_time: result.events[i].time - result.events[i-1].time
+            evt: 'timer',
+            condition_type: 'timer',
+            wait_time: result.events[i].time - result.events[i-1].time
         };
         var c = connCreate(
             nodes[i-1].getHybridPort(fromPort),
@@ -437,13 +488,8 @@ $(window).load(function () {
             userData
         );
         canvas.add(c);
-      }
-
-      if (window.location.hash == "#launch") {
-        initWorkflowSimulation();
-      }
-  });
-});
+    }
+}
 
 $('#nodeLinkPanelX').click(function(){
   $('#workflowsidepanel').attr('style','display: none;');
