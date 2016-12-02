@@ -2,12 +2,12 @@ var canvas;
 var conn;
 var nodes = [];
 var figure;
-var saveFlag;
 
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
     return;
-  figure.resetPorts();
+  if (figure.userData.evt != "timer" && figure.userData.evt != "wait_for_element")
+    figure.resetPorts();
   canvas.remove(figure);
   canvas.setCurrentSelection(null);
 }
@@ -155,20 +155,22 @@ function changeType() {
     var userData = figure.userData;
     userData.evt = $('#sidePanelTypeSelect').val();
 
-    figure.resetChildren();
-    figure.setBackgroundColor(mappingData[userData.evt].bgColor);
-    var CustomIcon = draw2d.SetFigure.extend({
-      init : function(){ this._super(); },
-      createSet: function(){
-          this.canvas.paper.setStart();
-          this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
-              stroke: 0
-          });
-          this.canvas.paper.image("icons/" + mappingData[userData.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
-          return this.canvas.paper.setFinish();
-      }
-    });
-    figure.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+    if (userData.evt != "timer" && userData.evt != "wait_for_element") {
+      figure.resetChildren();
+      figure.setBackgroundColor(mappingData[userData.evt].bgColor);
+      var CustomIcon = draw2d.SetFigure.extend({
+        init : function(){ this._super(); },
+        createSet: function(){
+            this.canvas.paper.setStart();
+            this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
+                stroke: 0
+            });
+            this.canvas.paper.image("icons/" + mappingData[userData.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
+            return this.canvas.paper.setFinish();
+        }
+      });
+      figure.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+    }
 
     if (userData.evt_data === undefined)
       userData.evt_data = {};
@@ -314,16 +316,17 @@ function saveToLocalStorage() {
         events: events
       });
       var text = encrypt(jsonTxt);
-      chrome.storage.local.set({workflow: text}, function(){
-        saveFlag = true;
-      });
+      chrome.storage.local.set({workflow: text});
   });
 }
 
 $(window).unload(function() {
-  saveFlag = false;
+  if (simulating) {
+    terminateSimulation(false, "Navigated away from simulation runner");
+  }
+
   saveToLocalStorage();
-  for (var i=0; i<99999 && !saveFlag; i++) { ; } // processing time waiting for async
+  // TODO - stall processing time waiting for async
   return;
 });
 
@@ -431,7 +434,9 @@ $(window).load(function () {
       canvas.installEditPolicy( new draw2d.policy.connection.DragConnectionCreatePolicy({
         createConnection: connCreate
       }));
-      canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy());
+      setTimeout(function(){
+        canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy());
+      },100);
       
       canvas.on("select", function(emitter,event) {
         if (event.figure!==null) {
@@ -445,7 +450,9 @@ $(window).load(function () {
       loadFromLocalStorageOrCreateNew(result);
 
       if (window.location.hash == "#launch") {
-        initWorkflowSimulation();
+        setTimeout(function(){
+          initWorkflowSimulation();
+        },200);
       }
   });
 });

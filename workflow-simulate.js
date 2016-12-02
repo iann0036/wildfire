@@ -149,7 +149,6 @@ function initWorkflowSimulation() {
                 nodes.push(canvas_elements[i]);
             }
         }
-        console.log(nodes);
 
         // Populate node_details
         node_details = [];
@@ -170,47 +169,63 @@ function initWorkflowSimulation() {
 }
 
 function runCode(code) {
+    return runCodeFrameURLPrefix(code, null);
+}
+
+function runCodeFrameURLPrefix(code, urlprefix) {
     return new Promise(function(resolve, reject) {
         try {
             var frameId = 0;
 
-            chrome.webNavigation.getAllFrames({tabId: new_window.tabs[0].id}, function (frames) {
-                for (var j=0; j<frames.length; j++) {
-                    if (frames[j].frameId!=0 && frames[j].url == node.userData.evt_data.url) {
-                        frameId = frames[j].frameId;
-                    }
+            var activeTab = 0;
+            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                for (var i=0; i<tabs.length; i++) {
+                    if (tabs[i].active)
+                        activeTab = i;
                 }
-                
-                /*eventExecutionTimeoutCounter = setTimeout(function(i){
-                    simulation_log.push({
-                        index: i,
-                        error: true
-                    });
-                    terminateSimulation(false, "Event timeout");
-                }, event_execution_timeout, i);*/
 
-                code = "try { " + code + "; } catch(err) { new Object({error: err.message}); }";
-
-                chrome.tabs.executeScript(new_window.tabs[0].id,{
-                    code: code,
-                    frameId: frameId,
-                    matchAboutBlank: true
-                }, function(results){
-                    if (results && results.length==1 && results[0]!==null && !results[0].error) {
-                        resolve({
-                            error: false,
-                            results: results,
-                            id: node.getId()
-                            //event: node
-                        });
-                    } else {
-                        reject({
-                            error: true,
-                            results: results,
-                            id: node.getId()
-                            //event: node
-                        });
+                chrome.webNavigation.getAllFrames({tabId: tabs[activeTab].id}, function (frames) {
+                    for (var j=0; j<frames.length; j++) {
+                        if (urlprefix != null && frames[j].frameId!=0 && frames[j].url.startsWith(urlprefix)) {
+                            frameId = frames[j].frameId;
+                            break;
+                        } else if (frames[j].frameId!=0 && frames[j].url == node.userData.evt_data.url) {
+                            frameId = frames[j].frameId;
+                            break;
+                        }
                     }
+                    
+                    /*eventExecutionTimeoutCounter = setTimeout(function(i){
+                        simulation_log.push({
+                            index: i,
+                            error: true
+                        });
+                        terminateSimulation(false, "Event timeout");
+                    }, event_execution_timeout, i);*/
+
+                    code = "try { " + code + "; } catch(err) { new Object({error: err.message}); }";
+
+                    chrome.tabs.executeScript(tabs[activeTab].id,{
+                        code: code,
+                        frameId: frameId,
+                        matchAboutBlank: true
+                    }, function(results){
+                        if (results && results.length==1 && results[0]!==null && !results[0].error) {
+                            resolve({
+                                error: false,
+                                results: results,
+                                id: node.getId()
+                                //event: node
+                            });
+                        } else {
+                            reject({
+                                error: true,
+                                results: results,
+                                id: node.getId()
+                                //event: node
+                            });
+                        }
+                    });
                 });
             });
         } catch(err) {
@@ -340,14 +355,21 @@ function execEvent() {
                         ".value = '';";
             break;
         case 'tabchange':
-            chrome.tabs.update(new_window.tabs[0].id, {
-                url: node.userData.evt_data.url
-            });
-            return new Promise(function(resolve, reject) {
-                resolve({
-                    error: false,
-                    results: null,
-                    id: node.getId()
+            var activeTab = 0;
+            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                for (var i=0; i<tabs.length; i++) {
+                    if (tabs[i].active)
+                        activeTab = i;
+                }
+                chrome.tabs.update(tabs[activeTab].id, {
+                    url: node.userData.evt_data.url
+                });
+                return new Promise(function(resolve, reject) {
+                    resolve({
+                        error: false,
+                        results: null,
+                        id: node.getId()
+                    });
                 });
             });
         case 'select':
@@ -364,12 +386,20 @@ function execEvent() {
                             url: "https://api.wildfire.ai/v1/premium-recaptcha",
                             data: sitekey + "," + result.results[0] + "," + all_settings.cloudapikey || ""
                         }).always(function(resp) {
+                            console.log(resp.responseText);
                             runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');").then(function(result){
+                            var runcode = "var script = document.createElement('script');\
+                                script.setAttribute(\"type\", \"application/javascript\");\
+                                script.textContent = \"eval($('.g-recaptcha').attr('data-callback') + '(\\\"" + resp.responseText + "\\\")');\";\
+                                document.documentElement.appendChild(script);\
+                                document.documentElement.removeChild(script);";
+                            runCode(runcode).then(function(result){
                                 resolve({
                                     error: false,
                                     results: [resp.responseText],
                                     id: node.getId()
                                 });
+                            });
                             });
                         });
                     });
@@ -391,13 +421,20 @@ function execEvent() {
 
 function waitForElement(resolve, csspath, returnvar) {
     waitForElementInterval = setInterval(function(){
-        chrome.tabs.executeScript(new_window.tabs[0].id,{
-            code: "$('" + csspath + "').length",
-            frameId: 0, // TODO - frame support
-            matchAboutBlank: true
-        }, function(results){
-            if (results[0])
-                resolve(returnvar);
+        var activeTab = 0;
+        chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+            for (var i=0; i<tabs.length; i++) {
+                if (tabs[i].active)
+                    activeTab = i;
+            }
+            chrome.tabs.executeScript(tabs[activeTab].id,{
+                code: "$('" + csspath + "').length",
+                frameId: 0, // TODO - frame support
+                matchAboutBlank: true
+            }, function(results){
+                if (results[0])
+                    resolve(returnvar);
+            });
         });
     }, 100);
 }
@@ -518,48 +555,53 @@ function beginWorkflowSimulation() {
     sim_start_time = Date.now();
     terminated = false;
 
-    chrome.windows.create({
-        "url":"chrome-extension://" + chrome.runtime.id + "/new.html",
-        //"url":"https://wildfire.ai/",
-        "focused":true,
-        "left":0,
-        "top":0,
-        "width":1920,
-        "height":1080
-        //"type":"popup"
-    }, function(simulation_window) {
-        new_window = simulation_window;
-        if (all_settings.runminimized) {
-            chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
-                state: "minimized"
+    chrome.windows.getCurrent(null, function(wildfirewindow){
+        chrome.windows.create({
+            "url":"chrome-extension://" + chrome.runtime.id + "/new.html",
+            //"url":"https://wildfire.ai/",
+            "focused":true,
+            "left":0,
+            "top":0,
+            "width":1920,
+            "height":1080
+            //"type":"popup"
+        }, function(simulation_window) {
+            new_window = simulation_window;
+            if (all_settings.runminimized) {
+                chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
+                    state: "minimized"
+                });
+            }
+            
+            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                for (var i=1; i<tabs.length; i++) {
+                    chrome.tabs.remove(tabs[i].id);
+                }
             });
-        }
-        
-        chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-            for (var i=1; i<tabs.length; i++) {
-                chrome.tabs.remove(tabs[i].id);
+
+            // Bring the wildfire window to the foreground
+            chrome.windows.update(wildfirewindow.id,{"focused":true});
+
+            timeoutObject = setTimeout(function() {
+                var custom = new CustomStop();
+                CustomTracker.push(custom);
+                node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+                terminateSimulation(false, "Global run timeout"); // TODO: Check
+            }, 600000); // 10 minutes
+            
+            chrome.windows.onRemoved.addListener(closeListenerCallbackWorkflow); // TODO: Check
+
+            //////// START ////////
+            for (var i=0; i<nodes.length; i++) {
+                if (nodes[i].userData.evt == "begin_recording") {
+                    node = nodes[i];
+                    break;
+                }
             }
+
+            setTimeout(function(){ // allow time for simulation window to open
+                processEvent();
+            }, 1000);
         });
-
-        timeoutObject = setTimeout(function() {
-            var custom = new CustomStop();
-            CustomTracker.push(custom);
-            node.add(custom, new draw2d.layout.locator.CenterLocator(node));
-            terminateSimulation(false, "Global run timeout"); // TODO: Check
-        }, 600000); // 10 minutes
-        
-        chrome.windows.onRemoved.addListener(closeListenerCallbackWorkflow); // TODO: Check
-
-        //////// START ////////
-        for (var i=0; i<nodes.length; i++) {
-            if (nodes[i].userData.evt == "begin_recording") {
-                node = nodes[i];
-                break;
-            }
-        }
-
-        setTimeout(function(){ // allow time for simulation window to open
-            processEvent();
-        }, 1000);
     });
 }

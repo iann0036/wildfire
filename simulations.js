@@ -36,7 +36,7 @@ function populateSimulation() {
         $('#recordTime').html(formatDiffDate(simulations[i].events[1].time,simulations[i].events[simulations[i].events.length-1].time));
         $('#simulationTime').html(formatDiffDate(simulations[i].starttime+1000,simulations[i].endtime));
 
-        if (simulations[i].node_details !== undefined)
+        if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0)
             $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Workflow</a>");
         else
             $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Real-time</a>");
@@ -48,7 +48,7 @@ function populateSimulation() {
         }
 
         //$('#simDetails').html(JSON.stringify(simulations[i].log, null, 2));
-        if (simulations[i].node_details !== undefined)
+        if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0)
             populateSimulationEvents(simulations[i]);
         else
             populateEvents(simulations[i]);

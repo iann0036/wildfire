@@ -30,8 +30,9 @@ function formatDate(date) {
 
 function populateSimulations() {
     chrome.storage.local.get('simulations', function (result) {
-        var simulations = result.simulations.reverse();
-		if (!Array.isArray(simulations))
+        if (result.simulations !== undefined)
+            var simulations = result.simulations.reverse();
+        else
 			simulations = [];
         console.log(simulations);
 
@@ -86,10 +87,13 @@ function populateSimulations() {
                 "<div class=\"progress-compact-style-label\">" + percentile + "% completed</div>" +
                 "</div>" +
                 "<div class=\"task-card-tags\">";
-            if (simulations[i].node_details !== undefined)
+            if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0) {
+                console.log(simulations[i].node_details);
                 innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Workflow</a>";
-            else
+            } else {
+                console.log(simulations[i].node_details);
                 innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>";
+            }
             innerHTML += "</div>" +
                 "</div>" +
                 "<div class=\"task-card-footer\">" +
