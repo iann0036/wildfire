@@ -587,7 +587,7 @@ function populateSimulationEvents(result) {
         if (simulation_log) { // Result in simulation log
             if (simulation_log.length > i) {
                 if (!simulation_log[i].results || simulation_log[i].results.length==1) {
-                    if (!simulation_log[i].results || !simulation_log[i].results[0].error)
+                    if (!simulation_log[i].results || !simulation_log[i].results[0] || !simulation_log[i].results[0].error)
                         innerHTML += "<td><span class=\"label label-success\">Success</span></td>";
                     else {
                         var eventerror = simulation_log[i].results[0].error;
@@ -608,9 +608,13 @@ function populateSimulationEvents(result) {
             innerHTML += "<span class=\"label label-success\">Emulated</span>";
         innerHTML += "</td>";
         */
+        var simtime = ((simulation_log[i].time-simulation_log[0].time)/1000).toFixed(2) + "s";
+        if (i==0)
+            simtime = "-";
+
         innerHTML += "<td>" +
             "<div class=\"font-11 color-blue-grey-lighter uppercase\">Time</div> " +
-            event_details.event_time +
+            simtime +
             "</td>";
         if (event_details.event_url)
             innerHTML += "<td>" +

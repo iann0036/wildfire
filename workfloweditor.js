@@ -209,6 +209,7 @@ function addNode(event) {
     bgColor: bgColor,
     userData: event
   });
+  node.installEditPolicy(new draw2d.policy.figure.AntSelectionFeedbackPolicy());
   /*
   if (event.evt == "begin_recording")
     node.setDeleteable(false);
@@ -435,7 +436,11 @@ $(window).load(function () {
         createConnection: connCreate
       }));
       setTimeout(function(){
-        canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy());
+        var gridPolicy = new draw2d.policy.canvas.SnapToGridEditPolicy();
+        gridPolicy.setGrid(5);
+        gridPolicy.setGridColor("#ffffff");
+        canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy() );
+        canvas.installEditPolicy( gridPolicy );
       },100);
       
       canvas.on("select", function(emitter,event) {
@@ -460,7 +465,7 @@ $(window).load(function () {
 function createNewWorkflowFromEvents(result) {
     for (var i=0; i<result.events.length; i++) {
         var node = addNode(result.events[i]);
-        var nodex = 296 + Math.min(80*(i%24), 80*12);
+        var nodex = 295 + Math.min(80*(i%24), 80*12);
         var nodey = 80 + 160*Math.floor(i/24);
         if (i%24 > 11) {
             nodey += 80;

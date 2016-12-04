@@ -34,16 +34,28 @@ function populateSimulations() {
             var simulations = result.simulations.reverse();
         else
 			simulations = [];
-        console.log(simulations);
 
         document.getElementById('simulationGrid').innerHTML = "";
 
         for (var i=0; i<simulations.length && i<3; i++) {
-			var stepcount = simulations[i].events.length - 2;
+            var stepcount;
+            if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0) // is it a workflow?
+                stepcount = simulations[i].node_details.length - 2;
+			else
+                stepcount = simulations[i].events.length - 2;
 			var logcount = simulations[i].log.length - 2;
-			var percentile = Math.max(0,Math.floor(logcount*100/stepcount));
-            percentile = Math.min(percentile, 100);
-			
+
+			var percentile = Math.floor(logcount*100/stepcount);
+            percentile = Math.max(0,Math.min(percentile, 100)); // bounded for safety
+
+            for (var j=0; j<simulations[i].node_details.length; j++) {
+                if (simulations[i].node_details[j].id == simulations[i].log[simulations[i].log.length-1].id &&
+                    simulations[i].node_details[j].evt == "end_recording") {
+                    percentile = 100;
+                    simulations[i].finished = true;
+                }
+            }
+
             var innerHTML = "<div class=\"tasks-grid-col ";
             if (simulations[i].finished)
                 innerHTML += "green";
@@ -88,10 +100,8 @@ function populateSimulations() {
                 "</div>" +
                 "<div class=\"task-card-tags\">";
             if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0) {
-                console.log(simulations[i].node_details);
                 innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Workflow</a>";
             } else {
-                console.log(simulations[i].node_details);
                 innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>";
             }
             innerHTML += "</div>" +

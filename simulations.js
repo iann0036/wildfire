@@ -14,9 +14,23 @@ function populateSimulation() {
 
         var i = parseInt(simulationId);
         
-        var stepcount = simulations[i].events.length - 2;
+        var stepcount;
+        if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0) // is it a workflow?
+            stepcount = simulations[i].node_details.length - 2;
+        else
+            stepcount = simulations[i].events.length - 2;
         var logcount = simulations[i].log.length - 2;
-        var percentile = Math.max(0,Math.floor(logcount*100/stepcount));
+
+        var percentile = Math.floor(logcount*100/stepcount);
+        percentile = Math.max(0,Math.min(percentile, 100)); // bounded for safety
+
+        for (var j=0; j<simulations[i].node_details.length; j++) {
+            if (simulations[i].node_details[j].id == simulations[i].log[simulations[i].log.length-1].id &&
+                simulations[i].node_details[j].evt == "end_recording") {
+                percentile = 100;
+                simulations[i].finished = true;
+            }
+        }
         
         if (simulations[i].image !== undefined)
             $('#screenshot').attr('src',simulations[i].image);

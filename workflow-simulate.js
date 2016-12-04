@@ -214,14 +214,16 @@ function runCodeFrameURLPrefix(code, urlprefix) {
                             resolve({
                                 error: false,
                                 results: results,
-                                id: node.getId()
+                                id: node.getId(),
+                                time: Date.now()
                                 //event: node
                             });
                         } else {
                             reject({
                                 error: true,
                                 results: results,
-                                id: node.getId()
+                                id: node.getId(),
+                                time: Date.now()
                                 //event: node
                             });
                         }
@@ -232,7 +234,8 @@ function runCodeFrameURLPrefix(code, urlprefix) {
             reject({
                 error: true,
                 results: null,
-                id: node.getId()
+                id: node.getId(),
+                time: Date.now()
                 //event: node
             });
         }
@@ -248,7 +251,8 @@ function execEvent() {
                 resolve({
                     error: false,
                     results: null,
-                    id: node.getId()
+                    id: node.getId(),
+                    time: Date.now()
                 });
             });
         case 'end_recording':
@@ -256,7 +260,8 @@ function execEvent() {
                 resolve({
                     error: false,
                     results: null,
-                    id: node.getId()
+                    id: node.getId(),
+                    time: Date.now()
                 });
             });
         case 'mousedown':
@@ -368,7 +373,8 @@ function execEvent() {
                     resolve({
                         error: false,
                         results: null,
-                        id: node.getId()
+                        id: node.getId(),
+                        time: Date.now()
                     });
                 });
             });
@@ -397,7 +403,8 @@ function execEvent() {
                                 resolve({
                                     error: false,
                                     results: [resp.responseText],
-                                    id: node.getId()
+                                    id: node.getId(),
+                                    time: Date.now()
                                 });
                             });
                             });
@@ -407,7 +414,8 @@ function execEvent() {
                     reject({
                         error: true,
                         results: null,
-                        id: node.getId()
+                        id: node.getId(),
+                        time: Date.now()
                     });
                 });
             });
