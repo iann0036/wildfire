@@ -174,6 +174,16 @@ function runCode(code) {
 
 function runCodeFrameURLPrefix(code, urlprefix) {
     return new Promise(function(resolve, reject) {
+        if (code == "" || code == ";" || code == ";;") {
+            resolve({
+                error: false,
+                results: null,
+                id: node.getId(),
+                time: Date.now()
+                //event: node
+            });
+        }
+
         try {
             var frameId = 0;
 
@@ -203,7 +213,7 @@ function runCodeFrameURLPrefix(code, urlprefix) {
                         terminateSimulation(false, "Event timeout");
                     }, event_execution_timeout, i);*/
 
-                    code = "try { " + code + "; } catch(err) { new Object({error: err.message}); }";
+                    code = "try { " + code + "; } catch(err) { new Object({error: err.message, errorstack: err.stack}); }";
 
                     chrome.tabs.executeScript(tabs[activeTab].id,{
                         code: code,
@@ -266,7 +276,7 @@ function execEvent() {
             });
         case 'mousedown':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'mousedown', { clientX: " +
                 node.userData.evt_data.clientX +
                 ", clientY: " +
@@ -281,7 +291,7 @@ function execEvent() {
             break;
         case 'mouseup':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'mouseup', { clientX: " +
                 node.userData.evt_data.clientX +
                 ", clientY: " +
@@ -291,7 +301,7 @@ function execEvent() {
         case 'mouseover':
             if (all_settings.simulatemouseover) {
                 code = "simulate(" +
-                    constructElementIdentifier(node.userData.evt_data.path) +
+                    "$('" + node.userData.evt_data.csspath + "')[0]" +
                     ",'mouseover', { clientX: " +
                     node.userData.evt_data.clientX +
                     ", clientY: " +
@@ -302,7 +312,7 @@ function execEvent() {
         case 'mouseout':
             if (all_settings.simulatemouseout) {
                 code = "simulate(" +
-                    constructElementIdentifier(node.userData.evt_data.path) +
+                    "$('" + node.userData.evt_data.csspath + "')[0]" +
                     ",'mouseout', { clientX: " +
                     node.userData.evt_data.clientX +
                     ", clientY: " +
@@ -321,28 +331,28 @@ function execEvent() {
             break;
         case 'keydown':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keydown', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
             break;
         case 'keyup':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keyup', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
             break;
         case 'keypress':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keypress', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
             break;
         case 'submit':
             code = "simulate(" +
-                constructElementIdentifier(node.userData.evt_data.path) +
+                "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'submit', {});";
             break;
         case 'dataentry':
@@ -356,7 +366,7 @@ function execEvent() {
                 node.userData.evt_data.value.replace("'", "\\'") + "');";*/
             break;
         case 'clipboard_cut':
-            code = constructElementIdentifier(node.userData.evt_data.path) +
+            code = "$('" + node.userData.evt_data.csspath + "')[0]" +
                         ".value = '';";
             break;
         case 'tabchange':
@@ -378,6 +388,7 @@ function execEvent() {
                     });
                 });
             });
+            break;
         case 'select':
             code = ";"; // TODO - emulate Text Select
             break;
@@ -392,7 +403,6 @@ function execEvent() {
                             url: "https://api.wildfire.ai/v1/premium-recaptcha",
                             data: sitekey + "," + result.results[0] + "," + all_settings.cloudapikey || ""
                         }).always(function(resp) {
-                            console.log(resp.responseText);
                             runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');").then(function(result){
                             var runcode = "var script = document.createElement('script');\
                                 script.setAttribute(\"type\", \"application/javascript\");\
@@ -485,7 +495,6 @@ function processEvent() {
             }
         }
         if (nodeConnectionPromises.length == 0) {
-            //console.log(node.getPorts());
             //node.setBackgroundColor("#000000");
             var custom = new CustomTick();
             CustomTracker.push(custom);

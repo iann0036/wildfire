@@ -99,7 +99,7 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   }
 
-  console.log(userdata.evt);
+  console.log("Unprocessable Event Options: " + userdata.evt);
 
   return "<i>Event Properties Unavailable</i><br /><br />";
 }
@@ -210,7 +210,7 @@ function addNode(event) {
     bgColor: bgColor,
     userData: event
   });
-  node.installEditPolicy(new draw2d.policy.figure.AntSelectionFeedbackPolicy());
+  //node.installEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
   /*
   if (event.evt == "begin_recording")
     node.setDeleteable(false);
@@ -298,6 +298,7 @@ function importJSON(json) {
   nodes = [];
   for (var i=0; i<canvas.figures.data.length; i++) {
     nodes.push(canvas.figures.data[i]);
+    canvas.figures.data[i].setResizeable(false);
   }
 
   if (canvas.figures.data.length>60)
