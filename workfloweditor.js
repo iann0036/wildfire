@@ -2,6 +2,7 @@ var canvas;
 var conn;
 var nodes = [];
 var figure;
+var gridPolicy;
 
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
@@ -264,6 +265,11 @@ function exportCanvasImage() {
     var minY   = Math.min.apply(Math, yCoords) - 10;
     var width  = Math.max.apply(Math, xCoords)-minX + 10;
     var height = Math.max.apply(Math, yCoords)-minY + 10;
+
+    canvas.getAllPorts().each(function(i,p){ // hide figure ports for screenshot
+        p.setVisible(false);
+    });
+    gridPolicy.setGrid(1); // sexy hack to make background white
     
     var writer = new draw2d.io.png.Writer();
     writer.marshal(canvas,function(png){
@@ -277,6 +283,8 @@ function exportCanvasImage() {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
+
+        gridPolicy.setGrid(5); // reset sexy hack
     }, new draw2d.geo.Rectangle(minX,minY,width,height));
 }
 $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
@@ -436,7 +444,7 @@ $(window).load(function () {
         createConnection: connCreate
       }));
       setTimeout(function(){
-        var gridPolicy = new draw2d.policy.canvas.SnapToGridEditPolicy();
+        gridPolicy = new draw2d.policy.canvas.SnapToGridEditPolicy();
         gridPolicy.setGrid(5);
         gridPolicy.setGridColor("#ffffff");
         canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy() );
