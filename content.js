@@ -173,6 +173,7 @@ function finishScrollEvent() {
                 scrollLeftEnd: scrollObject.scrollLeft,
                 inFrame: getFrameIndex(),
                 url: window.location.href,
+                scrollTime: Date.now()-scrollStartTime,
                 endtime: Date.now()
             },
             time: scrollStartTime

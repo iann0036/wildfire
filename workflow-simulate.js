@@ -287,7 +287,7 @@ function execEvent() {
             code = "$('html, body').animate({" +
                 "scrollTop: " + node.userData.evt_data.scrollTopEnd + "," +
                 "scrollLeft: " + node.userData.evt_data.scrollLeftEnd +
-                "}, " + (node.userData.evt_data.endtime-node.userData.time) + ");";
+                "}, " + (node.userData.evt_data.scrollTime || 0.1) + ");";
             break;
         case 'mouseup':
             code = "simulate(" +
@@ -359,6 +359,10 @@ function execEvent() {
             code = "$('" + node.userData.evt_data.csspath + "').val('" +
                 node.userData.evt_data.value.replace("'", "\\'") + "');";
             break;
+        case 'change':
+            code = "$('" + node.userData.evt_data.csspath + "').val('" +
+                node.userData.evt_data.value.replace("'", "\\'") + "');";
+            break;
         case 'input':
             code = "$('" + node.userData.evt_data.csspath + "').val('" +
                 node.userData.evt_data.value.replace("'", "\\'") + "');";
@@ -369,17 +373,49 @@ function execEvent() {
             code = "$('" + node.userData.evt_data.csspath + "')[0]" +
                         ".value = '';";
             break;
-        case 'tabchange':
-            var activeTab = 0;
-            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-                for (var i=0; i<tabs.length; i++) {
-                    if (tabs[i].active)
-                        activeTab = i;
-                }
-                chrome.tabs.update(tabs[activeTab].id, {
-                    url: node.userData.evt_data.url
+        case 'purgecookies':
+            return new Promise(function(resolve, reject) {
+                chrome.cookies.getAll({}, function(cookies){
+                    var cookiepurgeresults = [];
+                    for (var i=0; i<cookies.length; i++) {
+                        if (cookies[i].domain.includes(node.userData.evt_data.searchterm)) {
+                            var domain = cookies[i].domain;
+                            if (domain[0] == ".")
+                                domain = domain.substring(0);
+                            cookiepurgeresults.push(domain);
+                            domain = "https://" + domain;
+                            chrome.cookies.remove({url: domain, name: cookies[i].name});
+                        }
+                    }
+
+                    var cookieresults = "No cookies found for the search term provided";
+                    if (cookiepurgeresults.length > 0) {
+                        var uniqueDomains = cookiepurgeresults.filter(function(item, pos) {
+                            return cookiepurgeresults.indexOf(item) == pos;
+                        })
+                        cookieresults = "Domains purged: " + uniqueDomains.join(", ");
+                    }
+                    
+                    resolve({
+                        error: (cookiepurgeresults.length > 0) ? true : false,
+                        results: [cookieresults],
+                        id: node.getId(),
+                        time: Date.now()
+                    });
                 });
-                return new Promise(function(resolve, reject) {
+            });
+        case 'tabchange':
+            return new Promise(function(resolve, reject) {
+                var activeTab = 0;
+                chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                    for (var i=0; i<tabs.length; i++) {
+                        if (tabs[i].active)
+                            activeTab = i;
+                    }
+                    chrome.tabs.update(tabs[activeTab].id, {
+                        url: node.userData.evt_data.url
+                    });
+                    
                     resolve({
                         error: false,
                         results: null,
@@ -388,9 +424,8 @@ function execEvent() {
                     });
                 });
             });
-            break;
         case 'select':
-            code = ";"; // TODO - emulate Text Select
+            code = "$('" + node.userData.evt_data.csspath + "').select();";
             break;
         case 'recaptcha':
             return new Promise(function(resolve, reject) {

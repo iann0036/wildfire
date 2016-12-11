@@ -1,4 +1,12 @@
 var recording = false;
+var bgSettings;
+
+function updateBgSettings() {
+	chrome.storage.local.get('settings', function (settings) {
+		bgSettings = settings.settings;
+	});
+}
+updateBgSettings();
 
 chrome.tabs.onUpdated.addListener(
     function (tabId, changeInfo, tab) {
@@ -82,6 +90,44 @@ function updateExtIcon() {
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
     updateExtIcon();
+	updateBgSettings();
 });
 
 updateExtIcon();
+
+chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
+	if (request.action == "registrationStatus") {
+		if (bgSettings != null) {
+			sendResponse({
+				"success": true,
+				"account": bgSettings.account,
+				"cloudapikey": bgSettings.cloudapikey
+			});
+		} else {
+			sendResponse({
+				"success": false
+			});
+		}
+	} else if (request.action == "openExtension") {
+		var windowWidth = 1280;
+		var windowHeight = 800;
+		chrome.windows.create({
+			url: "dashboard.html",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
+	} else if (request.action == "registerExtension") {
+		chrome.storage.local.get('settings', function (settings) {
+			bgSettings = settings.settings;
+			bgSettings.account = request.account;
+			bgSettings.cloudapikey = request.cloudapikey;
+			chrome.storage.local.set({settings: bgSettings});
+		});
+		sendResponse({
+			"success": true
+		});
+	}
+});

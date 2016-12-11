@@ -61,6 +61,11 @@ var mappingData = {
         event_type: 'Key Press',
         icon: 'keyboard-key-a.png'
     },
+    purgecookies: {
+        bgColor: '#7D3F32',
+        event_type: 'Purge Cookies',
+        icon: 'christmas-cookies.png'
+    },
     submit: {
         bgColor: '#A46583',
         event_type: 'Form Submit',
@@ -333,6 +338,10 @@ function readableEventDetail(event) {
             break;
         case 'keypress':
             event_type = "Key Pressed";
+            minorEvent = false;
+            break;
+        case 'purgecookies':
+            event_type = "Purge Cookies";
             minorEvent = false;
             break;
         case 'dataentry':

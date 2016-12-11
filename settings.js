@@ -20,9 +20,23 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-custom-submit').click();
     if (all_settings.runminimized)
         $('#setting-run-minimized').click();
-    if (all_settings.account != "" && all_settings.account !== undefined)
+    if (all_settings.account != "" && all_settings.account !== undefined) {
         $('#setting-account').html(all_settings.account);
+        $('#setting-account').parent().append("&nbsp;&nbsp;<a id='unlinkButton' href='#'>Unlink</a>");
+        $('#unlinkButton').click(unlinkAccount);
+    }
 });
+
+function unlinkAccount() {
+    chrome.storage.local.get('settings', function (settings) {
+        all_settings = settings.settings;
+        all_settings.account = "";
+        all_settings.cloudapikey = "";
+        chrome.storage.local.set({settings: all_settings},function(){
+            location.reload();
+        });
+    });
+}
 
 $('#setting-record-mouse-over').change(function() {
     all_settings.recordmouseover = $(this).is(":checked");

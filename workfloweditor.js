@@ -16,7 +16,23 @@ $('#workflowToolbarDelete').click(function(){deleteSelection();});
 $('#deleteButtonSidepanel').click(function(){deleteSelection();});
 
 function getEventOptionsHtml(userdata) {
-  if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown" || userdata.evt == "mouseover" || userdata.evt == "mouseout") {
+  if (userdata.evt == "scroll") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scrollLeftEnd\">Scroll To</label>" +
+    "    <div class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">x</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollLeftEnd\" id=\"event_scrollLeftEnd\" value=\"" + (userdata.evt_data.scrollLeftEnd || "0") + "\">" +
+    "    </div>" +
+    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">y</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollTopEnd\" id=\"event_scrollTopEnd\" value=\"" + (userdata.evt_data.scrollTopEnd || "0") + "\">" +
+    "    </div><br />" +
+    "    <label class=\"form-label semibold\" for=\"event_scrollTime\">Scroll Time</label>" +
+    "    <div class=\"input-group\">" +
+    "        <input type=\"text\" class=\"form-control\" data-event-detail=\"scrollTime\" id=\"event_scrollTime\" value=\"" + (userdata.evt_data.scrollTime/1000) + "\">" +
+    "        <div class=\"input-group-addon\">secs</div>" +
+    "    </div>" +
+    "</div>";
+  } else if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown" || userdata.evt == "mouseover" || userdata.evt == "mouseout") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
@@ -29,12 +45,12 @@ function getEventOptionsHtml(userdata) {
     "    <label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
     "</div>";
-  } else if (userdata.evt == "focusin" || userdata.evt == "focusout") {
+  } else if (userdata.evt == "focusin" || userdata.evt == "focusout" || userdata.evt == "submit" || userdata.evt == "select") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
     "    <br />" +
     "</div>";
-  } else if (userdata.evt == "input" || userdata.evt == "dataentry") {
+  } else if (userdata.evt == "input" || userdata.evt == "dataentry" || userdata.evt == "change") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + (userdata.evt_data.value || "") + "\">" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
@@ -74,6 +90,11 @@ function getEventOptionsHtml(userdata) {
     "    </select>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "purgecookies") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"searchterm\">Domain Search Term</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + (userdata.evt_data.searchterm || "") + "\">" +
+    "    <br />" +
     "</div>";
   } else if (userdata.evt == "tabchange") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
@@ -519,7 +540,8 @@ $('#nodeLinkPanelX').click(function(){
 
 $('#workflowToolbarAddNode').click(function(){
   canvas.add(addNode({
-    evt: 'end_recording'
+    evt: 'end_recording',
+    time: 0
   }), window.innerWidth/2, window.innerHeight/3);
   nodes.push(node);
 });
