@@ -497,7 +497,11 @@ function populateEvents(result) {
 
     if (!events || events == null || events.length<1) {
         var eventNode = document.createElement("tr");
-        eventNode.innerHTML = '<tr><td style="text-align: center;" colspan="8">No events yet!</td></tr>';
+        var eventNodeTd = document.createElement("td");
+        eventNodeTd.setAttribute('style','text-align: center;');
+        eventNodeTd.setAttribute('colspan','8');
+        eventNodeTd.innerHTML = "No event yet!";
+        eventNode.appendChild(eventNodeTd);
         document.getElementById('events').appendChild(eventNode);
     } else {
         recording_start_time = events[0].time;

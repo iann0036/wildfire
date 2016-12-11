@@ -610,13 +610,11 @@ function beginWorkflowSimulation() {
     chrome.windows.getCurrent(null, function(wildfirewindow){
         chrome.windows.create({
             "url":"chrome-extension://" + chrome.runtime.id + "/new.html",
-            //"url":"https://wildfire.ai/",
             "focused":true,
             "left":0,
             "top":0,
             "width":1920,
             "height":1080
-            //"type":"popup"
         }, function(simulation_window) {
             new_window = simulation_window;
             if (all_settings.runminimized) {
