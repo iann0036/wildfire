@@ -28,6 +28,7 @@ chrome.storage.local.get('settings', function (settings) {
         all_settings.cloudapikey = "";
         all_settings.emulatehover = false;
         all_settings.leavesimulationopen = false;
+        all_settings.clearbrowsingdata = false;
         all_settings.recordmouseout = false;
         all_settings.recordmouseover = false;
         all_settings.simulatemouseout = false;
@@ -130,26 +131,49 @@ function terminateSimulation(finished, reason) {
 	chrome.windows.onRemoved.removeListener(closeListenerCallback);
     chrome.windows.onRemoved.removeListener(closeListenerCallbackWorkflow);
     clearTimeout(timeoutObject);
+
+    if (all_settings.clearbrowsingdata) {
+        chrome.browsingData.remove({
+            "since": sim_start_time
+        }, {
+            "appcache": true,
+            "cache": true,
+            "cookies": true,
+            "downloads": true,
+            "fileSystems": true,
+            "formData": true,
+            "history": true,
+            "indexedDB": true,
+            "localStorage": true,
+            "pluginData": true,
+            "passwords": true,
+            "webSQL": true
+        }, function() {
+            ;//console.log("Finished clearing browsing history");
+        });
+    }
 	
     simulating = false;
+
+    if (!all_settings.leavesimulationopen)
+        chrome.windows.remove(new_window.id,function(){});
+    
+    if (simulation_log.length < events.length && finished) { // No errors but missing events
+        finished = false;
+        reason = "Missed events";
+    }
+
+    chrome.notifications.create("",{
+        type: "basic",
+        title: "Wildfire",
+        message: "Simulation completed",
+        iconUrl: "icon-128.png"
+    });
+
     try {
         chrome.tabs.captureVisibleTab(new_window.id,{
             "format": "png"
         }, function(imagedata){
-            if (!all_settings.leavesimulationopen)
-                chrome.windows.remove(new_window.id,function(){});
-            
-            if (simulation_log.length < events.length && finished) { // No errors but missing events
-                finished = false;
-                reason = "Missed events";
-            }
-
-            chrome.notifications.create("",{
-                type: "basic",
-                title: "Wildfire",
-                message: "Simulation completed",
-                iconUrl: "icon-128.png"
-            });
             chrome.storage.local.get('simulations', function (result) {
                 var simulations = result.simulations;
                 if (!Array.isArray(simulations)) { // for safety only
@@ -169,12 +193,6 @@ function terminateSimulation(finished, reason) {
             });
         });
     } catch(err) {
-        chrome.notifications.create("",{
-            type: "basic",
-            title: "Wildfire",
-            message: "Simulation completed",
-            iconUrl: "icon-128.png"
-        });
         chrome.storage.local.get('simulations', function (result) {
             var simulations = result.simulations;
             if (!Array.isArray(simulations)) { // for safety only

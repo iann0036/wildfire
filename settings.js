@@ -16,6 +16,8 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-emulate-hover').click();
     if (all_settings.leavesimulationopen)
         $('#setting-leave-simulation-open').click();
+    if (all_settings.clearbrowsingdata)
+        $('#setting-clear-browsing-data').click();
     if (all_settings.customsubmit)
         $('#setting-custom-submit').click();
     if (all_settings.runminimized)
@@ -70,6 +72,11 @@ $('#setting-custom-submit').change(function() {
 
 $('#setting-leave-simulation-open').change(function() {
     all_settings.leavesimulationopen = $(this).is(":checked");
+    updateSettings();
+});
+
+$('#setting-clear-browsing-data').change(function() {
+    all_settings.clearbrowsingdata = $(this).is(":checked");
     updateSettings();
 });
 

@@ -493,6 +493,7 @@ function readableEventDetail(event) {
 function populateEvents(result) {
     var events = result.events;
     var simulation_log = result.log;
+    var rows_height = 0;
     document.getElementById('events').innerHTML = ""; // reset table
 
     if (!events || events == null || events.length<1) {
@@ -565,19 +566,23 @@ function populateEvents(result) {
         eventNode.id = "eventRow" + i;
         document.getElementById('events').appendChild(eventNode);
 
-        // Refresh table UI
-
         if (event_details.evt!="begin_recording" && event_details.evt!="end_recording" && !simulation_log) {
             document.getElementById("deleteEvent" + i).onclick = function(e){
                 deleteEvent(e.target.id.replace("deleteEvent",""));
             }
         }
+
+        rows_height += $(eventNode).height();
     }
+    // Refresh table UI
+    if (events.length>0)
+        $('.jspContainer').height(rows_height + 43);
 }
 
 function populateSimulationEvents(result) {
     var events = result.events;
     var simulation_log = result.log;
+    var rows_height = 0;
     document.getElementById('events').innerHTML = ""; // reset table
 
     recording_start_time = events[0].time;
@@ -648,14 +653,17 @@ function populateSimulationEvents(result) {
         eventNode.id = "eventRow" + i;
         document.getElementById('events').appendChild(eventNode);
 
-        // Refresh table UI
-
         if (event_details.evt!="begin_recording" && event_details.evt!="end_recording" && !simulation_log) {
             document.getElementById("deleteEvent" + i).onclick = function(e){
                 deleteEvent(e.target.id.replace("deleteEvent",""));
             }
         }
+
+        rows_height += $(eventNode).height();
     }
+    // Refresh table UI
+    if (events.length>0)
+        $('.jspContainer').height(rows_height + 43);
 }
 
 $('#table-check-head').click(function(e) {
