@@ -66,6 +66,11 @@ var mappingData = {
         event_type: 'Purge Cookies',
         icon: 'christmas-cookies.png'
     },
+    setproxy: {
+        bgColor: '#EFA821',
+        event_type: 'Set Proxy Settings',
+        icon: 'cloud-computing.png'
+    },
     submit: {
         bgColor: '#A46583',
         event_type: 'Form Submit',
@@ -442,6 +447,12 @@ function readableEventDetail(event) {
             event_data = "&nbsp;";
             minorEvent = false;
             break;
+        case 'setproxy':
+            event_type = "Set Proxy Settings";
+            event_data = "&nbsp;";
+            minorEvent = false;
+            event.evt_data.url = "";
+            break;
         case 'tabchange':
             event_type = "Changed Tabs";
             if (event.evt_data.url=="chrome://newtab/")
@@ -586,7 +597,6 @@ function populateSimulationEvents(result) {
     document.getElementById('events').innerHTML = ""; // reset table
 
     recording_start_time = events[0].time;
-    console.log(result);
 
     for (var i=0; simulation_log!=null && i<simulation_log.length; i++) {
         for (var j=0; j<result.node_details.length; j++) {

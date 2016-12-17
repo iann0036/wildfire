@@ -103,6 +103,23 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
     return "";
+  } else if (userdata.evt == "setproxy") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scheme\">Proxy Type</label>" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"keyCode\" id=\"event_scheme\">" +
+    "        <option value=\"http\">HTTP</option>" +
+    "        <option value=\"https\">HTTPS</option>" +
+    "        <option value=\"socks4\">SOCKS4</option>" +
+    "        <option value=\"socks5\">SOCKS5</option>" +
+    "    </select>" +
+    "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_host\">Host</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"host\" id=\"event_host\" value=\"" + (userdata.evt_data.host || "") + "\">" +
+    "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_port\">Port</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"port\" id=\"event_port\" value=\"" + (userdata.evt_data.port || "") + "\">" +
+    "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_username\">Username</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"username\" id=\"event_username\" value=\"" + (userdata.evt_data.username || "") + "\">" +
+    "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_password\">Password</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"password\" id=\"event_password\" value=\"" + (userdata.evt_data.password || "") + "\">" +
+    "</div><br />";
   } else if (userdata.evt == "recaptcha") {
     return "";
   } else if (userdata.evt == "timer" || userdata.evt === undefined) {
@@ -282,10 +299,10 @@ function exportCanvasImage() {
         xCoords.push(b.x, b.x+b.w);
         yCoords.push(b.y, b.y+b.h);
     });
-    var minX   = Math.min.apply(Math, xCoords) - 10;
-    var minY   = Math.min.apply(Math, yCoords) - 10;
-    var width  = Math.max.apply(Math, xCoords)-minX + 10;
-    var height = Math.max.apply(Math, yCoords)-minY + 10;
+    var minX   = Math.min.apply(Math, xCoords) - 30;
+    var minY   = Math.min.apply(Math, yCoords) - 30;
+    var width  = Math.max.apply(Math, xCoords)-minX + 30;
+    var height = Math.max.apply(Math, yCoords)-minY + 30;
 
     canvas.getAllPorts().each(function(i,p){ // hide figure ports for screenshot
         p.setVisible(false);

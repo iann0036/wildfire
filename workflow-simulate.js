@@ -275,6 +275,7 @@ function execEvent() {
                 });
             });
         case 'mousedown':
+            if (all_settings.simulatemousedown) {
             code = "simulate(" +
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'mousedown', { clientX: " +
@@ -282,14 +283,18 @@ function execEvent() {
                 ", clientY: " +
                 node.userData.evt_data.clientY +
                 " });";
+            }
             break;
         case 'scroll':
+            if (all_settings.simulatescroll) {
             code = "$('html, body').animate({" +
                 "scrollTop: " + node.userData.evt_data.scrollTopEnd + "," +
                 "scrollLeft: " + node.userData.evt_data.scrollLeftEnd +
                 "}, " + (node.userData.evt_data.scrollTime || 0.1) + ");";
+            }
             break;
         case 'mouseup':
+            if (all_settings.simulatemouseup) {
             code = "simulate(" +
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'mouseup', { clientX: " +
@@ -297,6 +302,7 @@ function execEvent() {
                 ", clientY: " +
                 node.userData.evt_data.clientY +
                 " });";
+            }
             break;
         case 'mouseover':
             if (all_settings.simulatemouseover) {
@@ -321,34 +327,46 @@ function execEvent() {
             }
             break;
         case 'click':
+            if (all_settings.simulateclick) {
             code = "$('" + node.userData.evt_data.csspath + "').click();";
+            }
             break;
         case 'focusin':
+            if (all_settings.simulatefocusin) {
             code = "$('" + node.userData.evt_data.csspath + "').focus();";
+            }
             break;
         case 'focusout':
+            if (all_settings.simulatefocusout) {
             code = "$('" + node.userData.evt_data.csspath + "').blur();";
+            }
             break;
         case 'keydown':
+            if (all_settings.simulatekeydown) {
             code = "simulate(" +
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keydown', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
+            }
             break;
         case 'keyup':
+            if (all_settings.simulatekeyup) {
             code = "simulate(" +
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keyup', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
+            }
             break;
         case 'keypress':
+            if (all_settings.simulatekeypress) {
             code = "simulate(" +
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'keypress', { keyCode: " +
                 node.userData.evt_data.keyCode +
                 " });";
+            }
             break;
         case 'submit':
             code = "simulate(" +
@@ -360,14 +378,18 @@ function execEvent() {
                 node.userData.evt_data.value.replace("'", "\\'") + "');";
             break;
         case 'change':
+            if (all_settings.simulatechange) {
             code = "$('" + node.userData.evt_data.csspath + "').val('" +
                 node.userData.evt_data.value.replace("'", "\\'") + "');";
+            }
             break;
         case 'input':
+            if (all_settings.simulateinput) {
             code = "$('" + node.userData.evt_data.csspath + "').val('" +
                 node.userData.evt_data.value.replace("'", "\\'") + "');";
             /*code = "$('" + node.userData.evt_data.csspath + "').val('" +
                 node.userData.evt_data.value.replace("'", "\\'") + "');";*/
+            }
             break;
         case 'clipboard_cut':
             code = "$('" + node.userData.evt_data.csspath + "')[0]" +
@@ -425,8 +447,29 @@ function execEvent() {
                 });
             });
         case 'select':
+            if (all_settings.simulateselect) {
             code = "$('" + node.userData.evt_data.csspath + "').select();";
+            }
             break;
+        case 'setproxy':
+            return new Promise(function(resolve, reject) {
+                chrome.storage.local.set({proxy: {
+                    username: node.userData.evt_data.username,
+                    password: node.userData.evt_data.password,
+                    scheme: node.userData.evt_data.scheme,
+                    host: node.userData.evt_data.host,
+                    port: node.userData.evt_data.port,
+                    ignore: [],
+                    clear: false
+                }},function(){
+                    resolve({
+                        error: false,
+                        results: null,
+                        id: node.getId(),
+                        time: Date.now()
+                    });
+                });
+            });
         case 'recaptcha':
             return new Promise(function(resolve, reject) {
                 code = 'if ($(".g-recaptcha").length > 0) { var sitekey = $(".g-recaptcha").attr("data-sitekey"); var url = location.host; sitekey; } else { throw "NOCAPTCHAFOUND"; }';

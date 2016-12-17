@@ -261,37 +261,49 @@ function addDocumentEventListener(eventName) {
 chrome.storage.local.get('recording', function (isRecording) {
     if (isRecording.recording) {
 
-        window.addEventListener("scroll", function (e) {
-            setTimeout(function () {
-                chrome.storage.local.get('recording', function (isRecording) {
-                    if (isRecording.recording) {
-                        updateScrollEvent(e);
-                    }
-                });
-            }, 1);
-        }, false);
+        if (all_settings.recordscroll) {
+            window.addEventListener("scroll", function (e) {
+                setTimeout(function () {
+                    chrome.storage.local.get('recording', function (isRecording) {
+                        if (isRecording.recording) {
+                            updateScrollEvent(e);
+                        }
+                    });
+                }, 1);
+            }, false);
+        }
 		
-		addDocumentEventListener("mousedown");
-		addDocumentEventListener("mouseup");
-		addDocumentEventListener("touchstart");
-        if (all_settings.recordmouseover) {
+		addDocumentEventListener("open"); // TODO - Figure this out
+		addDocumentEventListener("touchstart"); // TODO - Figure this out
+		addDocumentEventListener("propertychange"); // TODO - Figure this out
+		addDocumentEventListener("wfSubmit"); // TODO - Figure this out
+
+        if (all_settings.recordmousedown)
+		    addDocumentEventListener("mousedown");
+        if (all_settings.recordmouseup)
+		    addDocumentEventListener("mouseup");
+        if (all_settings.recordmouseover)
 			addDocumentEventListener("mouseover");
-        }
-        if (all_settings.recordmouseout) {
+        if (all_settings.recordmouseout)
 			addDocumentEventListener("mouseout");
-        }
-		addDocumentEventListener("open");
-		addDocumentEventListener("select");
-		addDocumentEventListener("focusin");
-		addDocumentEventListener("focusout");
-		addDocumentEventListener("click");
-		addDocumentEventListener("keydown");
-		addDocumentEventListener("keypress");
-		addDocumentEventListener("keyup");
-		addDocumentEventListener("input");
-		addDocumentEventListener("propertychange");
-		addDocumentEventListener("change");
-		addDocumentEventListener("wfSubmit");
+        if (all_settings.recordselect)
+		    addDocumentEventListener("select");
+        if (all_settings.recordfocusin)
+		    addDocumentEventListener("focusin");
+        if (all_settings.recordfocusout)
+		    addDocumentEventListener("focusout");
+        if (all_settings.recordclick)
+		    addDocumentEventListener("click");
+        if (all_settings.recordkeydown)
+		    addDocumentEventListener("keydown");
+        if (all_settings.recordkeypress)
+		    addDocumentEventListener("keypress");
+        if (all_settings.recordkeyup)
+		    addDocumentEventListener("keyup");
+        if (all_settings.recordinput)
+		    addDocumentEventListener("input");
+        if (all_settings.recordchange)
+		    addDocumentEventListener("change");
 
         if (all_settings.customsubmit) {
             /* Inject JS directly in for submit intercepts */
@@ -372,3 +384,43 @@ chrome.storage.local.get('recording', function (isRecording) {
 
     }
 });
+
+function initRecording() {
+    var video_constraints = {
+        mandatory: {
+            chromeMediaSource: 'tab'
+        }
+    };
+    var constraints = {
+        audio: false,
+        video: true,
+        videoConstraints: video_constraints
+    };
+
+    chrome.tabCapture.capture(constraints, function(stream) {
+        console.log(stream);
+        var options = {
+            type: 'video',
+            mimeType : 'video/webm',
+            // minimum time between pushing frames to Whammy (in milliseconds)
+            frameInterval: 20,
+            video: {
+                width: 1280,
+                height: 720
+            },
+            canvas: {
+                width: 1280,
+                height: 720
+            }
+        };
+        var recordRTC = RecordRTC(stream, options);
+        recordRTC.startRecording();
+
+        setTimeout(function(){
+            recordRTC.stopRecording(function(videoURL) {
+                stream.getVideoTracks()[0].stop();
+                recordRTC.save();
+            });
+        },10*1000);
+    });
+}

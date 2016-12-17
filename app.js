@@ -20,23 +20,46 @@ var terminated;
 var node_details = [];
 
 chrome.storage.local.get('settings', function (settings) {
-    if (settings.settings != null) {
-        all_settings = settings.settings;
-    } else {
-        all_settings = new Object();
-        all_settings.account = "";
-        all_settings.cloudapikey = "";
-        all_settings.emulatehover = false;
-        all_settings.leavesimulationopen = false;
-        all_settings.clearbrowsingdata = false;
-        all_settings.recordmouseout = false;
-        all_settings.recordmouseover = false;
-        all_settings.simulatemouseout = false;
-        all_settings.simulatemouseover = false;
-        all_settings.customsubmit = true;
-        all_settings.runminimized = false;
-        chrome.storage.local.set({settings: all_settings});
-    }
+    all_settings = {
+        "account": "",
+        "cloudapikey": "",
+        "emulatehover": false,
+        "leavesimulationopen": false,
+        "clearbrowsingdata": false,
+        "recordmousedown": false,
+        "recordmouseup": false,
+        "recordmouseover": false,
+        "recordmouseout": false,
+        "recordselect": false,
+        "recordfocusin": false,
+        "recordfocusout": false,
+        "recordclick": true,
+        "recordkeydown": false,
+        "recordkeypress": true,
+        "recordkeyup": false,
+        "recordinput": true,
+        "recordchange": true,
+        "recordscroll": false,
+        "simulatemousedown": false,
+        "simulatemouseup": false,
+        "simulatemouseover": false,
+        "simulatemouseout": false,
+        "simulateselect": true,
+        "simulatefocusin": true,
+        "simulatefocusout": true,
+        "simulateclick": true,
+        "simulatekeydown": true,
+        "simulatekeypress": true,
+        "simulatekeyup": true,
+        "simulateinput": true,
+        "simulatechange": true,
+        "simulatescroll": true,
+        "customsubmit": true,
+        "runminimized": false
+    };
+    if (settings.settings != null)
+        all_settings = $.extend(all_settings,settings.settings);
+    chrome.storage.local.set({settings: all_settings});
 });
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
@@ -131,6 +154,7 @@ function terminateSimulation(finished, reason) {
 	chrome.windows.onRemoved.removeListener(closeListenerCallback);
     chrome.windows.onRemoved.removeListener(closeListenerCallbackWorkflow);
     clearTimeout(timeoutObject);
+    chrome.storage.local.set({proxy: {clear: true}});
 
     if (all_settings.clearbrowsingdata) {
         chrome.browsingData.remove({
@@ -154,9 +178,6 @@ function terminateSimulation(finished, reason) {
     }
 	
     simulating = false;
-
-    if (!all_settings.leavesimulationopen)
-        chrome.windows.remove(new_window.id,function(){});
     
     if (simulation_log.length < events.length && finished) { // No errors but missing events
         finished = false;
@@ -190,6 +211,8 @@ function terminateSimulation(finished, reason) {
                     node_details: node_details
                 });
                 chrome.storage.local.set({simulations: simulations});
+                if (!all_settings.leavesimulationopen)
+                    chrome.windows.remove(new_window.id,function(){});
             });
         });
     } catch(err) {
@@ -209,6 +232,8 @@ function terminateSimulation(finished, reason) {
                 node_details: node_details
             });
             chrome.storage.local.set({simulations: simulations});
+            if (!all_settings.leavesimulationopen)
+                chrome.windows.remove(new_window.id,function(){});
         });
     }
 }
@@ -278,6 +303,7 @@ function simulateNextStep() {
             }, events[i].time-events[i-1].time, new_window, timeoutObject, i);
             break;
         case 'mousedown':
+            if (all_settings.simulatemousedown) {
             simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'mousedown', { clientX: " +
@@ -285,14 +311,28 @@ function simulateNextStep() {
 				", clientY: " +
 				events[i].evt_data.clientY +
 				" });", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'scroll':
+            if (all_settings.simulatescroll) {
             simulateEvent("$('html, body').animate({" +
 				"scrollTop: " + events[i].evt_data.scrollTopEnd + "," +
 				"scrollLeft: " + events[i].evt_data.scrollLeftEnd +
 				"}, " + (events[i].evt_data.endtime-events[i].time) + ");", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'mouseup':
+            if (all_settings.simulatemouseup) {
             simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'mouseup', { clientX: " +
@@ -300,6 +340,12 @@ function simulateNextStep() {
 				", clientY: " +
 				events[i].evt_data.clientY +
 				" });", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'mouseover':
             if (all_settings.simulatemouseover) {
@@ -334,34 +380,76 @@ function simulateNextStep() {
 			}
             break;
         case 'click':
+            if (all_settings.simulateclick) {
             simulateEvent("$('" + events[i].evt_data.csspath + "').click();", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'focusin':
+            if (all_settings.simulatefocusin) {
             simulateEvent("$('" + events[i].evt_data.csspath + "').focus();", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'focusout':
+            if (all_settings.simulatefocusout) {
             simulateEvent("$('" + events[i].evt_data.csspath + "').blur();", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'keydown':
+            if (all_settings.simulatekeydown) {
             simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'keydown', { keyCode: " +
 				events[i].evt_data.keyCode +
 				" });", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'keyup':
+            if (all_settings.simulatekeyup) {
 			simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'keyup', { keyCode: " +
 				events[i].evt_data.keyCode +
 				" });", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'keypress':
+            if (all_settings.simulatekeypress) {
 			simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'keypress', { keyCode: " +
 				events[i].evt_data.keyCode +
 				" });", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'submit':
 			simulateEvent("simulate(" +
@@ -373,14 +461,28 @@ function simulateNextStep() {
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);
             break;
         case 'change':
+            if (all_settings.simulatechange) {
 			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'input':
+            if (all_settings.simulateinput) {
 			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);
 			/*simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
 				events[i].evt_data.value.replace("'", "\\'") + "');", i);*/
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         case 'clipboard_cut':
 			simulateEvent(constructElementIdentifier(events[i].evt_data.path) +
@@ -408,7 +510,14 @@ function simulateNextStep() {
             }, events[i].time-events[i-1].time, events, i);
             break;
         case 'select':
-            simulateEvent(";", i); // TODO - emulate Text Select
+            if (all_settings.simulateselect) {
+            simulateEvent("$('" + node.userData.evt_data.csspath + "').select();", i); // TODO - emulate Text Select
+			} else {
+				simulation_log.push({
+                    index: i,
+                    error: false
+                });
+			}
             break;
         default:
             console.log("Unknown event type: " + events[i].evt);
