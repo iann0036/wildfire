@@ -11,6 +11,11 @@ var mappingData = {
         event_type: 'End Recording',
         icon: 'winner-runner-arriving-to-end-line.png'
     },
+    /*setvar: {
+        bgColor: '#4988CF',
+        event_type: 'Set Variable',
+        icon: 'variable.png'
+    },*/
     click: {
         bgColor: '#556270',
         event_type: 'Mouse Click',
@@ -299,27 +304,27 @@ function readableEventDetail(event) {
             break;
         case 'mousedown':
             event_type = "Mouse Down";
-            event_data = "Began clicking at coordinates (" + event.evt_data.clientX + "," + event.evt_data.clientY + ")";
+            event_data = "Began clicking at coordinates (" + (event.evt_data.clientX || "0") + "," + (event.evt_data.clientY || "0")+ ")";
             minorEvent = false;
             break;
         case 'mouseup':
             event_type = "Mouse Up";
-            event_data = "Finished clicking at coordinates (" + event.evt_data.clientX + "," + event.evt_data.clientY + ")";
+            event_data = "Finished clicking at coordinates (" + (event.evt_data.clientX || "0") + "," + (event.evt_data.clientY || "0") + ")";
             minorEvent = false;
             break;
         case 'mouseover':
             event_type = "Mouse Over";
-            event_data = "Moused over an element at coordinates (" + event.evt_data.clientX + "," + event.evt_data.clientY + ")";
+            event_data = "Moused over an element at coordinates (" + (event.evt_data.clientX || "0") + "," + (event.evt_data.clientY || "0") + ")";
             minorEvent = false;
             break;
         case 'mouseout':
             event_type = "Mouse Out";
-            event_data = "Moved mouse out of element at coordinates (" + event.evt_data.clientX + "," + event.evt_data.clientY + ")";
+            event_data = "Moved mouse out of element at coordinates (" + (event.evt_data.clientX || "0") + "," + (event.evt_data.clientY || "0") + ")";
             minorEvent = false;
             break;
         case 'click':
             event_type = "Mouse Clicked";
-            event_data = "Clicked at coordinates (" + event.evt_data.clientX + "," + event.evt_data.clientY + ")";
+            event_data = "Clicked at coordinates (" + (event.evt_data.clientX || "0") + "," + (event.evt_data.clientY || "0") + ")";
             minorEvent = false;
             break;
         case 'select':

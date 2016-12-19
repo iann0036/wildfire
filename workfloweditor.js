@@ -4,10 +4,16 @@ var nodes = [];
 var figure;
 var gridPolicy;
 
+var link_types = [
+  "timer",
+  "wait_for_element",
+  "wait_for_title"
+]
+
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
     return;
-  if (figure.userData.evt != "timer" && figure.userData.evt != "wait_for_element")
+  if ($.inArray(figure.userData.evt,link_types)==-1)
     figure.resetPorts();
   canvas.remove(figure);
   canvas.setCurrentSelection(null);
@@ -15,16 +21,25 @@ function deleteSelection() {
 $('#workflowToolbarDelete').click(function(){deleteSelection();});
 $('#deleteButtonSidepanel').click(function(){deleteSelection();});
 
+function escapeOrDefault(value, defaultval) {
+  if (value) {
+    if (isNaN(value))
+      return value.replace(/\"/g,'&quot;');
+    return value;
+  }
+  return defaultval;
+}
+
 function getEventOptionsHtml(userdata) {
   if (userdata.evt == "scroll") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scrollLeftEnd\">Scroll To</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollLeftEnd\" id=\"event_scrollLeftEnd\" value=\"" + (userdata.evt_data.scrollLeftEnd || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollLeftEnd\" id=\"event_scrollLeftEnd\" value=\"" + escapeOrDefault(userdata.evt_data.scrollLeftEnd,"0") + "\">" +
     "    </div>" +
     "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollTopEnd\" id=\"event_scrollTopEnd\" value=\"" + (userdata.evt_data.scrollTopEnd || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollTopEnd\" id=\"event_scrollTopEnd\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTopEnd,"0") + "\">" +
     "    </div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_scrollTime\">Scroll Time</label>" +
     "    <div class=\"input-group\">" +
@@ -36,25 +51,25 @@ function getEventOptionsHtml(userdata) {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + (userdata.evt_data.clientX || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
     "    </div>" +
     "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + (userdata.evt_data.clientY || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
     "    </div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "focusin" || userdata.evt == "focusout" || userdata.evt == "submit" || userdata.evt == "select") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath.replace(/\"/g,'&quot;')|| "") + "\">" +
     "    <br />" +
     "</div>";
   } else if (userdata.evt == "input" || userdata.evt == "dataentry" || userdata.evt == "change") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + (userdata.evt_data.value || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + escapeOrDefault(userdata.evt_data.value,"") + "\">" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "keydown" || userdata.evt == "keyup" || userdata.evt == "keypress") {
     var chars = "";
@@ -89,16 +104,23 @@ function getEventOptionsHtml(userdata) {
     chars +
     "    </select>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + (userdata.evt_data.csspath || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "purgecookies") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"searchterm\">Domain Search Term</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + (userdata.evt_data.searchterm || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + escapeOrDefault(userdata.evt_data.searchterm,"") + "\">" +
+    "    <br />" +
+    "</div>";
+  } else if (userdata.evt == "setvar") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"var\">Variable</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"var\" id=\"var\" value=\"" + escapeOrDefault(userdata.evt_data.var,"") + "\">" +
+    "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"expr\">Value / Expression</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"expr\" id=\"expr\" value=\"" + escapeOrDefault(userdata.evt_data.expr,"") + "\">" +
     "    <br />" +
     "</div>";
   } else if (userdata.evt == "tabchange") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + (userdata.evt_data.url || "about:blank") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"about:blank") + "\">" +
     "    <br />" +
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
@@ -112,13 +134,13 @@ function getEventOptionsHtml(userdata) {
     "        <option value=\"socks5\">SOCKS5</option>" +
     "    </select>" +
     "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_host\">Host</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"host\" id=\"event_host\" value=\"" + (userdata.evt_data.host || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"host\" id=\"event_host\" value=\"" + escapeOrDefault(userdata.evt_data.host,"") + "\">" +
     "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_port\">Port</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"port\" id=\"event_port\" value=\"" + (userdata.evt_data.port || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"port\" id=\"event_port\" value=\"" + escapeOrDefault(userdata.evt_data.port,"") + "\">" +
     "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_username\">Username</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"username\" id=\"event_username\" value=\"" + (userdata.evt_data.username || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"username\" id=\"event_username\" value=\"" + escapeOrDefault(userdata.evt_data.username,"") + "\">" +
     "</div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_password\">Password</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"password\" id=\"event_password\" value=\"" + (userdata.evt_data.password || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"password\" id=\"event_password\" value=\"" + escapeOrDefault(userdata.evt_data.password,"") + "\">" +
     "</div><br />";
   } else if (userdata.evt == "recaptcha") {
     return "";
@@ -133,7 +155,11 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "wait_for_element") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_csspath\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_csspath\" value=\"" + (userdata.csspath || "") + "\">" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_csspath\" value=\"" + escapeOrDefault(userdata.csspath,"") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "wait_for_title") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_title\">Title</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_title\" value=\"" + escapeOrDefault(userdata.title,"") + "\">" +
     "</div>";
   }
 
@@ -146,7 +172,7 @@ function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
   $('#sidePanelTypeSelect').html('');
 
-  if (figure.userData.evt != "timer" && figure.userData.evt != "wait_for_element") {
+  if ($.inArray(figure.userData.evt,link_types)==-1) {
     $('#sidePanelTitle').text("Event Properties");
     $('#sidePanelTypeSelect').removeAttr('disabled');
     if (figure.userData.evt == "begin_recording") {
@@ -172,12 +198,20 @@ function selectedFigure(figure) {
     if (figure.userData.evt == "wait_for_element")
       $('#sidePanelTypeSelect').html(
         '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-        '<option selected="selected" value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
+        '<option selected="selected" value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
+        '<option value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
+      ).selectpicker('refresh');
+    else if (figure.userData.evt == "wait_for_title")
+      $('#sidePanelTypeSelect').html(
+        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
+        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
+        '<option selected="selected" value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
       ).selectpicker('refresh');
     else if (figure.userData.evt == "timer")
       $('#sidePanelTypeSelect').html(
-        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>'
+        '<option selected="selected" value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
+        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
+        '<option value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
       ).selectpicker('refresh');
   }
 
@@ -194,7 +228,7 @@ function changeType() {
     var userData = figure.userData;
     userData.evt = $('#sidePanelTypeSelect').val();
 
-    if (userData.evt != "timer" && userData.evt != "wait_for_element") {
+    if ($.inArray(userData.evt,link_types)==-1) {
       figure.resetChildren();
       figure.setBackgroundColor(mappingData[userData.evt].bgColor);
       var CustomIcon = draw2d.SetFigure.extend({
@@ -222,6 +256,11 @@ function setDetailListeners() {
   $('#event_detail_timer').change(function(){
     var userData = figure.userData;
     userData['wait_time'] = $('#event_detail_timer').val() * 1000;
+    figure.setUserData(userData);
+  });
+  $('#event_detail_title').change(function(){
+    var userData = figure.userData;
+    userData['title'] = $('#event_detail_title').val();
     figure.setUserData(userData);
   });
   $('#event_detail_csspath').change(function(){

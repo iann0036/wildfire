@@ -6,7 +6,7 @@ var CustomPending;
 var CustomStop;
 var node;
 
-var waitForElementInterval;
+var waitForElementInterval, waitForTitleInterval;
 var CustomTracker = [];
 
 var CustomNode, CustomArrow;
@@ -515,6 +515,26 @@ function execEvent() {
     return runCode(code);
 }
 
+function waitForTitle(resolve, expected_title, returnvar) {
+    waitForTitleInterval = setInterval(function(){
+        var activeTab = 0;
+        chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+            for (var i=0; i<tabs.length; i++) {
+                if (tabs[i].active)
+                    activeTab = i;
+            }
+            chrome.tabs.executeScript(tabs[activeTab].id,{
+                code: "document.title",
+                frameId: 0, // TODO - frame support
+                matchAboutBlank: true
+            }, function(results){
+                if (results[0] && results[0]==expected_title)
+                    resolve(returnvar);
+            });
+        });
+    }, 100);
+}
+
 function waitForElement(resolve, csspath, returnvar) {
     waitForElementInterval = setInterval(function(){
         var activeTab = 0;
@@ -565,6 +585,8 @@ function processEvent() {
                             setTimeout(resolve, nodeConnections[i].userData.wait_time, nodeConnections[i]);
                         } else if (nodeConnections[i].userData.evt == "wait_for_element") {
                             waitForElement(resolve, nodeConnections[i].userData.csspath, nodeConnections[i]);
+                        } else if (nodeConnections[i].userData.evt == "wait_for_title") {
+                            waitForTitle(resolve, nodeConnections[i].userData.title, nodeConnections[i]);
                         } else {
                             reject();
                         }
@@ -584,6 +606,7 @@ function processEvent() {
         Promise.race(nodeConnectionPromises)
         .then(function(winning_link) {
             clearInterval(waitForElementInterval);
+            clearInterval(waitForTitleInterval);
             if (!terminated) {
                 var custom = new CustomTick();
                 CustomTracker.push(custom);
@@ -616,6 +639,8 @@ function processEvent() {
                             setTimeout(resolve, nodeConnections[i].userData.wait_time, nodeConnections[i]);
                         } else if (nodeConnections[i].userData.evt == "wait_for_element") {
                             waitForElement(resolve, nodeConnections[i].userData.csspath, nodeConnections[i]);
+                        } else if (nodeConnections[i].userData.evt == "wait_for_title") {
+                            waitForTitle(resolve, nodeConnections[i].userData.title, nodeConnections[i]);
                         } else {
                             reject();
                         }
@@ -634,6 +659,7 @@ function processEvent() {
         Promise.race(nodeConnectionPromises)
         .then(function(winning_link) {
             clearInterval(waitForElementInterval);
+            clearInterval(waitForTitleInterval);
             if (!terminated) {
                 var custom = new CustomCross();
                 CustomTracker.push(custom);

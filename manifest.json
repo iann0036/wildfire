@@ -1,7 +1,7 @@
 {
   "name": "Wildfire",
   "short_name": "Wildfire",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "manifest_version": 2,
   "author": "wildfire.ai",
   "description": "A Chrome extension to automate your life.",
