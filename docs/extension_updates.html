@@ -32,14 +32,12 @@
     <![endif]-->
     <link rel="stylesheet" href="/theme/css/lib/font-awesome/font-awesome.min.css">
     <link rel="stylesheet" href="/theme/css/lib/bootstrap-sweetalert/sweetalert.css"/>
-    <link rel="stylesheet" href="/theme/css/separate/vendor/bootstrap-select/bootstrap-select.min.css">
     <link rel="stylesheet" href="/theme/css/main.css">
     <link rel="stylesheet" href="/theme/css/custom.css">
 </head>
 
-<body class="horizontal-navigation" style="background-color: #ffffff">
+<body class="horizontal-navigation with-side-menu">
 <input id="eventfileContainer" accept=".WFIRE" type="file" style="display: none;" />
-<input id="simfileContainer" accept=".WFSIM" type="file" style="display: none;" />
 
 <header class="site-header">
     <div class="container-fluid">
@@ -83,99 +81,125 @@
 <div class="mobile-menu-left-overlay"></div>
 <ul class="main-nav nav nav-inline">
     <li class="nav-item">
-        <a class="nav-link" href="dashboard.html">Dashboard</a>
+        <a class="nav-link" href="/dashboard.html">Dashboard</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="simulationlog.html">Simulation Log</a>
+        <a class="nav-link" href="/simulationlog.html">Simulation Log</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="eventlog.html">Event Log</a>
+        <a class="nav-link" href="/eventlog.html">Event Log</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link active" href="workfloweditor.html">Workflow Editor</a>
+        <a class="nav-link" href="/workfloweditor.html">Workflow Editor</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="settings.html">Settings</a>
+        <a class="nav-link" href="/settings.html">Settings</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/docs/index.html">Docs</a>
+        <a class="nav-link active" href="/docs/index.html">Docs</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="about.html">About</a>
+        <a class="nav-link" href="/about.html">About</a>
     </li>
 </ul>
 
-<div style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;">
-    <div id="graph"></div>
-</div>
-<div class="form-group" style="right: 0px; padding-top: 136px; margin: 16px; float: right; position: absolute;">
-    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar">
-        <div class="btn-group" role="group" aria-label="Event Actions">
-            <button id="workflowToolbarAddNode" type="button" class="btn btn-default-outline"><i class="fa fa-plus-square-o"></i></button>
-            <!--<button type="button" class="btn btn-default-outline"><i class="fa fa-copy"></i></button>-->
-            <button id="workflowToolbarDelete" type="button" class="btn btn-default-outline"><i class="fa fa-trash-o"></i></button>
-        </div>
-        <div class="btn-group" role="group" aria-label="Workflow Actions">
-            <button id="workflowToolbarInitSimulation" type="button" class="btn btn-default-outline"><i class="fa fa-play-circle-o"></i></button>
-            <button id="workflowToolbarNew" type="button" class="btn btn-default-outline"><i class="fa fa-file-o"></i></button>
-            <button id="workflowToolbarImport" type="button" class="btn btn-default-outline"><i class="fa fa-folder-open-o"></i></button>
-            <button id="workflowToolbarSave" type="button" class="btn btn-default-outline"><i class="fa fa-save"></i></button>
-            <button id="workflowToolbarExportImage" type="button" class="btn btn-default-outline"><i class="fa fa-picture-o"></i></button>
-            <!--<button type="button" class="btn btn-default-outline"><i class="fa fa-cog"></i></button>-->
-        </div>
-    </div>
-</div>
-<div style="padding-top: 136px; width: 300px; float: left; position: absolute;">
-    <div class="container-fluid" style="padding-top: 20px;">
-        <section id="workflowsidepanel" class="card card-default" style="display: none;">
-            <header class="card-header">
-                <span id="sidePanelTitle">Event Properties</span>
-                <button id="nodeLinkPanelX" type="button" class="modal-close">
-                    <i class="font-icon-close-2"></i>
-                </button>
+<nav class="side-menu" style="z-index: 5; padding-top: 160px; padding-bottom: 0;">
+<section>
+    <header class="side-menu-title">Documentation</header>
+    <ul class="side-table-of-contents">
+        <li>Introduction
+            <ul>
+                <li><a href="/docs/how_wildfire_works.html">How Wildfire Works</a></li>
+                <li><a href="/docs/extension_updates.html">Extension Updates</a></li>
+                <li><a href="/docs/getting_support.html">Getting Support</a></li>
+            </ul>
+        </li>
+        <li>Using Wildfire
+            <ul>
+                <li><a href="/docs/getting_started.html">Getting Started</a></li>
+                <li><a href="/docs/event_log.html">Event Log</a></li>
+                <li><a href="/docs/simulation_log.html">Simulation Log</a></li>
+                <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
+                <li><a href="/docs/settings.html">Settings</a></li>
+            </ul>
+        </li>
+        <li>Events Reference
+            <ul>
+                <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
+                <li><a href="/docs/end_recording.html">End Recording</a></li>
+                <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
+                <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
+                <li><a href="/docs/data_input.html">Data Input</a></li>
+                <li><a href="/docs/data_entry.html">Data Entry</a></li>
+                <li><a href="/docs/change.html">Change</a></li>
+                <li><a href="/docs/element_focus.html">Element Focus</a></li>
+                <li><a href="/docs/element_unfocus.html">Element Unfocus</a></li>
+                <li><a href="/docs/key_down.html">Key Down</a></li>
+                <li><a href="/docs/key_up.html">Key Up</a></li>
+                <li><a href="/docs/key_press.html">Key Press</a></li>
+                <li><a href="/docs/purge_cookies.html">Purge Cookies</a></li>
+                <li><a href="/docs/set_proxy_settings.html">Set Proxy Settings</a></li>
+                <li><a href="/docs/form_submit.html">Form Submit</a></li>
+                <li><a href="/docs/text_select.html">Text Select</a></li>
+                <li><a href="/docs/page_scroll.html">Page Scroll</a></li>
+                <li><a href="/docs/mouse_down.html">Mouse Down</a></li>
+                <li><a href="/docs/mouse_up.html">Mouse Up</a></li>
+                <li><a href="/docs/mouse_over.html">Mouse Over</a></li>
+                <li><a href="/docs/mouse_out.html">Mouse Out</a></li>
+                <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
+                <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
+                <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
+                <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
+            </ul>
+        </li>
+        <li>Links Reference
+            <ul>
+                <li><a href="/docs/timer.html">Timer</a></li>
+                <li><a href="/docs/wait_for_element.html">Wait For Element</a></li>
+                <li><a href="/docs/wait_for_title.html">Wait For Title</a></li>
+            </ul>
+        </li>
+        <li>Wildfire Cloud
+            <ul>
+                <li><a href="/docs/overview.html">Overview</a></li>
+            </ul>
+        </li>
+    </ul>
+</section>
+</nav><!--.side-menu-->
+
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="box-typical box-typical-padding documentation">
+            <header class="documentation-header">
+                <h2>Extension Updates</h2>
+                <!--<p class="lead color-blue-grey">XXXXX</p>-->
+                <div class="documentation-header-by">
+                    Last Updated: December 20, 2016
+                </div>
             </header>
-            <div class="card-block" style="min-height: 120px;">
-                <p class="card-text">
-                    <label class="form-label semibold" for="sidePanelTypeSelect">Type</label>
-                    <select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
-                    </select><br /><br />
-                    <span id="sidePanelEventDetails"></span>
-                    <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
+            <div class="text-block text-block-typical">
+                <p>
+                    Documentation for this page is not yet ready. Come back real soon!
                 </p>
+                <hr style="margin-bottom: 1rem;" />
+                <p style="float: left;"><a href="/docs/how_wildfire_works.html">&#8656; How Wildfire Works</a></p>
+                <p style="float: right;"><a href="/docs/getting_support.html">Getting Support &#8658;</a></p>
             </div>
-        </section>
-    </div>
-</div>
+        </div><!--.box-typical-->
+    </div><!--.container-fluid-->
+</div><!--.page-content-->
 
 <script src="/theme/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
 <script src="/theme/js/lib/jquery/jquery.min.js"></script>
 <script src="/theme/js/lib/tether/tether.min.js"></script>
 <script src="/theme/js/lib/bootstrap/bootstrap.min.js"></script>
 <script src="/theme/js/plugins.js"></script>
+<script src="/theme/js/lib/pnotify/pnotify.js"></script>
 
 <script src="/theme/js/app.js"></script>
 <script src="/aes.js"></script>
-
-<script src="/draw2d/lib/shifty.js"></script>
-<script src="/draw2d/lib/raphael.js"></script>
-<script src="/draw2d/jquery-ui-1.10.4.custom.js"></script>
-<script src="/draw2d/lib/jquery.autoresize.js"></script>
-<script src="/draw2d/lib/jquery-touch_punch.js"></script>
-<script src="/draw2d/lib/jquery.contextmenu.js"></script>
-<script src="/draw2d/lib/rgbcolor.js"></script>
-<script src="/draw2d/lib/canvg.js"></script>
-<script src="/draw2d/lib/Class.js"></script>
-<script src="/draw2d/lib/json2.js"></script>
-<script src="/draw2d/lib/pathfinding-browser.min.js"></script>
-<script src="/draw2d/src/draw2d.js"></script>
-
-<script src="/theme/js/lib/bootstrap-select/bootstrap-select.min.js"></script>
-
-<script src="/exprparse.js"></script>
-<script src="/log_helper.js"></script>
-<script src="/workfloweditor.js"></script>
-
+<script src="/dashboard.js"></script>
 <script src="/app.js"></script>
-<script src="/workflow-simulate.js"></script>
 </body>
-</html>
+</html
