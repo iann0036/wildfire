@@ -116,7 +116,7 @@
         </li>
         <li>Using Wildfire
             <ul>
-                <li><a class="active" href="/docs/getting_started.html">Getting Started</a></li>
+                <li><a href="/docs/getting_started.html">Getting Started</a></li>
                 <li><a href="/docs/event_log.html">Event Log</a></li>
                 <li><a href="/docs/simulation_log.html">Simulation Log</a></li>
                 <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
@@ -129,7 +129,7 @@
                 <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
-                <li><a href="/docs/data_input.html">Data Input</a></li>
+                <li><a class="active" href="/docs/data_input.html">Data Input</a></li>
                 <li><a href="/docs/data_entry.html">Data Entry</a></li>
                 <li><a href="/docs/change.html">Change</a></li>
                 <li><a href="/docs/element_focus.html">Element Focus</a></li>
@@ -172,38 +172,43 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Getting Started</h2>
+                <h2>Data Input</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
                     Last Updated: December 20, 2016
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p>
-                    If this is your first time using Wildfire, you'll be seeing this documentation immediately after installing the Chrome extension. Thanks for trying us out!
+                <p style="margin-bottom: 2rem;">
+                    This event simulates the click of the left-mouse button on the CSS selector and position specified.
                 </p>
-                <p>
-                    You'll now have this icon in your Chrome interface:
-                </p>
-                <p><img style="padding-top: 8px; padding-bottom: 8px;" src="/docs/getting_started_1.png" /></p>
-                <p>
-                    Clicking this icon will show a small popup with a <b>Start Recording</b> button, and a <b>Go To Dashboard</b> link.
-                </p>
-                <p><img style="padding-top: 8px; padding-bottom: 8px; max-width: 288px; height: auto;" src="/docs/getting_started_2.png" /><p>
-                <blockquote class="blockquote" style="margin-top: 1rem;margin-right: 0px;margin-bottom: 2rem;margin-left: 0px;">
-                    <p style="margin-bottom: 0;">For reference, you can get back to this page by opening this popup, clicking the <b>Go To Dashboard</b> link and then clicking the <b>Docs</b> link. From there, you should see the link to this Getting Started page.</p>
-                </blockquote>
-                <h4>Making a Recording</h4>
-                <p>
-                    Let's open that popup and click the <b>Start Recording</b> button. If you see the red recording icon has replaced the Wildfire logo, you're recording. Any actions you take from this time will be recorded until you stop recording. Generally, we recommend you immediately open a new tab to start your work so you can ensure it's a clean recording. There's no other things to worry about until you're ready to stop recording.
-                </p>
-                <p><img style="padding-top: 8px; padding-bottom: 8px; max-width: 288px; height: auto;" src="/docs/getting_started_3.png" /></p>
-                <p>
-                    To stop recording, click the red recording icon which will produce another small popup, but this time you'll have the option to <b>Stop Recording</b>. When you stop recording, Wildfire will immediately open the <a href="/docs/event_log.html">Event Log</a> page so you can review your recorded events.
-                </p>
+                <h4>Data Input</h4>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Value</strong><br />
+                            <span class="color-blue-grey-lighter">optional</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The X and Y coordinate values relative to the element. They should be any non-negative whole number. If you're unsure, setting both to <code>0</code> is a safe option.</p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>CSS Selector</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The CSS Selector for the element.</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/getting_support.html">&#8656; Getting Support</a></p>
-                <p style="float: right;"><a href="/docs/event_log.html">Event Log &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/end_recording.html">&#8656; End Recording</a></p>
+                <p style="float: right;"><a href="/docs/change_tabs.html">Change Tabs &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

@@ -188,3 +188,27 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 		});
 	}
 });
+
+chrome.runtime.onInstalled.addListener(function(details){
+	var windowWidth = 1280;
+	var windowHeight = 800;
+
+    if (details.reason == "install") {
+        chrome.windows.create({
+			url: "docs/getting_started.html",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
+    } else if (details.reason == "update") {
+        var thisVersion = chrome.runtime.getManifest().version;
+        chrome.notifications.create("",{
+            type: "basic",
+            title: "Wildfire",
+            message: "The Wildfire extension has been updated",
+            iconUrl: "icon-128.png"
+        });
+    }
+});

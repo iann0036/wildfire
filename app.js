@@ -577,7 +577,7 @@ function runSimulation() {
 
                 timeoutObject = setTimeout(function() {
                     terminateSimulation(false, "Global run timeout");
-                }, 600000); // 10 minutes
+                }, 3600000); // 1 hour
 				
 				chrome.windows.onRemoved.addListener(closeListenerCallback);
 

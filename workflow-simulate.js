@@ -706,7 +706,7 @@ function beginWorkflowSimulation() {
                 CustomTracker.push(custom);
                 node.add(custom, new draw2d.layout.locator.CenterLocator(node));
                 terminateSimulation(false, "Global run timeout"); // TODO: Check
-            }, 600000); // 10 minutes
+            }, 3600000); // 1 hour
             
             chrome.windows.onRemoved.addListener(closeListenerCallbackWorkflow); // TODO: Check
 
