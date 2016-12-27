@@ -43,7 +43,7 @@ function getEventOptionsHtml(userdata) {
     "    </div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_scrollTime\">Scroll Time</label>" +
     "    <div class=\"input-group\">" +
-    "        <input type=\"text\" class=\"form-control\" data-event-detail=\"scrollTime\" id=\"event_scrollTime\" value=\"" + (userdata.evt_data.scrollTime/1000) + "\">" +
+    "        <input type=\"text\" class=\"form-control\" data-event-detail=\"scrollTime\" id=\"event_scrollTime\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTime/1000,"0") + "\">" +
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
@@ -108,7 +108,7 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "purgecookies") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"searchterm\">Domain Search Term</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + escapeOrDefault(userdata.evt_data.searchterm,"") + "\">" +
+    "    <input type=\"text\" required class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + escapeOrDefault(userdata.evt_data.searchterm,"example.com") + "\">" +
     "    <br />" +
     "</div>";
   } else if (userdata.evt == "setvar") {
@@ -146,10 +146,10 @@ function getEventOptionsHtml(userdata) {
     return "";
   } else if (userdata.evt == "timer" || userdata.evt === undefined) {
     if (userdata.wait_time === undefined)
-      userdata.wait_time = 0;
+      userdata.wait_time = 0; // TODO probably not necessary with the escapeOrDefault
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_timer\">Timer</label>" +
     "    <div class=\"input-group\">" +
-    "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + (userdata.wait_time/1000) + "\">" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + escapeOrDefault(userdata.wait_time/1000,"0") + "\">" +
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
