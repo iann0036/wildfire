@@ -179,11 +179,31 @@
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p>
+                <p style="margin-bottom: 2rem;">
                     The Workflow Editor allows you to construct custom workflows for which to simulate events.
                 </p>
+                <h4>Components</h4>
+                <p style="padding-left: 4%;">
+                    <strong>1.</strong>&nbsp;&nbsp;An event within the workflow<br />
+                    <strong>2.</strong>&nbsp;&nbsp;A link within the workflow<br />
+                    <strong>3.</strong>&nbsp;&nbsp;The type of event to be simulated<br />
+                    <strong>4.</strong>&nbsp;&nbsp;Various fields relating to the type of event<br />
+                    <strong>5.</strong>&nbsp;&nbsp;Button to remove event or link from the workflow<br />
+                    <strong>6.</strong>&nbsp;&nbsp;Actions for the workflow (see below)
+                </p>
                 <p>
-                    <img src="/docs/workflow_editor_1.png" style="padding-top: 8px; padding-bottom: 8px; width: 100%;" />
+                    <img src="/docs/workflow_editor_1_x.png" style="padding-top: 8px; padding-bottom: 8px; width: 100%;" />
+                </p>
+                <h4>Workflow Actions</h4>
+                <p style="padding-left: 4%;">
+                    <i class="fa fa-plus-square-o"></i>&nbsp;&nbsp;<strong>Add Node</strong>&nbsp;-&nbsp;Adds an End Simulation node to the center of the workflow<br />
+                    <i class="fa fa-trash-o"></i>&nbsp;&nbsp;<strong>Delete Node/Link</strong>&nbsp;-&nbsp;Removes the selected node(s) / link(s) from the workflow<br />
+                    <i class="fa fa-play-circle-o"></i>&nbsp;&nbsp;<strong>Execute Simulation</strong>&nbsp;-&nbsp;Begin a simulation of the workflow<br />
+                    <i class="fa fa-file-o"></i>&nbsp;&nbsp;<strong>New Workflow</strong>&nbsp;-&nbsp;Clears the workflow and regenerates from the Event Log<br />
+                    <i class="fa fa-folder-open-o"></i>&nbsp;&nbsp;<strong>Import Workflow</strong>&nbsp;-&nbsp;Imports a previously exported workflow data file<br />
+                    <i class="fa fa-save"></i>&nbsp;&nbsp;<strong>Export Workflow</strong>&nbsp;-&nbsp;Saves a file with the workflow data that can be imported<br />
+                    <i class="fa fa-picture-o"></i>&nbsp;&nbsp;<strong>Generate Workflow PNG</strong>&nbsp;-&nbsp;Generates and initiates the download of an image of the workflow
+                    
                 </p>
                 <hr style="margin-bottom: 1rem;" />
                 <p style="float: left;"><a href="/docs/simulation_log.html">&#8656; Simulation Log</a></p>

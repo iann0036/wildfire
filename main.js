@@ -204,11 +204,11 @@ chrome.runtime.onInstalled.addListener(function(details){
 		});
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;
-        chrome.notifications.create("",{
+        /*chrome.notifications.create("",{
             type: "basic",
             title: "Wildfire",
             message: "The Wildfire extension has been updated",
             iconUrl: "icon-128.png"
-        });
+        });*/
     }
 });
