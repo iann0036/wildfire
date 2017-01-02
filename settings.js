@@ -72,6 +72,10 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-custom-submit').click();
     if (all_settings.runminimized)
         $('#setting-run-minimized').click();
+    if (all_settings.incognito)
+        $('#setting-incognito').click();
+    if (all_settings.rightclick)
+        $('#setting-rightclick').click();
     if (all_settings.account != "" && all_settings.account !== undefined) {
         $('#setting-account').html(all_settings.account);
         $('#setting-account').parent().append("&nbsp;&nbsp;<a id='unlinkButton' href='#'>Unlink</a>");
@@ -224,8 +228,197 @@ $('#setting-run-minimized').change(function() {
     all_settings.runminimized = $(this).is(":checked");
     updateSettings();
 });
-$('#setting-flush-database').click(function(e) {
+$('#setting-incognito').change(function() {
+    all_settings.incognito = $(this).is(":checked");
+    updateSettings();
+});
+$('#setting-rightclick').change(function() {
+    all_settings.rightclick = $(this).is(":checked");
+    updateSettings();
+});
+$('#setting-flush-simulation-log').click(function(e) {
 	e.preventDefault();
 	$(this).attr('disabled','disabled');
-    chrome.storage.local.set({simulations: []});
+    chrome.storage.local.set({simulations: []},function(){
+        calculateUsage();
+    });
 });
+$('#setting-flush-favorites').click(function(e) {
+	e.preventDefault();
+	$(this).attr('disabled','disabled');
+    chrome.storage.local.set({favorites: []},function(){
+        populateFavoritesTable();
+        calculateUsage();
+    });
+});
+$('#setting-flush-event-log-workflow').click(function(e) {
+	e.preventDefault();
+	$(this).attr('disabled','disabled');
+    chrome.storage.local.remove('workflow',function(){
+        chrome.storage.local.remove('events',function(){
+            calculateUsage();
+        });
+    });
+});
+$('#setting-reset-wildfire').click(function(e) {
+	e.preventDefault();
+    chrome.storage.local.clear(function(){
+        chrome.runtime.reload();
+    });
+});
+
+chrome.extension.isAllowedIncognitoAccess(function(isAllowedIncognito) {
+    if (!isAllowedIncognito) {
+        $('#setting-incognito').attr('disabled','disabled');
+        $('#incognito-warning').attr('style','');
+    }
+});
+
+function bytesReadable(bytes) {
+    if (bytes > 1024*1024*1024)
+        return (bytes/(1024*1024*1024)).toFixed(2) + " GB";
+    if (bytes > 1024*1024)
+        return (bytes/(1024*1024)).toFixed(2) + " MB";
+    if (bytes > 1024)
+        return (bytes/1024).toFixed(2) + " KB";
+    return bytes + " B";
+}
+
+function calculateUsage() {
+    chrome.storage.local.getBytesInUse('workflow',function(workflow_usage){
+        $('#workflow-editor-usage').text(bytesReadable(workflow_usage));
+        chrome.storage.local.getBytesInUse('events',function(events_usage){
+            $('#event-log-usage').text(bytesReadable(events_usage));
+            chrome.storage.local.getBytesInUse('simulations',function(simulations_usage){
+                $('#simulation-log-usage').text(bytesReadable(simulations_usage));
+                chrome.storage.local.getBytesInUse('favorites',function(favorites_usage){
+                    $('#favorites-usage').text(bytesReadable(favorites_usage));
+                    chrome.storage.local.getBytesInUse([
+                        'settings',
+                        'recording',
+                        'simulating'
+                    ],function(metadata_usage){
+                        $('#metadata-usage').text(bytesReadable(metadata_usage));
+
+                        $('#total-usage').text(bytesReadable(
+                            workflow_usage +
+                            events_usage +
+                            simulations_usage +
+                            favorites_usage +
+                            metadata_usage
+                        ));
+
+                        $('#usage-chart').html(""); // clear chart if already exists
+
+                        c3.generate({
+                            bindto: '#usage-chart',
+                            data: {
+                                columns: [
+                                    ['Workflow', workflow_usage],
+                                    ['Events', events_usage],
+                                    ['Simulations', simulations_usage],
+                                    ['Favorites', favorites_usage],
+                                    ['Metadata', metadata_usage],
+                                ],
+                                colors: {
+                                    Workflow: '#fa424a',
+                                    Events: '#46c35f',
+                                    Simulations: '#fdad2a',
+                                    Favorites: '#00a8ff',
+                                    Metadata: '#ac6bec'
+                                },
+                                type : 'donut'
+                            },
+                            size: {
+                                width: 156,
+                                height: 180
+                            },
+                            label: {
+                                show: false
+                            },
+                            legend: {
+                                hide: true
+                            },
+                            tooltip: {
+                                show: false
+                            }
+                        });
+                        d3.selectAll("text").text("")
+                    });
+                });
+            });
+        });
+    });
+}
+
+calculateUsage();
+
+function formatDate(date) {
+	var seconds = Math.floor((new Date() - date) / 1000);
+    var interval = Math.floor(seconds / 31536000);
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+        return date.toString();
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+        return interval + " days ago";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+        return interval + " hours ago";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 2) {
+        return interval + " minutes ago";
+    }
+	if (interval > 0.85) {
+		return "a minute ago";
+	}
+    return "just now";
+}
+
+function populateFavoritesTable() {
+    chrome.storage.local.get('favorites', function (result) {
+        var favorites = result.favorites;
+        if (!Array.isArray(favorites)) { // for safety only
+            favorites = [];
+        }
+
+        if (favorites.length < 1)
+            $('#favoritesTable').html('<tr><td colspan="4" style="text-align: center;">Nothing has been favorited yet!</td></tr>');
+        else
+            $('#favoritesTable').html("");
+
+        for (var i=0; i<favorites.length; i++) {
+            var innerHTML = "<tr>" +
+            "    <td>" + favorites[i].name + "</td>" +
+            "    <td>" +
+            "        <div class=\"checkbox-toggle\" style=\"margin-top: 8px; margin-bottom: 4px; margin-left: 36px;\">" +
+            "            <input type=\"checkbox\" id=\"check-toggle-" + (i+1) + "\"";
+            if (favorites[i].rightclick)
+                innerHTML += " checked";
+            innerHTML += ">" +
+            "            <label for=\"check-toggle-" + (i+1) + "\"></label>" +
+            "        </div>" +
+            "    </td>" +
+            "    <td>" + formatDate(favorites[i].time) + "</td>" +
+            "    <td>" +
+            "        <a href=\"#\" id=\"restoreFavorite" + (i+1) + "\">Restore</a>&nbsp;&nbsp;" +
+            "        <a href=\"#\" id=\"deleteFavorite" + (i+1) + "\">Delete</a>" +
+            "    </td>" +
+            "</tr>";
+
+            $('#favoritesTable').append(innerHTML);
+        }
+    });
+}
+
+populateFavoritesTable();
+
+if (window.location.hash == "#favorites") {
+    setTimeout(function(){
+        $('#favoritesTab').click();
+    },1);
+}

@@ -55,7 +55,9 @@ chrome.storage.local.get('settings', function (settings) {
         "simulatechange": true,
         "simulatescroll": true,
         "customsubmit": true,
-        "runminimized": false
+        "runminimized": false,
+        "incognito": false,
+        "rightclick": true
     };
     if (settings.settings != null)
         all_settings = $.extend(all_settings,settings.settings);
@@ -80,7 +82,7 @@ function updateEvents() {
 
 updateEvents();
 
-function downloadEventfile() {
+function downloadEventLog() {
     var text = encrypt(JSON.stringify(events));
     var filename = "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire";
 
@@ -155,6 +157,8 @@ function terminateSimulation(finished, reason) {
     chrome.windows.onRemoved.removeListener(closeListenerCallbackWorkflow);
     clearTimeout(timeoutObject);
     chrome.storage.local.set({proxy: {clear: true}});
+
+    chrome.browserAction.setBadgeText({ text: "" });
 
     if (all_settings.clearbrowsingdata) {
         chrome.browsingData.remove({
@@ -316,6 +320,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'scroll':
@@ -329,6 +336,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'mouseup':
@@ -345,6 +355,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'mouseover':
@@ -361,6 +374,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'mouseout':
@@ -377,6 +393,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'click':
@@ -387,6 +406,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'focusin':
@@ -397,6 +419,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'focusout':
@@ -407,6 +432,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'keydown':
@@ -421,6 +449,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'keyup':
@@ -435,6 +466,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'keypress':
@@ -449,16 +483,15 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'submit':
 			simulateEvent("simulate(" +
 				constructElementIdentifier(events[i].evt_data.path) +
 				",'submit', {});", i);
-            break;
-        case 'dataentry':
-			simulateEvent("$('" + events[i].evt_data.csspath + "').val('" +
-				events[i].evt_data.value.replace("'", "\\'") + "');", i);
             break;
         case 'change':
             if (all_settings.simulatechange) {
@@ -469,6 +502,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'input':
@@ -482,11 +518,19 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         case 'clipboard_cut':
-			simulateEvent(constructElementIdentifier(events[i].evt_data.path) +
-                        ".value = '';", i);
+			simulateEvent("document.execCommand('copy');window.getSelection().anchorNode.parentNode.value = '';", i);
+            break;
+        case 'clipboard_copy':
+			simulateEvent("document.execCommand('copy');", i);
+            break;
+        case 'clipboard_paste':
+			simulateEvent("document.execCommand('paste');", i);
             break;
         case 'tabchange':
             setTimeout(function(events, i) {
@@ -517,6 +561,9 @@ function simulateNextStep() {
                     index: i,
                     error: false
                 });
+                setTimeout(function(){
+                    simulateNextStep();
+                },1);
 			}
             break;
         default:
@@ -541,6 +588,9 @@ function runSimulation() {
 		stepIterator = 0;
 		terminated = false;
 
+        chrome.browserAction.setBadgeText({ text: "SIM" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: "#00CC66" });
+
         chrome.storage.local.get('events', function (result) {
             events = result.events;
 
@@ -552,36 +602,47 @@ function runSimulation() {
             /* Fast forward into first real step */
             events[0].time = events[1].time - 1000;
 
-            chrome.windows.create({
-                "url":"chrome-extension://" + chrome.runtime.id + "/new.html",
-                //"url":"https://wildfire.ai/",
-                "focused":true,
-                "left":0,
-                "top":0,
-                "width":1920,
-                "height":1080
-                //"type":"popup"
-            },function(simulation_window) {
-                new_window = simulation_window;
-                if (all_settings.runminimized) {
-                    chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
-                        state: "minimized"
-                    });
+            chrome.extension.isAllowedIncognitoAccess(function(isAllowedIncognito) {
+                var incognito = false;
+                if (all_settings.incognito && isAllowedIncognito) {
+                    incognito = true;
                 }
-				
-				chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-					for (var i=1; i<tabs.length; i++) {
-						chrome.tabs.remove(tabs[i].id);
-					}
-				});
 
-                timeoutObject = setTimeout(function() {
-                    terminateSimulation(false, "Global run timeout");
-                }, 3600000); // 1 hour
-				
-				chrome.windows.onRemoved.addListener(closeListenerCallback);
+                var url = "chrome-extension://" + chrome.runtime.id + "/new.html";
+                if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
+                    url = events[1].url;
+                }
 
-                simulateNextStep();
+                chrome.windows.create({
+                    "url":url,
+                    "focused":true,
+                    "left":0,
+                    "top":0,
+                    "width":1920,
+                    "height":1080,
+                    "incognito":incognito
+                },function(simulation_window) {
+                    new_window = simulation_window;
+                    if (all_settings.runminimized) {
+                        chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
+                            state: "minimized"
+                        });
+                    }
+                    
+                    chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                        for (var i=1; i<tabs.length; i++) {
+                            chrome.tabs.remove(tabs[i].id);
+                        }
+                    });
+
+                    timeoutObject = setTimeout(function() {
+                        terminateSimulation(false, "Global run timeout");
+                    }, 3600000); // 1 hour
+                    
+                    chrome.windows.onRemoved.addListener(closeListenerCallback);
+
+                    simulateNextStep();
+                });
             });
         });
     } else {
@@ -626,10 +687,10 @@ function decrypt(str) {
 document.getElementById('simulateButton').addEventListener('click', function() {
     runSimulation();
 });
-document.getElementById('downloadEventfileButton2').addEventListener('click', function() {
-    downloadEventfile();
+document.getElementById('downloadEventLogButton2').addEventListener('click', function() {
+    downloadEventLog();
 });
-document.getElementById('importEventfileButton').addEventListener('click', function() {
+document.getElementById('importEventLogButton').addEventListener('click', function() {
     $('#eventfileContainer').click();
 });
 document.getElementById('eventfileContainer').addEventListener('change', function() {
@@ -642,7 +703,7 @@ document.getElementById('eventfileContainer').addEventListener('change', functio
         chrome.notifications.create("",{
             type: "basic",
             title: "Wildfire",
-            message: "Eventfile Imported",
+            message: "Event Log Imported",
             iconUrl: "icon-128.png"
         });
     }

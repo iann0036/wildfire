@@ -373,10 +373,6 @@ function execEvent() {
                 "$('" + node.userData.evt_data.csspath + "')[0]" +
                 ",'submit', {});";
             break;
-        case 'dataentry':
-            code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                node.userData.evt_data.value.replace("'", "\\'") + "');";
-            break;
         case 'change':
             if (all_settings.simulatechange) {
             code = "$('" + node.userData.evt_data.csspath + "').val('" +
@@ -392,8 +388,13 @@ function execEvent() {
             }
             break;
         case 'clipboard_cut':
-            code = "$('" + node.userData.evt_data.csspath + "')[0]" +
-                        ".value = '';";
+            code = "document.execCommand('cut');";
+            break;
+        case 'clipboard_copy':
+            code = "document.execCommand('copy');";
+            break;
+        case 'clipboard_paste':
+            code = "document.execCommand('paste');";
             break;
         case 'purgecookies':
             return new Promise(function(resolve, reject) {
@@ -673,54 +674,82 @@ function processEvent() {
 }
 
 function beginWorkflowSimulation() {
+    if (events.length<3) {
+        swal({
+            title: "No events found",
+            text: "You haven't recorded any actions yet!",
+            type: "info",
+            showCancelButton: false,
+            cancelButtonClass: "btn-default",
+            confirmButtonClass: "btn-info",
+            confirmButtonText: "OK",
+            closeOnConfirm: true
+        });
+        return;
+    }
     sim_start_time = Date.now();
     terminated = false;
 
+    chrome.browserAction.setBadgeText({ text: "SIM" });
+    chrome.browserAction.setBadgeBackgroundColor({ color: "#00CC66" });
+
     chrome.windows.getCurrent(null, function(wildfirewindow){
-        chrome.windows.create({
-            "url":"chrome-extension://" + chrome.runtime.id + "/new.html",
-            "focused":true,
-            "left":0,
-            "top":0,
-            "width":1920,
-            "height":1080
-        }, function(simulation_window) {
-            new_window = simulation_window;
-            if (all_settings.runminimized) {
-                chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
-                    state: "minimized"
+        chrome.extension.isAllowedIncognitoAccess(function(isAllowedIncognito) {
+            var incognito = false;
+            if (all_settings.incognito && isAllowedIncognito)
+                incognito = true;
+
+            var url = "chrome-extension://" + chrome.runtime.id + "/new.html";
+            if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
+                url = events[1].evt_data.url;
+            }
+            
+            chrome.windows.create({
+                "url":url,
+                "focused":true,
+                "left":0,
+                "top":0,
+                "width":1920,
+                "height":1080,
+                "incognito":incognito
+            }, function(simulation_window) {
+                new_window = simulation_window;
+                if (all_settings.runminimized) {
+                    chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
+                        state: "minimized"
+                    });
+                }
+                
+                chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+                    for (var i=1; i<tabs.length; i++) {
+                        chrome.tabs.remove(tabs[i].id);
+                    }
                 });
-            }
-            
-            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-                for (var i=1; i<tabs.length; i++) {
-                    chrome.tabs.remove(tabs[i].id);
+
+                // Bring the wildfire window to the foreground
+                chrome.windows.update(wildfirewindow.id,{"focused":true});
+
+                timeoutObject = setTimeout(function() {
+                    var custom = new CustomStop();
+                    CustomTracker.push(custom);
+                    node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+                    terminateSimulation(false, "Global run timeout"); // TODO: Check
+                }, 3600000); // 1 hour
+                
+                chrome.windows.onRemoved.addListener(closeListenerCallbackWorkflow); // TODO: Check
+
+                //////// START ////////
+                for (var i=0; i<nodes.length; i++) {
+                    if (nodes[i].userData.evt == "begin_recording") {
+                        node = nodes[i];
+                        break;
+                    }
                 }
+
+                setTimeout(function(){ // allow time for simulation window to open
+                    processEvent();
+                }, 1000);
             });
-
-            // Bring the wildfire window to the foreground
-            chrome.windows.update(wildfirewindow.id,{"focused":true});
-
-            timeoutObject = setTimeout(function() {
-                var custom = new CustomStop();
-                CustomTracker.push(custom);
-                node.add(custom, new draw2d.layout.locator.CenterLocator(node));
-                terminateSimulation(false, "Global run timeout"); // TODO: Check
-            }, 3600000); // 1 hour
-            
-            chrome.windows.onRemoved.addListener(closeListenerCallbackWorkflow); // TODO: Check
-
-            //////// START ////////
-            for (var i=0; i<nodes.length; i++) {
-                if (nodes[i].userData.evt == "begin_recording") {
-                    node = nodes[i];
-                    break;
-                }
-            }
-
-            setTimeout(function(){ // allow time for simulation window to open
-                processEvent();
-            }, 1000);
         });
     });
 }

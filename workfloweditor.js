@@ -65,7 +65,7 @@ function getEventOptionsHtml(userdata) {
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath.replace(/\"/g,'&quot;')|| "") + "\">" +
     "    <br />" +
     "</div>";
-  } else if (userdata.evt == "input" || userdata.evt == "dataentry" || userdata.evt == "change") {
+  } else if (userdata.evt == "input" || userdata.evt == "change") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + escapeOrDefault(userdata.evt_data.value,"") + "\">" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
@@ -123,7 +123,7 @@ function getEventOptionsHtml(userdata) {
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"about:blank") + "\">" +
     "    <br />" +
     "</div>";
-  } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording") {
+  } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording" || userdata.evt == "clipboard_cut" || userdata.evt == "clipboard_copy" || userdata.evt == "clipboard_paste") {
     return "";
   } else if (userdata.evt == "setproxy") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scheme\">Proxy Type</label>" +
@@ -549,6 +549,12 @@ $(window).load(function () {
 });
 
 function createNewWorkflowFromEvents(result) {
+    if (result.events.length < 1) { // only happens on fresh install
+        result.events.push({
+            evt: 'begin_recording',
+            time: 0
+        });
+    }
     for (var i=0; i<result.events.length; i++) {
         var node = addNode(result.events[i]);
         var nodex = 295 + Math.min(80*(i%24), 80*12);
@@ -590,18 +596,56 @@ function createNewWorkflowFromEvents(result) {
 }
 
 $('#nodeLinkPanelX').click(function(){
-  $('#workflowsidepanel').attr('style','display: none;');
-  // TODO: Deselect node/link
+    $('#workflowsidepanel').attr('style','display: none;');
+    // TODO: Deselect node/link
 });
 
 $('#workflowToolbarAddNode').click(function(){
-  canvas.add(addNode({
-    evt: 'end_recording',
-    time: 0
-  }), window.innerWidth/2, window.innerHeight/3);
-  nodes.push(node);
+    canvas.add(addNode({
+      evt: 'end_recording',
+      time: 0
+    }), window.innerWidth/2, window.innerHeight/3);
+    nodes.push(node);
 });
-
 $('#workflowToolbarInitSimulation').click(function(){
-  initWorkflowSimulation();
+    initWorkflowSimulation();
 });
+$('#workflowToolbarFavorite').click(function(){
+    swal({
+        title: "Favorite Workflow",
+        text: "Enter your workflow name:",
+        type: "input",
+        showCancelButton: true,
+        closeOnConfirm: false,
+        inputPlaceholder: ""
+    }, function (inputValue) {
+        if (inputValue === false || inputValue.trim() === "") {
+            swal.showInputError("You need to enter a workflow name");
+            return false;
+        }
+        chrome.storage.local.get('favorites', function (result) {
+            var writer = new draw2d.io.json.Writer();
+            writer.marshal(canvas, function(json){
+                var favorites = result.favorites;
+                if (!Array.isArray(favorites)) { // for safety only
+                    favorites = [];
+                }
+                favorites.push({
+                    name: inputValue.trim(),
+                    canvas: json,
+                    events: events,
+                    rightclick: true,
+                    time: Date.now()
+                });
+                chrome.storage.local.set({favorites: favorites},function(){
+                    swal({
+                        title: "Done",
+                        text: "Your <b>" + inputValue.trim() + "</b> workflow has been favorited.",
+                        type: "success",
+                        html: true
+                    });
+                });
+            });
+        });
+    });
+})

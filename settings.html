@@ -68,8 +68,8 @@
                                 <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
                                 <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Workflow Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
-                                <a class="dropdown-item" href="#" id="importEventfileButton"><span class="font-icon font-icon-upload-2"></span> Import Eventfile</a>
-                                <a class="dropdown-item" href="#" id="downloadEventfileButton2"><span class="font-icon font-icon-download-3"></span> Export Eventfile</a>
+                                <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
+                                <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
                             </div>
                         </div>
                     </div><!--.site-header-collapsed-in-->
@@ -105,350 +105,533 @@
 
 <div class="page-content">
     <div class="container-fluid">
-        <section class="card">
-            <header class="card-header card-header-lg">
-                Settings
-            </header>
-            <div class="card-block">
-                <p class="card-text">
-                    Below you can customize the settings that controls how Wildfire operates. All changes to settings are saved instantly.
-                <form>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5 class="m-t-lg with-border">General Settings</h5>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Wildfire Cloud Account</label>
-                            <div class="col-sm-6">
-                                <div style="padding-top: 6px;">
-                                    <b id="setting-account">Not Linked</b>
+        <section class="tabs-section">
+				<div class="tabs-section-nav tabs-section-nav-icons">
+					<div class="tbl">
+						<ul class="nav" role="tablist">
+							<li class="nav-item">
+								<a class="nav-link active" href="#tabs-1-tab-1" role="tab" data-toggle="tab">
+									<span class="nav-link-in">
+										<i class="fa fa-sliders"></i>
+										Options
+									</span>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a id="favoritesTab" class="nav-link" href="#tabs-1-tab-2" role="tab" data-toggle="tab">
+									<span class="nav-link-in">
+										<span class="fa fa-star"></span>
+										Favorites
+									</span>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#tabs-1-tab-3" role="tab" data-toggle="tab">
+									<span class="nav-link-in">
+										<span class="glyphicon glyphicon-hdd"></span>
+										Disk Usage
+									</span>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div><!--.tabs-section-nav-->
+
+				<div class="tab-content">
+					<div role="tabpanel" class="tab-pane fade in active" id="tabs-1-tab-1">
+                        <div class="card-block">
+                            <p class="card-text">
+                                Below you can customize the settings that controls how Wildfire operates. All changes to settings are saved instantly.
+                            <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="m-t-lg with-border">General Settings</h5>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Wildfire Cloud Account</label>
+                                        <div class="col-sm-6">
+                                            <div style="padding-top: 6px;">
+                                                <b id="setting-account">Not Linked</b>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Run Simulation Minimized</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-run-minimized">
+                                                <label for="setting-run-minimized">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Clear Browsing Data</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-clear-browsing-data">
+                                                <label for="setting-clear-browsing-data">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Leave Simulation Window Open</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-leave-simulation-open">
+                                                <label for="setting-leave-simulation-open">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h5 class="m-t-lg with-border">Events Recorded</h5>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Click</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-click">
+                                                <label for="setting-record-click">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Press</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-keypress">
+                                                <label for="setting-record-keypress">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Data Input</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-input">
+                                                <label for="setting-record-input">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Change</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-change">
+                                                <label for="setting-record-change">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Text Select</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-select">
+                                                <label for="setting-record-select">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Element Focus</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-focusin">
+                                                <label for="setting-record-focusin">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Element Unfocus</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-focusout">
+                                                <label for="setting-record-focusout">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Down</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-keydown">
+                                                <label for="setting-record-keydown">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Up</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-keyup">
+                                                <label for="setting-record-keyup">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Scroll</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-scroll">
+                                                <label for="setting-record-scroll">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Down</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-mousedown">
+                                                <label for="setting-record-mousedown">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Up</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-mouseup">
+                                                <label for="setting-record-mouseup">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Over</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-mouseover">
+                                                <label for="setting-record-mouseover">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Out</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-record-mouseout">
+                                                <label for="setting-record-mouseout">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="m-t-lg with-border">Experimental Features&nbsp;&nbsp;<i class="fa fa-warning" style="color: #f29824;"></i></h5>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Emulate CSS <code>:hover</code> class</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-emulate-hover">
+                                                <label for="setting-emulate-hover">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Custom Submit DOM Event</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-custom-submit">
+                                                <label for="setting-custom-submit">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Run Simulations In Incognito Mode</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-incognito">
+                                                <label for="setting-incognito">&nbsp;</label>
+                                                <span id="incognito-warning" style="display: none;" class="hint-circle orange" data-toggle="tooltip" data-placement="top" title="This extension does not have permission to use incognito windows.">!</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Enable right-click menu</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-rightclick">
+                                                <label for="setting-rightclick">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h5 class="m-t-lg with-border" style="margin-top: 23px;">Events Simulated</h5>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Click</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-click">
+                                                <label for="setting-simulate-click">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Press</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-keypress">
+                                                <label for="setting-simulate-keypress">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Data Input</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-input">
+                                                <label for="setting-simulate-input">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Change</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-change">
+                                                <label for="setting-simulate-change">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Text Select</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-select">
+                                                <label for="setting-simulate-select">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Element Focus</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-focusin">
+                                                <label for="setting-simulate-focusin">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Element Unfocus</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-focusout">
+                                                <label for="setting-simulate-focusout">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Down</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-keydown">
+                                                <label for="setting-simulate-keydown">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Key Up</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-keyup">
+                                                <label for="setting-simulate-keyup">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Scroll</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-scroll">
+                                                <label for="setting-simulate-scroll">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Down</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-mousedown">
+                                                <label for="setting-simulate-mousedown">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Up</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-mouseup">
+                                                <label for="setting-simulate-mouseup">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Over</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-mouseover">
+                                                <label for="setting-simulate-mouseover">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Mouse Out</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-simulate-mouseout">
+                                                <label for="setting-simulate-mouseout">&nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Run Simulation Minimized</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-run-minimized">
-                                    <label for="setting-run-minimized">&nbsp;</label>
+                                <!--
+                                <div class="form-group row">
+                                    <label class="col-sm-2 form-control-label">Custom Domain</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">https://wildfire.ai/users/</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Clear Browsing Data</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-clear-browsing-data">
-                                    <label for="setting-clear-browsing-data">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Flush Simulation Log</label>
-                            <div class="col-sm-6">
-								<button id="setting-flush-database" class="btn btn-rounded">Flush</button>
-                            </div>
-                        </div>
-                        <h5 class="m-t-lg with-border">Events Recorded</h5>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Click</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-click">
-                                    <label for="setting-record-click">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Press</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-keypress">
-                                    <label for="setting-record-keypress">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Data Input</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-input">
-                                    <label for="setting-record-input">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Change</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-change">
-                                    <label for="setting-record-change">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Text Select</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-select">
-                                    <label for="setting-record-select">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Element Focus</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-focusin">
-                                    <label for="setting-record-focusin">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Element Unfocus</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-focusout">
-                                    <label for="setting-record-focusout">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Down</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-keydown">
-                                    <label for="setting-record-keydown">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Up</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-keyup">
-                                    <label for="setting-record-keyup">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Scroll</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-scroll">
-                                    <label for="setting-record-scroll">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Down</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-mousedown">
-                                    <label for="setting-record-mousedown">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Up</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-mouseup">
-                                    <label for="setting-record-mouseup">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Over</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-mouseover">
-                                    <label for="setting-record-mouseover">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Out</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-record-mouseout">
-                                    <label for="setting-record-mouseout">&nbsp;</label>
-                                </div>
-                            </div>
+                                -->
+                            </form>
+                            </p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <h5 class="m-t-lg with-border">Experimental Features&nbsp;&nbsp;<i class="fa fa-warning" style="color: #f29824;"></i></h5>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Emulate CSS <code>:hover</code> class</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-emulate-hover">
-                                    <label for="setting-emulate-hover">&nbsp;</label>
+					<div role="tabpanel" class="tab-pane fade" id="tabs-1-tab-2">
+                        <div class="card-block">
+                            <p class="card-text">
+                                Below you can manage your favorite workflows. All changes to settings are saved instantly.
+                                <h5 class="m-t-lg with-border">Favorites</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <!--<th class="table-check">
+                                                    <div class="checkbox checkbox-only">
+                                                        <input type="checkbox" id="table-check-head">
+                                                        <label for="table-check-head"></label>
+                                                    </div>
+                                                </th>-->
+                                                <th>Name</th>
+                                                <th>Right-Click Menu</th>
+                                                <th>Date Favorited</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="favoritesTable">
+                                            
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
+                            </p>
                         </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Leave Simulation Window Open</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-leave-simulation-open">
-                                    <label for="setting-leave-simulation-open">&nbsp;</label>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="tabs-1-tab-3">
+                        <div class="card-block" style="padding-bottom: 8px;">
+                            <p class="card-text">
+                                Below you can see how much data Wildfire is using on your disk. If you find that it is using too much disk space, you can clear some excessive usage here.
+                            <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="m-t-lg with-border">Disk Usage</h5>
+                                    <section class="widget widget-pie-chart" style="margin-bottom: 0;">
+                                        <div class="no-padding">
+                                            <div class="tbl tbl-grid">
+                                                <div class="tbl-row">
+                                                    <div class="tbl-cell">
+                                                        <div class="ggl-pie-chart-container">
+                                                            <!--
+                                                            <div id="donutchart2" class="ggl-pie-chart"><div style="position: relative;"><div dir="ltr" style="position: relative; width: 156px; height: 156px;"><div style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;" aria-label="Usage"><svg width="156" height="156" aria-label="Usage" style="overflow: hidden;"><defs id="defs"></defs><rect x="0" y="0" width="156" height="156" stroke="none" stroke-width="0" fill="#ffffff"></rect><g><path d="M78,22L78,8A70,70,0,0,1,111.72275718712007,16.65853239692955L104.97820574969606,28.92682591754364A56,56,0,0,0,78,22" stroke="#ffffff" stroke-width="1" fill="#46c35f"></path></g><g><path d="M104.97820574969606,28.92682591754364L111.72275718712007,16.65853239692955A70,70,0,0,1,144.57395614066075,56.368810393753684L131.2591649125286,60.69504831500295A56,56,0,0,0,104.97820574969606,28.92682591754364" stroke="#ffffff" stroke-width="1" fill="#fa424a"></path></g><g><path d="M42.30425657407339,121.1487415954442L33.380320717591744,131.93592699430525A70,70,0,0,1,78,8L77.99999999999999,22A56,56,0,0,0,42.30425657407339,121.1487415954442" stroke="#ffffff" stroke-width="1" fill="#fdad2a"></path></g><g><path d="M131.2591649125286,60.69504831500295L144.57395614066075,56.368810393753684A70,70,0,0,1,33.380320717591744,131.93592699430525L42.30425657407339,121.1487415954442A56,56,0,0,0,131.2591649125286,60.69504831500295" stroke="#ffffff" stroke-width="1" fill="#ac6bec"></path></g><g></g></svg><div aria-label="A tabular representation of the data in the chart." style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;"></div></div></div><div aria-hidden="true" style="display: none; position: absolute; top: 166px; left: 166px; white-space: nowrap; font-family: Arial; font-size: 9px;"></div><div></div></div></div>
+                                                            <div class="ggl-pie-chart-title">
+                                                                <div class="caption">Items</div>
+                                                                <div class="number">218</div>
+                                                            </div>
+                                                            -->
+                                                            <div id="usage-chart"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tbl-cell tbl-cell-340px">
+                                                        <div class="col" style="float: none; width: 100%;">
+                                                            <div class="chart-box-info">
+                                                                <div id="total-usage" class="number"></div>
+                                                                <div class="caption">Total Usage</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="chart-legend-tbl">
+                                                            <div class="title">Legend:</div>
+                                                            <div class="tbl">
+                                                                <div class="tbl-row">
+                                                                    <div class="tbl-cell tbl-cell-legend">
+                                                                        <div class="dot orange"></div>
+                                                                        Simulation Log
+                                                                    </div>
+                                                                    <div id="simulation-log-usage" class="tbl-cell tbl-cell-value"></div>
+                                                                </div>
+                                                                <div class="tbl-row">
+                                                                    <div class="tbl-cell tbl-cell-legend">
+                                                                        <div class="dot green"></div>
+                                                                        Event Log
+                                                                    </div>
+                                                                    <div id="event-log-usage" class="tbl-cell tbl-cell-value"></div>
+                                                                </div>
+                                                                <div class="tbl-row">
+                                                                    <div class="tbl-cell tbl-cell-legend">
+                                                                        <div class="dot red"></div>
+                                                                        Workflow Editor
+                                                                    </div>
+                                                                    <div id="workflow-editor-usage" class="tbl-cell tbl-cell-value"></div>
+                                                                </div>
+                                                                <div class="tbl-row">
+                                                                    <div class="tbl-cell tbl-cell-legend">
+                                                                        <div class="dot blue"></div>
+                                                                        Favorites
+                                                                    </div>
+                                                                    <div id="favorites-usage" class="tbl-cell tbl-cell-value"></div>
+                                                                </div>
+                                                                <div class="tbl-row">
+                                                                    <div class="tbl-cell tbl-cell-legend">
+                                                                        <div class="dot purple"></div>
+                                                                        Metadata
+                                                                    </div>
+                                                                    <div id="metadata-usage" class="tbl-cell tbl-cell-value"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="m-t-lg with-border">Clear Data</h5>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Clear Simulation Log</label>
+                                        <div class="col-sm-6">
+                                            <button id="setting-flush-simulation-log" class="btn btn-rounded">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Clear Event Log and Workflow</label>
+                                        <div class="col-sm-6">
+                                            <button id="setting-flush-event-log-workflow" class="btn btn-rounded">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Clear Favorites</label>
+                                        <div class="col-sm-6">
+                                            <button id="setting-flush-favorites" class="btn btn-rounded">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Reset Wildfire</label>
+                                        <div class="col-sm-6">
+                                            <button id="setting-reset-wildfire" class="btn btn-rounded btn-danger">Reset</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Custom Submit DOM Event</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-custom-submit">
-                                    <label for="setting-custom-submit">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="m-t-lg with-border" style="margin-top: 78px;">Events Simulated</h5>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Click</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-click">
-                                    <label for="setting-simulate-click">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Press</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-keypress">
-                                    <label for="setting-simulate-keypress">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Data Input</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-input">
-                                    <label for="setting-simulate-input">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Change</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-change">
-                                    <label for="setting-simulate-change">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Text Select</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-select">
-                                    <label for="setting-simulate-select">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Element Focus</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-focusin">
-                                    <label for="setting-simulate-focusin">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Element Unfocus</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-focusout">
-                                    <label for="setting-simulate-focusout">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Down</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-keydown">
-                                    <label for="setting-simulate-keydown">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Key Up</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-keyup">
-                                    <label for="setting-simulate-keyup">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Scroll</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-scroll">
-                                    <label for="setting-simulate-scroll">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Down</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-mousedown">
-                                    <label for="setting-simulate-mousedown">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Up</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-mouseup">
-                                    <label for="setting-simulate-mouseup">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Over</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-mouseover">
-                                    <label for="setting-simulate-mouseover">&nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-6 form-control-label">Mouse Out</label>
-                            <div class="col-sm-6">
-                                <div class="checkbox-toggle" style="padding-top: 6px;">
-                                    <input type="checkbox" id="setting-simulate-mouseout">
-                                    <label for="setting-simulate-mouseout">&nbsp;</label>
-                                </div>
-                            </div>
+                            </form>
+                            </p>
                         </div>
                     </div>
-                </div>
-                    <!--
-                    <div class="form-group row">
-                        <label class="col-sm-2 form-control-label">Custom Domain</label>
-                        <div class="col-sm-4">
-                            <div class="input-group">
-                                <div class="input-group-addon">https://wildfire.ai/users/</div>
-                                <input type="text" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    -->
-                </form>
-                </p>
-            </div>
-        </section>
+				</div>
+			</section>
     </div><!--.container-fluid-->
 </div><!--.page-content-->
 
@@ -457,6 +640,9 @@
 <script src="/theme/js/lib/tether/tether.min.js"></script>
 <script src="/theme/js/lib/bootstrap/bootstrap.min.js"></script>
 <script src="/theme/js/plugins.js"></script>
+
+<script src="/theme/js/lib/d3/d3.min.js"></script>
+<script src="/theme/js/lib/charts-c3js/c3.min.js"></script>
 
 <script src="/theme/js/app.js"></script>
 <script src="/aes.js"></script>

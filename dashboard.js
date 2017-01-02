@@ -30,3 +30,7 @@ $('#submit').click(function(e){
 	
 	$(this).attr('disabled','disabled');
 });
+
+document.getElementById('dashboardSimLaunch').addEventListener('click', function() {
+    runSimulation();
+});

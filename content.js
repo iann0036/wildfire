@@ -3,6 +3,132 @@
 var all_settings;
 chrome.storage.local.get('settings', function (settings) {
     all_settings = settings.settings;
+    
+    /* Main */
+    if (all_settings.recordscroll) {
+        window.addEventListener("scroll", function (e) {
+            setTimeout(function () {
+                chrome.storage.local.get('recording', function (isRecording) {
+                    if (isRecording.recording) {
+                        updateScrollEvent(e);
+                    }
+                });
+            }, 1);
+        }, false);
+    }
+
+    addDocumentEventListener("open"); // TODO - Figure this out
+    addDocumentEventListener("touchstart"); // TODO - Figure this out
+    addDocumentEventListener("propertychange"); // TODO - Figure this out
+    addDocumentEventListener("wfSubmit"); // TODO - Figure this out
+
+    if (all_settings.recordmousedown)
+        addDocumentEventListener("mousedown");
+    if (all_settings.recordmouseup)
+        addDocumentEventListener("mouseup");
+    if (all_settings.recordmouseover)
+        addDocumentEventListener("mouseover");
+    if (all_settings.recordmouseout)
+        addDocumentEventListener("mouseout");
+    if (all_settings.recordselect)
+        addDocumentEventListener("select");
+    if (all_settings.recordfocusin)
+        addDocumentEventListener("focusin");
+    if (all_settings.recordfocusout)
+        addDocumentEventListener("focusout");
+    if (all_settings.recordclick)
+        addDocumentEventListener("click");
+    if (all_settings.recordkeydown)
+        addDocumentEventListener("keydown");
+    if (all_settings.recordkeypress)
+        addDocumentEventListener("keypress");
+    if (all_settings.recordkeyup)
+        addDocumentEventListener("keyup");
+    if (all_settings.recordinput)
+        addDocumentEventListener("input");
+    if (all_settings.recordchange)
+        addDocumentEventListener("change");
+    addDocumentEventListener("cut");
+    addDocumentEventListener("copy");
+    addDocumentEventListener("paste");
+
+    if (all_settings.customsubmit) {
+        /* Inject JS directly in for submit intercepts */
+        var s = document.createElement('script');
+        s.src = chrome.extension.getURL('embedded.js');
+        s.onload = function () {
+            this.parentNode.removeChild(this);
+        };
+        (document.head || document.documentElement).appendChild(s);
+    }
+
+    /* Duplicate hover CSS classes */
+    if (window.location.href.substring(0, 19) != "chrome-extension://" && all_settings.emulatehover) {
+        var styles = document.styleSheets;
+        for (var i = 0, len = styles.length; i < len; i++) {
+            var rules = styles[i].cssRules;
+            if (rules) {
+                var newstyle = "";
+                for (var j = 0; j < rules.length; j++) {
+                    if (rules[j].cssText.indexOf(":hover") > -1) {
+                        newstyle += rules[j].cssText.replace(/:hover/g, ".wildfire-hover") + ";";
+                    }
+                }
+                var style_tag = document.createElement('style');
+                style_tag.appendChild(document.createTextNode(newstyle));
+                document.body.appendChild(style_tag);
+            } else {
+                loadCSSCors(styles[i].href);
+            }
+        }
+
+        function loadCSSCors(stylesheet_uri) {
+            var path_parts = stylesheet_uri.split('/');
+            path_parts.pop();
+            var relative_host_dir = path_parts.join('/') + "/";
+
+            var _xhr = XMLHttpRequest;
+            var has_cred = false;
+            try {
+                has_cred = _xhr && ('withCredentials' in (new _xhr()));
+            } catch (e) {
+            }
+            if (!has_cred) {
+                console.error('CORS not supported');
+                return;
+            }
+            var xhr = new _xhr();
+            xhr.open('GET', stylesheet_uri);
+            xhr.onload = function () {
+                xhr.onload = xhr.onerror = null;
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    console.error('style failed to load: ' + stylesheet_uri)
+                } else if (xhr.responseText.indexOf(":hover") > -1) {
+                    var style_tag = document.createElement('style');
+                    var newstyle = xhr.responseText.replace(/:hover/g, ".wildfire-hover");
+                    newstyle = newstyle.replace(/url\((?!http|\/\/)/g, "url(" + relative_host_dir);
+                    style_tag.appendChild(document.createTextNode(newstyle));
+                    document.body.appendChild(style_tag);
+                }
+                xhr.onerror = function () {
+                    xhr.onload = xhr.onerror = null;
+                    console.error('XHR CORS CSS fail:' + styleURI);
+                };
+            };
+            xhr.send();
+        }
+
+        function simulateHoverElement(el) {
+            stopSimulateHover();
+            $(el).addClass("wildfire-hover");
+            $(el).parents().addClass("wildfire-hover");
+        }
+
+        function stopSimulateHover() {
+            $("*").removeClass("wildfire-hover");
+        }
+    }
+    /****/
 });
 
 function getFrameIndex() {
@@ -137,16 +263,6 @@ var defaultOptions = {
     cancelable: true
 }
 
-function getClipboard() {
-    const input = document.createElement('input');
-    input.style.position = 'fixed';
-    input.style.opacity = 0;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('Paste');
-    document.body.removeChild(input);
-}
-
 /* Start Scroll */
 var scrollTimer = null;
 var scrollObject = null;
@@ -233,7 +349,13 @@ function addDocumentEventListener(eventName) {
             else
     			evt_data['value'] = e.srcElement.innerText;
 		}
-		
+
+        if (eventName == "cut")
+            eventName = "clipboard_cut";
+        if (eventName == "copy")
+            eventName = "clipboard_copy";
+        if (eventName == "paste")
+            eventName = "clipboard_paste";
 		if (eventName=="wfSubmit")
 			eventName = "submit";
 		
@@ -245,12 +367,29 @@ function addDocumentEventListener(eventName) {
 						if (!Array.isArray(events)) { // for safety only
 							events = [];
 						}
-						events.push({
-							evt: eventName,
-							evt_data: evt_data,
-							time: Date.now()
-						});
-						chrome.storage.local.set({events: events});
+                        // Below adds new tab automatically, using alternative mechanisms for this
+                        /*
+                        if (events.length == 1) {
+                            events.push({
+                                tab: null,
+                                evt: 'tabchange',
+                                evt_data: {
+                                    id: 1,
+                                    openerTabId: null,
+                                    url: evt_data.url,
+                                    active: true,
+                                    prerender: false
+                                },
+                                time: events[0].time + 10
+                            });
+                        }
+                        */
+                        events.push({
+                            evt: eventName,
+                            evt_data: evt_data,
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
 					});
 				}
 			});
@@ -258,143 +397,15 @@ function addDocumentEventListener(eventName) {
 	}, false);
 }
 
-chrome.storage.local.get('recording', function (isRecording) {
-    if (isRecording.recording) {
-
-        if (all_settings.recordscroll) {
-            window.addEventListener("scroll", function (e) {
-                setTimeout(function () {
-                    chrome.storage.local.get('recording', function (isRecording) {
-                        if (isRecording.recording) {
-                            updateScrollEvent(e);
-                        }
-                    });
-                }, 1);
-            }, false);
-        }
-		
-		addDocumentEventListener("open"); // TODO - Figure this out
-		addDocumentEventListener("touchstart"); // TODO - Figure this out
-		addDocumentEventListener("propertychange"); // TODO - Figure this out
-		addDocumentEventListener("wfSubmit"); // TODO - Figure this out
-
-        if (all_settings.recordmousedown)
-		    addDocumentEventListener("mousedown");
-        if (all_settings.recordmouseup)
-		    addDocumentEventListener("mouseup");
-        if (all_settings.recordmouseover)
-			addDocumentEventListener("mouseover");
-        if (all_settings.recordmouseout)
-			addDocumentEventListener("mouseout");
-        if (all_settings.recordselect)
-		    addDocumentEventListener("select");
-        if (all_settings.recordfocusin)
-		    addDocumentEventListener("focusin");
-        if (all_settings.recordfocusout)
-		    addDocumentEventListener("focusout");
-        if (all_settings.recordclick)
-		    addDocumentEventListener("click");
-        if (all_settings.recordkeydown)
-		    addDocumentEventListener("keydown");
-        if (all_settings.recordkeypress)
-		    addDocumentEventListener("keypress");
-        if (all_settings.recordkeyup)
-		    addDocumentEventListener("keyup");
-        if (all_settings.recordinput)
-		    addDocumentEventListener("input");
-        if (all_settings.recordchange)
-		    addDocumentEventListener("change");
-
-        if (all_settings.customsubmit) {
-            /* Inject JS directly in for submit intercepts */
-            var s = document.createElement('script');
-            s.src = chrome.extension.getURL('embedded.js');
-            s.onload = function () {
-                this.parentNode.removeChild(this);
-            };
-            (document.head || document.documentElement).appendChild(s);
-        }
-
-        /* Duplicate hover CSS classes */
-        if (window.location.href.substring(0, 19) != "chrome-extension://" && all_settings.emulatehover) {
-            var styles = document.styleSheets;
-            for (var i = 0, len = styles.length; i < len; i++) {
-                var rules = styles[i].cssRules;
-                if (rules) {
-                    var newstyle = "";
-                    for (var j = 0; j < rules.length; j++) {
-                        if (rules[j].cssText.indexOf(":hover") > -1) {
-                            newstyle += rules[j].cssText.replace(/:hover/g, ".wildfire-hover") + ";";
-                        }
-                    }
-                    var style_tag = document.createElement('style');
-                    style_tag.appendChild(document.createTextNode(newstyle));
-                    document.body.appendChild(style_tag);
-                } else {
-                    loadCSSCors(styles[i].href);
-                }
-            }
-
-            function loadCSSCors(stylesheet_uri) {
-                var path_parts = stylesheet_uri.split('/');
-                path_parts.pop();
-                var relative_host_dir = path_parts.join('/') + "/";
-
-                var _xhr = XMLHttpRequest;
-                var has_cred = false;
-                try {
-                    has_cred = _xhr && ('withCredentials' in (new _xhr()));
-                } catch (e) {
-                }
-                if (!has_cred) {
-                    console.error('CORS not supported');
-                    return;
-                }
-                var xhr = new _xhr();
-                xhr.open('GET', stylesheet_uri);
-                xhr.onload = function () {
-                    xhr.onload = xhr.onerror = null;
-                    if (xhr.status < 200 || xhr.status >= 300) {
-                        console.error('style failed to load: ' + stylesheet_uri)
-                    } else if (xhr.responseText.indexOf(":hover") > -1) {
-                        var style_tag = document.createElement('style');
-                        var newstyle = xhr.responseText.replace(/:hover/g, ".wildfire-hover");
-                        newstyle = newstyle.replace(/url\((?!http|\/\/)/g, "url(" + relative_host_dir);
-                        style_tag.appendChild(document.createTextNode(newstyle));
-                        document.body.appendChild(style_tag);
-                    }
-                    xhr.onerror = function () {
-                        xhr.onload = xhr.onerror = null;
-                        console.error('XHR CORS CSS fail:' + styleURI);
-                    };
-                };
-                xhr.send();
-            }
-
-            function simulateHoverElement(el) {
-                stopSimulateHover();
-                $(el).addClass("wildfire-hover");
-                $(el).parents().addClass("wildfire-hover");
-            }
-
-            function stopSimulateHover() {
-                $("*").removeClass("wildfire-hover");
-            }
-        }
-
-    }
-});
-
-function initRecording() {
-    var video_constraints = {
-        mandatory: {
-            chromeMediaSource: 'tab'
-        }
-    };
+function initVideoRecording() { // dead code, can't use
     var constraints = {
         audio: false,
         video: true,
-        videoConstraints: video_constraints
+        videoConstraints: {
+            mandatory: {
+                chromeMediaSource: 'tab'
+            }
+        }
     };
 
     chrome.tabCapture.capture(constraints, function(stream) {

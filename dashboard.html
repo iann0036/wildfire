@@ -68,8 +68,8 @@
                                 <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
                                 <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Workflow Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
-                                <a class="dropdown-item" href="#" id="importEventfileButton"><span class="font-icon font-icon-upload-2"></span> Import Eventfile</a>
-                                <a class="dropdown-item" href="#" id="downloadEventfileButton2"><span class="font-icon font-icon-download-3"></span> Export Eventfile</a>
+                                <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
+                                <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
                             </div>
                         </div>
                     </div><!--.site-header-collapsed-in-->
@@ -121,17 +121,34 @@
                         What's New
                     </header>
                     <div class="card-block">
+                        <h5>Version 1.0.24</h5>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/settings.html">Favorites</a> feature with optional right-click menu.</p>
+                        <p><span class="label label-danger">Bug Fix</span> Fixed Real-time simulations stopping when events are not set to simulate.</p>
+                        <p><span class="label label-info">Improvement</span> Simulations launch first URL if it's not a New Tab.</p>
+                        <p><span class="label label-info">Improvement</span> Disk Usage chart dynamically updates when clearing data.</p>
+                        <br />
+                        <h5>Version 1.0.23</h5>
+                        <p><span class="label label-danger">Bug Fix</span> Fixed order of events in Workflow Editor properties.</p>
+                        <p><span class="label label-info">Improvement</span> Added shortcut buttons to Dashboard.</p>
+                        <p><span class="label label-info">Improvement</span> Better scroll bars in Docs.</p>
+                        <br />
+                        <h5>Version 1.0.22</h5>
+                        <p><span class="label label-success">Feature</span> Added ability to run simulations in <a href="/docs/settings.html">Incognito Mode</a>.</p>
+                        <p><span class="label label-danger">Bug Fix</span> Clipboard events are now properly detected during recordings and simulated.</p>
+                        <p><span class="label label-info">Improvement</span> Dedicated disk usage section in the <a href="/docs/settings.html">Settings</a> section.</p>
+                        <p><span class="label label-info">Improvement</span> Better recording / simulation icon.</p>
+                        <br />
                         <h5>Version 1.0.21</h5>
-                        <p><span class="label label-success">Feature</span> Added Wait For Title link type.</p>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/wait_for_title.html">Wait For Title</a> link type.</p>
                         <p><span class="label label-danger">Bug Fix</span> Double quotes are now fixed for workflow Event Properties fields.</p>
                         <p><span class="label label-info">Improvement</span> Created Documentation section.</p>
                         <br />
                         <h5>Version 1.0.20</h5>
-                        <p><span class="label label-success">Feature</span> Added Set Proxy Settings event type.</p>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/set_proxy_settings.html">Set Proxy Settings</a> event type.</p>
                         <p><span class="label label-info">Improvement</span> Added Recording and Simulation toggles for most events.</p>
                         <br />
                         <h5>Version 1.0.19</h5>
-                        <p><span class="label label-success">Feature</span> Added Clear Browsing Data setting.</p>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/settings.html">Clear Browsing Data</a> setting.</p>
                         <p><span class="label label-danger">Bug Fix</span> Fixed table size issue in Event Log and Simulations.</p>
 						<br />
                         <h5>Version 1.0.18</h5>
@@ -144,7 +161,7 @@
                         <p><span class="label label-info">Improvement</span> Permissions update for future events.</p>
 						<br />
                         <h5>Version 1.0.15</h5>
-                        <p><span class="label label-success">Feature</span> Added Purge Cookies event type.</p>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/purge_cookies.html">Purge Cookies</a> event type.</p>
                         <p><span class="label label-danger">Bug Fix</span> Added event options for Change, Form Submit, Text Select and Page Scroll.</p>
                         <p><span class="label label-info">Improvement</span> Added What's New section to Dashboard.</p>
                         <br />
@@ -164,7 +181,7 @@
                         <br />
                         <h5>Version 1.0.7</h5>
                         <p><span class="label label-success">Feature</span> Added live workflow ticks/crosses to the Workflow Editor.</p>
-                        <p><span class="label label-success">Feature</span> Added Solve reCAPTCHA action to Workflow Editor.</p>
+                        <p><span class="label label-success">Feature</span> Added <a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a> action to Workflow Editor.</p>
                         <p><span class="label label-danger">Bug Fix</span> Now populating the Input Change event properties correctly.</p>
                         <p><span class="label label-danger">Bug Fix</span> Fixed the import workflow method to show icons and correct arrow positions.</p>
                         <br />
@@ -172,6 +189,40 @@
                 </section>
             </div>
             <div class="col-md-5">
+                <section>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <a href="#">
+                                <section id="dashboardSimLaunch" class="widget widget-simple-sm-fill purple">
+                                    <div class="widget-simple-sm-icon">
+                                        <i class="font-icon font-icon-clock"></i>
+                                    </div>
+                                    <div class="widget-simple-sm-fill-caption">Start Real-time Simulation</div>
+                                </section>
+                            </a>
+                        </div>
+                        <div class="col-sm-4">
+                            <a href="/workfloweditor.html#launch">
+                                <section class="widget widget-simple-sm-fill green">
+                                    <div class="widget-simple-sm-icon">
+                                        <i class="font-icon font-icon-revers"></i>
+                                    </div>
+                                    <div class="widget-simple-sm-fill-caption">Start Workflow Simulation</div>
+                                </section>
+                            </a>
+                        </div>
+                        <div class="col-sm-4">
+                            <a href="/docs/getting_started.html">
+                                <section class="widget widget-simple-sm-fill">
+                                    <div class="widget-simple-sm-icon">
+                                        <i class="font-icon font-icon-question"></i>
+                                    </div>
+                                    <div class="widget-simple-sm-fill-caption">Learn How To Record</div>
+                                </section>
+                            </a>
+                        </div>
+                    </div>
+                </section>
                 <section class="card">
                     <header class="card-header card-header-lg">
                         Contact Us

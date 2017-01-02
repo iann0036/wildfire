@@ -68,8 +68,8 @@
                                 <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
                                 <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Workflow Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
-                                <a class="dropdown-item" href="#" id="importEventfileButton"><span class="font-icon font-icon-upload-2"></span> Import Eventfile</a>
-                                <a class="dropdown-item" href="#" id="downloadEventfileButton2"><span class="font-icon font-icon-download-3"></span> Export Eventfile</a>
+                                <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
+                                <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
                             </div>
                         </div>
                     </div><!--.site-header-collapsed-in-->
@@ -103,7 +103,7 @@
     </li>
 </ul>
 
-<nav class="side-menu" style="z-index: 5; padding-top: 160px; padding-bottom: 0;">
+<nav class="side-menu" style="z-index: 5; margin-top: 136px; height: calc(100% - 136px); padding-top: 20px; padding-bottom: 0;">
 <section>
     <header class="side-menu-title">Documentation</header>
     <ul class="side-table-of-contents">
@@ -130,7 +130,7 @@
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
-                <li><a href="/docs/data_entry.html">Data Entry</a></li>
+
                 <li><a href="/docs/change.html">Change</a></li>
                 <li><a href="/docs/element_focus.html">Element Focus</a></li>
                 <li><a href="/docs/element_unfocus.html">Element Unfocus</a></li>
@@ -175,7 +175,7 @@
                 <h2>Settings</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: December 31, 2016
                 </div>
             </header>
             <div class="text-block text-block-typical">
@@ -186,16 +186,23 @@
                 <p style="padding-left: 4%;">
                     <strong>1.</strong>&nbsp;&nbsp;<a href="/docs/cloud_overview.html">Wildfire Cloud</a> account link status<br />
                     <strong>2.</strong>&nbsp;&nbsp;Have the simulation be minimized during execution<br />
-                    <strong>3.</strong>&nbsp;&nbsp;Clear all browsing data from when the simulation starts to when it finishes when completed<br />
-                    <strong>4.</strong>&nbsp;&nbsp;Removes all simulation logs (good for reducing disk usage)<br />
+                    <strong>3.</strong>&nbsp;&nbsp;Clear all browsing data from when the simulation starts to when it is completed<br />
+                    <strong>4.</strong>&nbsp;&nbsp;Leave the simulation window open when complete<br />
                     <strong>5.</strong>&nbsp;&nbsp;Attempt to change an element to it's hover state when mousing over in a simulation<br />
-                    <strong>6.</strong>&nbsp;&nbsp;Leave the simulation window open when complete<br />
-                    <strong>7.</strong>&nbsp;&nbsp;Fire a custom DOM event listener when submitting forms to ensure the event is not missed<br />
+                    <strong>6.</strong>&nbsp;&nbsp;Fire a custom DOM event listener when submitting forms to ensure the event is not missed<br />
+                    <strong>7.</strong>&nbsp;&nbsp;Run simulations in an incognito window (you must enable incognito access for Wildfire)<br />
                     <strong>8.</strong>&nbsp;&nbsp;List of events that should be recorded in the Event Log<br />
-                    <strong>9.</strong>&nbsp;&nbsp;List of events that should be simulated if scheduled (other events will simply be skipped)
+                    <strong>9.</strong>&nbsp;&nbsp;List of events that should be simulated if scheduled (other events will simply be skipped)<br />
+                    <strong>10.</strong>&nbsp;The disk usage of the different types of Wildfire data<br />
+                    <strong>11.</strong>&nbsp;Clears all simulations from the Simulation Log<br />
+                    <strong>12.</strong>&nbsp;Clears all Event Log entries and the current workflow in the Workflow Editor<br />
+                    <strong>13.</strong>&nbsp;Removes all Wildfire data and resets the extension (this will close the Wildfire window)
                 </p>
                 <p>
                     <img src="/docs/settings_1_x.png" style="padding-top: 8px; padding-bottom: 8px; width: 100%;" />
+                </p>
+                <p>
+                    <img src="/docs/settings_2_x.png" style="padding-top: 8px; padding-bottom: 8px; width: 100%;" />
                 </p>
                 <hr style="margin-bottom: 1rem;" />
                 <p style="float: left;"><a href="/docs/workflow_editor.html">&#8656; Workflow Editor</a></p>

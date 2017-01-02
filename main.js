@@ -3,6 +3,8 @@ var bgSettings;
 var proxyAuthEnable = false;
 var proxyUsername;
 var proxyPassword;
+var windowWidth = 1280;
+var windowHeight = 800;
 
 function updateBgSettings() {
 	chrome.storage.local.get('settings', function (settings) {
@@ -77,14 +79,17 @@ chrome.tabs.onReplaced.addListener( // Pre-rendered
 function updateExtIcon() {
     chrome.storage.local.get('recording', function (isRecording) {
         if (isRecording.recording && !recording) {
-            chrome.browserAction.setIcon({
+            /*chrome.browserAction.setIcon({
                 path: 'icon-recording-128.png'
-            });
+            });*/
+			chrome.browserAction.setBadgeText({ text: "REC" });
+			chrome.browserAction.setBadgeBackgroundColor({ color: "#FF2222" });
             recording = true;
         } else if (!isRecording.recording && recording) {
-            chrome.browserAction.setIcon({
+            /*chrome.browserAction.setIcon({
                 path: 'icon-128.png'
-            });
+            });*/
+			chrome.browserAction.setBadgeText({ text: "" });
             recording = false;
         }
     });
@@ -142,10 +147,14 @@ chrome.webRequest.onAuthRequired.addListener(
 chrome.storage.onChanged.addListener(function(changes, namespace) {
 	if (changes.recording != undefined)
     	updateExtIcon();
-	if (changes.settings != undefined)
+	if (changes.settings != undefined) {
 		updateBgSettings();
+		setContextMenus();
+	}
 	if (changes.proxy != undefined)
 		updateProxy();
+	if (changes.favorites != undefined)
+		setContextMenus();
 });
 
 updateExtIcon();
@@ -190,9 +199,6 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 });
 
 chrome.runtime.onInstalled.addListener(function(details){
-	var windowWidth = 1280;
-	var windowHeight = 800;
-
     if (details.reason == "install") {
         chrome.windows.create({
 			url: "docs/getting_started.html",
@@ -212,3 +218,61 @@ chrome.runtime.onInstalled.addListener(function(details){
         });*/
     }
 });
+
+function setContextMenus() {
+	chrome.storage.local.get('favorites', function (result) {
+        var favorites = result.favorites;
+        if (!Array.isArray(favorites)) { // for safety only
+            favorites = [];
+        }
+		console.log(bgSettings.rightclick);
+		chrome.contextMenus.removeAll(function(){
+			if (bgSettings.rightclick) {
+				chrome.contextMenus.create({
+					"title": "Run the current workflow",
+					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+					"onclick": function(){
+						chrome.windows.create({
+							url: "/workfloweditor.html#launch",
+							type: "popup",
+							width: windowWidth,
+							height: windowHeight,
+							left: screen.width/2-(windowWidth/2),
+							top: screen.height/2-(windowHeight/2)
+						});
+					}
+				});
+				for (var i=0; i<favorites.length; i++) {
+					if (favorites[i].rightclick)
+						chrome.contextMenus.create({
+							"title": "Run '" + favorites[i].name + "'",
+							"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
+							"onclick": function(){
+								;
+							}
+						});
+				}
+				chrome.contextMenus.create({
+					"type": "separator",
+					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+				});
+				chrome.contextMenus.create({
+					"title": "Manage Favorites",
+					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+					"onclick": function(){
+						chrome.windows.create({
+							url: "/settings.html#favorites",
+							type: "popup",
+							width: windowWidth,
+							height: windowHeight,
+							left: screen.width/2-(windowWidth/2),
+							top: screen.height/2-(windowHeight/2)
+						});
+					}
+				});
+			}
+		});
+	});
+}
+
+setContextMenus();

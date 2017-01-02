@@ -68,8 +68,8 @@
                                 <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
                                 <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Workflow Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
-                                <a class="dropdown-item" href="#" id="importEventfileButton"><span class="font-icon font-icon-upload-2"></span> Import Eventfile</a>
-                                <a class="dropdown-item" href="#" id="downloadEventfileButton2"><span class="font-icon font-icon-download-3"></span> Export Eventfile</a>
+                                <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
+                                <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
                             </div>
                         </div>
                     </div><!--.site-header-collapsed-in-->
@@ -103,7 +103,7 @@
     </li>
 </ul>
 
-<nav class="side-menu" style="z-index: 5; padding-top: 160px; padding-bottom: 0;">
+<nav class="side-menu" style="z-index: 5; margin-top: 136px; height: calc(100% - 136px); padding-top: 20px; padding-bottom: 0;">
 <section>
     <header class="side-menu-title">Documentation</header>
     <ul class="side-table-of-contents">
@@ -130,7 +130,7 @@
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
-                <li><a href="/docs/data_entry.html">Data Entry</a></li>
+
                 <li><a href="/docs/change.html">Change</a></li>
                 <li><a href="/docs/element_focus.html">Element Focus</a></li>
                 <li><a href="/docs/element_unfocus.html">Element Unfocus</a></li>
@@ -175,7 +175,7 @@
                 <h2>Getting Started</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: December 31, 2016
                 </div>
             </header>
             <div class="text-block text-block-typical">
@@ -195,11 +195,22 @@
                 </blockquote>
                 <h4>Making a Recording</h4>
                 <p>
-                    Let's open that popup and click the <b>Start Recording</b> button. If you see the red recording icon has replaced the Wildfire logo, you're recording. Any actions you take from this time will be recorded until you stop recording. Generally, we recommend you immediately open a new tab to start your work so you can ensure it's a clean recording. There's no other things to worry about until you're ready to stop recording.
+                    Let's open that popup and click the <b>Start Recording</b> button. If you see the red REC badge over the Wildfire logo, you're recording. Any actions you take from this time will be recorded until you stop recording. Generally, we recommend you immediately open a new tab to start your work so you can ensure it's a clean recording. There's no other things to worry about until you're ready to stop recording.
                 </p>
                 <p><img style="padding-top: 8px; padding-bottom: 8px; max-width: 288px; height: auto;" src="/docs/getting_started_3.png" /></p>
+                <p style="margin-bottom: 2rem;">
+                    To stop recording, click the icon again which will produce another small popup, but this time you'll have the option to <b>Stop Recording</b>. When you stop recording, Wildfire will immediately open the <a href="/docs/event_log.html">Event Log</a> page so you can review your recorded events.
+                </p>
+                <h4>Running a Simulation</h4>
                 <p>
-                    To stop recording, click the red recording icon which will produce another small popup, but this time you'll have the option to <b>Stop Recording</b>. When you stop recording, Wildfire will immediately open the <a href="/docs/event_log.html">Event Log</a> page so you can review your recorded events.
+                    In every Wildfire page, you'll see the blue <b>Actions</b> dropdown in the top-right corner of the window.
+                </p>
+                <p><img style="padding-top: 8px; padding-bottom: 8px; max-width: 112px; height: auto;" src="/docs/getting_started_4.png" /></p>
+                <p>
+                    To run a simple simulation, click on this button then click the <b>Run Real-time Simulation</b> link. This will immediately open a new window and perform the simulation actions you have just recorded. You'll also see a green SIM badge indicating a running simulation. Once it's done, the window will disappear and you'll get a notification confirming the end of the simulation.
+                </p>
+                <p>
+                    That's the basics. Once you have nailed that, check out the <a href="/docs/workflow_editor.html">Workflow Editor</a> for some more advanced automation.
                 </p>
                 <hr style="margin-bottom: 1rem;" />
                 <p style="float: left;"><a href="/docs/getting_support.html">&#8656; Getting Support</a></p>

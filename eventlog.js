@@ -74,8 +74,8 @@ document.addEventListener('visibilitychange', function(){
     chrome.storage.local.get('events', function (result) {
         populateEvents(result);
     });
-    document.getElementById('downloadEventfileButton').addEventListener('click', function() {
-        downloadEventfile();
+    document.getElementById('downloadEventLogButton').addEventListener('click', function() {
+        downloadEventLog();
     });
     document.getElementById('deleteMultipleEvents').addEventListener('click', function() {
         deleteMultipleEvents();

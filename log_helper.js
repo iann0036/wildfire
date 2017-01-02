@@ -31,11 +31,6 @@ var mappingData = {
         event_type: 'Data Input',
         icon: 'text-entry-box.png'
     },
-    dataentry: {
-        bgColor: '#EEE9E5',
-        event_type: 'Data Entry',
-        icon: 'edit-line.png'
-    },
     change: {
         bgColor: '#98462A',
         event_type: 'Change',
@@ -354,22 +349,6 @@ function readableEventDetail(event) {
             event_type = "Purge Cookies";
             minorEvent = false;
             break;
-        case 'dataentry':
-            if (event.evt_data.value)
-                var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            else
-                var escaped_value = "<i>Unknown</i>";
-            event_type = "Data Entry";
-            event_data = "Changed a";
-            if (event.evt_data.type == "input")
-                event_data += "n";
-            event_data += " <code>&lt;" + event.evt_data.type + "&gt;</code> element to the value \"" + escaped_value + "\"";
-            minorEvent = false;
-            break;
         case 'input':
             if (event.evt_data.value)
                 var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
@@ -403,40 +382,16 @@ function readableEventDetail(event) {
             minorEvent = false;
             break;
         case 'clipboard_copy':
-            if (event.evt_data.value)
-                var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            else
-                var escaped_value = "<i>Unknown</i>";
             event_type = "Clipboard Copy";
-            event_data = "Copied the text \"" + escaped_value + "\" to the clipboard";
+            event_data = "&nbsp;";
             break;
         case 'clipboard_cut':
-            if (event.evt_data.value)
-                var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            else
-                var escaped_value = "<i>Unknown</i>";
             event_type = "Clipboard Cut";
-            event_data = "Cut the text \"" + escaped_value + "\" to the clipboard";
+            event_data = "&nbsp;";
             break;
         case 'clipboard_paste':
-            if (event.evt_data.value)
-                var escaped_value = event.evt_data.value.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            else
-                var escaped_value = "<i>Unknown</i>";
             event_type = "Clipboard Paste";
-            event_data = "Pasted the text \"" + escaped_value + "\" from the clipboard";
+            event_data = "&nbsp;";
             break;
         case 'submit':
             event_type = "Form Submit";
