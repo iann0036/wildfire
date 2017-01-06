@@ -392,7 +392,7 @@ function populateFavoritesTable() {
             $('#favoritesTable').html("");
 
         for (var i=0; i<favorites.length; i++) {
-            var innerHTML = "<tr>" +
+            var innerHTML = "<tr id=\"row" + (i+1) + "\">" +
             "    <td>" + favorites[i].name + "</td>" +
             "    <td>" +
             "        <div class=\"checkbox-toggle\" style=\"margin-top: 8px; margin-bottom: 4px; margin-left: 36px;\">" +
@@ -411,6 +411,48 @@ function populateFavoritesTable() {
             "</tr>";
 
             $('#favoritesTable').append(innerHTML);
+            $('#check-toggle-' + (i+1)).change(i, function(evt){
+                var checked = this.checked;
+                chrome.storage.local.get('favorites', function (result) {
+                    var favorites = result.favorites;
+                    favorites[evt.data].rightclick = checked;
+                    chrome.storage.local.set({favorites: favorites});
+                });
+            });
+            $('#restoreFavorite' + (i+1)).click(i, function(evt){
+                chrome.storage.local.get('favorites', function (result) {
+                    var favorites = result.favorites;
+                    var importedjson = JSON.parse(decrypt(favorites[evt.data].workflow));
+                    chrome.storage.local.set({events: importedjson.events});
+                    chrome.storage.local.set({workflow: favorites[evt.data].workflow});
+
+                    swal({
+                        title: "Done",
+                        text: "Your workflow has been restored.",
+                        type: "success",
+                        html: true
+                    });
+                });
+            });
+            $('#deleteFavorite' + (i+1)).click(i, function(evt){
+                swal({
+                    title: "Are you sure?",
+                    text: "This workflow will be deleted.",
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonClass: "btn-default",
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Delete",
+                    closeOnConfirm: true
+                }, function(evt) {
+                    chrome.storage.local.get('favorites', function (result) {
+                        var favorites = result.favorites;
+                        favorites.splice(evt.data, 1);
+                        chrome.storage.local.set({favorites: favorites});
+                        populateFavoritesTable();
+                    });
+                });
+            });
         }
     });
 }

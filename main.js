@@ -231,6 +231,7 @@ function setContextMenus() {
 				chrome.contextMenus.create({
 					"title": "Run the current workflow",
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+					"documentUrlPatterns": ["http://*/*","https://*/*"],
 					"onclick": function(){
 						chrome.windows.create({
 							url: "/workfloweditor.html#launch",
@@ -247,18 +248,21 @@ function setContextMenus() {
 						chrome.contextMenus.create({
 							"title": "Run '" + favorites[i].name + "'",
 							"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
-							"onclick": function(){
+							"documentUrlPatterns": ["http://*/*","https://*/*"],
+							"onclick": function(info, tab){
 								;
 							}
 						});
 				}
 				chrome.contextMenus.create({
 					"type": "separator",
+					"documentUrlPatterns": ["http://*/*","https://*/*"],
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"]
 				});
 				chrome.contextMenus.create({
 					"title": "Manage Favorites",
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+					"documentUrlPatterns": ["http://*/*","https://*/*"],
 					"onclick": function(){
 						chrome.windows.create({
 							url: "/settings.html#favorites",

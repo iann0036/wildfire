@@ -611,6 +611,7 @@ $('#workflowToolbarInitSimulation').click(function(){
     initWorkflowSimulation();
 });
 $('#workflowToolbarFavorite').click(function(){
+    saveToLocalStorage();
     swal({
         title: "Favorite Workflow",
         text: "Enter your workflow name:",
@@ -624,16 +625,14 @@ $('#workflowToolbarFavorite').click(function(){
             return false;
         }
         chrome.storage.local.get('favorites', function (result) {
-            var writer = new draw2d.io.json.Writer();
-            writer.marshal(canvas, function(json){
+            chrome.storage.local.get('workflow', function (workflow) {
                 var favorites = result.favorites;
                 if (!Array.isArray(favorites)) { // for safety only
                     favorites = [];
                 }
                 favorites.push({
                     name: inputValue.trim(),
-                    canvas: json,
-                    events: events,
+                    workflow: workflow.workflow,
                     rightclick: true,
                     time: Date.now()
                 });
@@ -648,4 +647,4 @@ $('#workflowToolbarFavorite').click(function(){
             });
         });
     });
-})
+});
