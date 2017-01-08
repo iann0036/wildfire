@@ -396,15 +396,19 @@ function loadFromLocalStorageOrCreateNew(eventresult) {
 }
 
 function saveToLocalStorage() {
-  var writer = new draw2d.io.json.Writer();
-  writer.marshal(canvas, function(json){
-      var jsonTxt = JSON.stringify({
-        canvas: json,
-        events: events
-      });
-      var text = encrypt(jsonTxt);
-      chrome.storage.local.set({workflow: text});
-  });
+    return new Promise(function(resolve, reject) {
+        var writer = new draw2d.io.json.Writer();
+        writer.marshal(canvas, function(json){
+            var jsonTxt = JSON.stringify({
+                canvas: json,
+                events: events
+            });
+            var text = encrypt(jsonTxt);
+            chrome.storage.local.set({workflow: text},function(){
+                resolve();
+            });
+        });
+    });
 }
 
 $(window).unload(function() {
@@ -608,7 +612,9 @@ $('#workflowToolbarAddNode').click(function(){
     nodes.push(node);
 });
 $('#workflowToolbarInitSimulation').click(function(){
-    initWorkflowSimulation();
+    saveToLocalStorage().then(function() {
+      initWorkflowSimulation();
+    });
 });
 $('#workflowToolbarFavorite').click(function(){
     saveToLocalStorage();

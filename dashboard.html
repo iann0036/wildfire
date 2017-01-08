@@ -63,10 +63,10 @@
                             <button class="btn btn-rounded dropdown-toggle" id="dd-header-add" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Actions
                             </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-header-add">
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-header-add" style="min-width: 200px;">
                                 <div class="dropdown-header">Simulation</div>
-                                <a class="dropdown-item" href="#" id="simulateButton"><span class="font-icon font-icon-clock"></span> Run Real-time Simulation</a>
-                                <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Workflow Simulation</a>
+                                
+                                <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
                                 <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
                                 <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
@@ -121,9 +121,11 @@
                         What's New
                     </header>
                     <div class="card-block">
-                        <h5>Version 1.0.24</h5>
+                        <h5>Version 1.1.0</h5>
                         <p><span class="label label-success">Feature</span> Added <a href="/docs/settings.html">Favorites</a> feature with optional right-click menu.</p>
-                        <p><span class="label label-danger">Bug Fix</span> Fixed Real-time simulations stopping when events are not set to simulate.</p>
+                        <p><span class="label label-danger">Bug Fix</span> Fixed simulations stopping when events are not set to simulate.</p>
+                        <p><span class="label label-info">Improvement</span> Consolidated Real-time and Workflow simulation types.</p>
+                        <p><span class="label label-info">Improvement</span> Simulations will now continue to run when Wildfire window is closed.</p>
                         <p><span class="label label-info">Improvement</span> Simulations launch first URL if it's not a New Tab.</p>
                         <p><span class="label label-info">Improvement</span> Disk Usage chart dynamically updates when clearing data.</p>
                         <br />
@@ -192,22 +194,22 @@
                 <section>
                     <div class="row">
                         <div class="col-sm-4">
-                            <a href="#">
-                                <section id="dashboardSimLaunch" class="widget widget-simple-sm-fill purple">
-                                    <div class="widget-simple-sm-icon">
-                                        <i class="font-icon font-icon-clock"></i>
-                                    </div>
-                                    <div class="widget-simple-sm-fill-caption">Start Real-time Simulation</div>
-                                </section>
-                            </a>
-                        </div>
-                        <div class="col-sm-4">
                             <a href="/workfloweditor.html#launch">
                                 <section class="widget widget-simple-sm-fill green">
                                     <div class="widget-simple-sm-icon">
                                         <i class="font-icon font-icon-revers"></i>
                                     </div>
-                                    <div class="widget-simple-sm-fill-caption">Start Workflow Simulation</div>
+                                    <div class="widget-simple-sm-fill-caption">Start<br />Simulation</div>
+                                </section>
+                            </a>
+                        </div>
+                        <div class="col-sm-4">
+                            <a href="/settings.html#favorites">
+                                <section class="widget widget-simple-sm-fill" style="background-color: #FFCC00;">
+                                    <div class="widget-simple-sm-icon">
+                                        <i class="font-icon font-icon-star"></i>
+                                    </div>
+                                    <div class="widget-simple-sm-fill-caption">Manage<br />Favorites</div>
                                 </section>
                             </a>
                         </div>
@@ -217,7 +219,7 @@
                                     <div class="widget-simple-sm-icon">
                                         <i class="font-icon font-icon-question"></i>
                                     </div>
-                                    <div class="widget-simple-sm-fill-caption">Learn How To Record</div>
+                                    <div class="widget-simple-sm-fill-caption">Learn How<br />To Record</div>
                                 </section>
                             </a>
                         </div>

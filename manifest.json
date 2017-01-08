@@ -1,7 +1,7 @@
 {
   "name": "Wildfire",
   "short_name": "Wildfire",
-  "version": "1.0.24",
+  "version": "1.1.0",
   "manifest_version": 2,
   "author": "wildfire.ai",
   "description": "Record browser actions then replay within Chrome. Craft your own custom automation workflows.",
@@ -13,7 +13,7 @@
     "128": "icon-128.png"
   },
   "background":  {
-    "scripts": ["main.js"]
+    "scripts": ["main.js", "aes.js"]
   },
   "content_scripts": [
     {
