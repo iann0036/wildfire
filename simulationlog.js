@@ -99,11 +99,10 @@ function populateSimulations() {
                 "<div class=\"progress-compact-style-label\">" + percentile + "% completed</div>" +
                 "</div>" +
                 "<div class=\"task-card-tags\">";
-            if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0) {
+            if (simulations[i].favorite)
+                innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Favorite</a>";
+            else
                 innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Workflow</a>";
-            } else {
-                innerHTML += "<a href=\"#\" class=\"label label-light-grey\">Real-time</a>";
-            }
             innerHTML += "</div>" +
                 "</div>" +
                 "<div class=\"task-card-footer\">" +
@@ -161,5 +160,5 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 populateSimulations();
 
 document.getElementById('simulateButton3').addEventListener('click', function() {
-    runSimulation();
+    window.location.href = "/workfloweditor.html#launch";
 });

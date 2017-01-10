@@ -15,6 +15,7 @@ var simulation_log = [];
 var waitForElementInterval, waitForTitleInterval;
 var simulating = false;
 var last_node;
+var isFavSim = false;
 
 function updateBgSettings() {
 	chrome.storage.local.get('settings', function (settings) {
@@ -25,7 +26,52 @@ function updateBgSettings() {
 function updateWorkflowData() {
 	return new Promise(function(resolve,reject){
 		chrome.storage.local.get('workflow', function (workflow) {
-			var wfobj = JSON.parse(decrypt(workflow.workflow));
+            chrome.storage.local.get('events', function (events_result) {
+                if (!events_result.events || events_result.events.length<3) {
+                    chrome.notifications.create("no_recorded_events",{
+                        type: "basic",
+                        title: "Wildfire",
+                        message: "You have no recorded events. Click here to learn about recording your events.",
+                        iconUrl: "icon-128.png"
+                    });
+                    reject();
+                } else if (workflow.workflow) {
+                    var wfobj = JSON.parse(decrypt(workflow.workflow));
+                    var canvas_elements = wfobj.canvas;
+                    
+                    nodes = [];
+                    links = [];
+
+                    for (var i=0; i<canvas_elements.length; i++) {
+                        if (canvas_elements[i].type == "draw2d.Connection")
+                            links.push(canvas_elements[i]);
+                        else
+                            nodes.push(canvas_elements[i]);
+                    }
+
+                    events = events_result.events;
+                    resolve();
+                } else {
+                    chrome.notifications.create("no_workflow_available",{
+                        type: "basic",
+                        title: "Wildfire",
+                        message: "There is currently no active workflow. Click here or open the Workflow Editor to generate one.",
+                        iconUrl: "icon-128.png"
+                    });
+                    reject();
+                }
+		    });
+        });
+	});
+}
+
+function updateWorkflowDataToFavorite(favorite_index) {
+    if (favorite_index == -1)
+        return updateWorkflowData();
+	return new Promise(function(resolve,reject){
+		chrome.storage.local.get('favorites', function (favorites) {
+            console.log("Starting executiong of " + favorites.favorites[favorite_index].name);
+			var wfobj = JSON.parse(decrypt(favorites.favorites[favorite_index].workflow));
 			var canvas_elements = wfobj.canvas;
 			
 			nodes = [];
@@ -38,13 +84,42 @@ function updateWorkflowData() {
 					nodes.push(canvas_elements[i]);
 			}
 
-			chrome.storage.local.get('events', function (result) {
-				events = result.events;
-				resolve();
-			});
+            events = wfobj.events;
+            resolve();
 		});
 	});
 }
+
+chrome.notifications.onClicked.addListener(function(notificationId){
+    if (notificationId == "no_workflow_available") {
+        chrome.windows.create({
+			url: "workfloweditor.html",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
+    } else if (notificationId == "sim_complete") {
+        chrome.windows.create({
+            url: "simulations.html#0",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
+    } else if (notificationId == "no_recorded_events") {
+        chrome.windows.create({
+            url: "docs/getting_started.html",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
+    }
+});
 
 chrome.tabs.onUpdated.addListener(
     function (tabId, changeInfo, tab) {
@@ -233,6 +308,7 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 });
 
 chrome.runtime.onInstalled.addListener(function(details){
+    chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
         chrome.windows.create({
 			url: "docs/getting_started.html",
@@ -266,15 +342,10 @@ function setContextMenus() {
                     "id": "wildfire-currentwf",
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
 					"documentUrlPatterns": ["http://*/*","https://*/*"],
-					"onclick": function(){
-						chrome.windows.create({
-							url: "/workfloweditor.html#launch",
-							type: "popup",
-							width: windowWidth,
-							height: windowHeight,
-							left: screen.width/2-(windowWidth/2),
-							top: screen.height/2-(windowHeight/2)
-						});
+					"onclick": function(info, tab){
+						chrome.windows.get(tab.windowId, null, function(curr_window) {
+                            begin_fav_sim(-1, curr_window);
+                        });
 					}
 				});
 				for (var i=0; i<favorites.length; i++) {
@@ -285,7 +356,9 @@ function setContextMenus() {
 							"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
 							"documentUrlPatterns": ["http://*/*","https://*/*"],
 							"onclick": function(info, tab){
-								;
+                                chrome.windows.get(tab.windowId, null, function(curr_window) {
+                                    begin_fav_sim(info.menuItemId.replace("wildfire-favorite-",""), curr_window);
+                                });
 							}
 						});
 				}
@@ -348,6 +421,8 @@ chrome.runtime.onConnect.addListener(function(new_port) {
 				});
 			} else if (msg.action == "begin_sim") {
 				begin_sim();
+			} else if (msg.action == "stop_sim") {
+				terminateSimulation(false, "User terminated");
 			}
 		});
 	}
@@ -366,14 +441,18 @@ function decrypt(str) {
   return CryptoJS.AES.decrypt(str, generatePassphrase()).toString(CryptoJS.enc.Utf8);
 }
 
-function begin_fav_sim(fav_index) { ////////////////////
+function begin_fav_sim(fav_index, curr_window) { ////////////////////
     sim_start_time = Date.now();
     terminated = false;
+    new_window = curr_window;
+    isFavSim = true;
 
-	chrome.browserAction.setBadgeText({ text: "SIM" });
-    chrome.browserAction.setBadgeBackgroundColor({ color: "#00CC66" });
+    chrome.storage.local.set({simulating: true});
 
-    updateWorkflowData().then(function(){
+    updateWorkflowDataToFavorite(fav_index).then(function(){
+	    chrome.browserAction.setBadgeText({ text: "SIM" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: "#00CC66" });
+
         var node;
 
         for (var i=0; i<nodes.length; i++) {
@@ -386,12 +465,17 @@ function begin_fav_sim(fav_index) { ////////////////////
         setTimeout(function(node){ // allow time for simulation window to open
             processEvent(node);
         }, 1000, node);
+    }).catch(function(){
+        ; // TODO: Better handling
     });
 }
 
 function begin_sim() {
     sim_start_time = Date.now();
     terminated = false;
+    isFavSim = false;
+
+    chrome.storage.local.set({simulating: true});
 
 	chrome.browserAction.setBadgeText({ text: "SIM" });
     chrome.browserAction.setBadgeBackgroundColor({ color: "#00CC66" });
@@ -969,11 +1053,13 @@ function terminateSimulation(finished, reason) {
 	if (terminated)
 		return;
 	terminated = true; // prevent race against close listener
+
+    chrome.storage.local.set({simulating: false});
 	
-	console.log("Terminating...");
-	
-	chrome.windows.onRemoved.removeListener(closeListenerCallback);
-    clearTimeout(timeoutObject);
+    if (!isFavSim) {
+    	chrome.windows.onRemoved.removeListener(closeListenerCallback);
+        clearTimeout(timeoutObject);
+    }
     chrome.storage.local.set({proxy: {clear: true}});
 
     chrome.browserAction.setBadgeText({ text: "" });
@@ -983,7 +1069,6 @@ function terminateSimulation(finished, reason) {
         nodeid: last_node.id,
         status: "stop"
     });
-    console.log("Sending stop event update");
 
     if (bgSettings.clearbrowsingdata) {
         chrome.browsingData.remove({
@@ -1008,16 +1093,16 @@ function terminateSimulation(finished, reason) {
 	
     simulating = false;
 
-    chrome.notifications.create("",{
+    chrome.notifications.create("sim_complete",{
         type: "basic",
         title: "Wildfire",
-        message: "Simulation completed",
+        message: "Simulation completed. Click here to view the results.",
         iconUrl: "icon-128.png"
     });
 
 	var node_details = [];
 	for (var i=0; i<nodes.length; i++) {
-		//nodes[i].userData['id'] = nodes[i].getId();
+		nodes[i].userData['id'] = nodes[i].id;
 		node_details.push(nodes[i].userData);
 	}
 
@@ -1038,10 +1123,11 @@ function terminateSimulation(finished, reason) {
                     finished: finished,
                     events: events,
                     terminate_reason: reason,
-                    node_details: node_details
+                    node_details: node_details,
+                    favorite: isFavSim
                 });
                 chrome.storage.local.set({simulations: simulations});
-                if (!bgSettings.leavesimulationopen)
+                if (!bgSettings.leavesimulationopen && !isFavSim)
                     chrome.windows.remove(new_window.id,function(){});
             });
         });
@@ -1059,10 +1145,11 @@ function terminateSimulation(finished, reason) {
                 finished: finished,
                 events: events,
                 terminate_reason: reason,
-                node_details: node_details
+                node_details: node_details,
+                favorite: isFavSim
             });
             chrome.storage.local.set({simulations: simulations});
-            if (!bgSettings.leavesimulationopen)
+            if (!bgSettings.leavesimulationopen && !isFavSim)
                 chrome.windows.remove(new_window.id,function(){});
         });
     }

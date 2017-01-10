@@ -62,12 +62,6 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     updateEvents();
 });
 
-function closeListenerCallback(closed_window_id) {
-	if (closed_window_id == new_window.id) {
-		terminateSimulation(false, "Simulation terminated");
-	}
-}
-
 function updateEvents() {
     chrome.storage.local.get('events', function (result) {
         events = result.events;

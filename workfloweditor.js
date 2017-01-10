@@ -412,13 +412,9 @@ function saveToLocalStorage() {
 }
 
 $(window).unload(function() {
-  if (simulating) {
-    terminateSimulation(false, "Navigated away from simulation runner");
-  }
-
   saveToLocalStorage();
   // TODO - stall processing time waiting for async
-  return;
+  //return;
 });
 
 function flushWorkflow() {
@@ -531,6 +527,8 @@ $(window).load(function () {
         gridPolicy.setGridColor("#ffffff");
         canvas.installEditPolicy( new draw2d.policy.canvas.CoronaDecorationPolicy() );
         canvas.installEditPolicy( gridPolicy );
+
+        saveToLocalStorage();
       },100);
       
       canvas.on("select", function(emitter,event) {

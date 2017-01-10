@@ -50,10 +50,11 @@ function populateSimulation() {
         $('#recordTime').html(formatDiffDate(simulations[i].events[1].time,simulations[i].events[simulations[i].events.length-1].time));
         $('#simulationTime').html(formatDiffDate(simulations[i].starttime+1000,simulations[i].endtime));
 
-        if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0)
-            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Workflow</a>");
+        if (simulations[i].favorite)
+            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Favorite</a>");
         else
-            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Real-time</a>");
+            $('#tags').html("<a href=\"#\" class=\"label label-light-grey\">Workflow</a>");
+            
 
         if (!simulations[i].finished) {
             $('#terminationReason').html(simulations[i].terminate_reason);
