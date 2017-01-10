@@ -446,6 +446,7 @@ function begin_fav_sim(fav_index, curr_window) { ////////////////////
     terminated = false;
     new_window = curr_window;
     isFavSim = true;
+    simulation_log = [];
 
     chrome.storage.local.set({simulating: true});
 
@@ -474,6 +475,7 @@ function begin_sim() {
     sim_start_time = Date.now();
     terminated = false;
     isFavSim = false;
+    simulation_log = [];
 
     chrome.storage.local.set({simulating: true});
 
@@ -1093,12 +1095,14 @@ function terminateSimulation(finished, reason) {
 	
     simulating = false;
 
-    chrome.notifications.create("sim_complete",{
-        type: "basic",
-        title: "Wildfire",
-        message: "Simulation completed. Click here to view the results.",
-        iconUrl: "icon-128.png"
-    });
+    setTimeout(function(){
+        chrome.notifications.create("sim_complete",{
+            type: "basic",
+            title: "Wildfire",
+            message: "Simulation completed. Click here to view the results.",
+            iconUrl: "icon-128.png"
+        });
+    },100);
 
 	var node_details = [];
 	for (var i=0; i<nodes.length; i++) {

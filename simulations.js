@@ -63,10 +63,9 @@ function populateSimulation() {
         }
 
         //$('#simDetails').html(JSON.stringify(simulations[i].log, null, 2));
+        console.log(simulations[i]);
         if (simulations[i].node_details !== undefined && simulations[i].node_details.length > 0)
             populateSimulationEvents(simulations[i]);
-        else
-            populateEvents(simulations[i]);
     });
 }
 
