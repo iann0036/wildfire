@@ -253,22 +253,22 @@ function changeType() {
 }
 
 function setDetailListeners() {
-  $('#event_detail_timer').change(function(){
+  $('#event_detail_timer').on('input', function() {
     var userData = figure.userData;
     userData['wait_time'] = $('#event_detail_timer').val() * 1000;
     figure.setUserData(userData);
   });
-  $('#event_detail_title').change(function(){
+  $('#event_detail_title').on('input', function() {
     var userData = figure.userData;
     userData['title'] = $('#event_detail_title').val();
     figure.setUserData(userData);
   });
-  $('#event_detail_csspath').change(function(){
+  $('#event_detail_csspath').on('input', function() {
     var userData = figure.userData;
     userData['csspath'] = $('#event_detail_csspath').val();
     figure.setUserData(userData);
   });
-  $('.event-detail').change(function(){
+  $('.event-detail').on('input', function() {
     var userData = figure.userData;
     userData.evt_data[$(this).attr('data-event-detail')] = $(this).val();
     figure.setUserData(userData);

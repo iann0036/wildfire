@@ -118,6 +118,15 @@ chrome.notifications.onClicked.addListener(function(notificationId){
 			left: screen.width/2-(windowWidth/2),
 			top: screen.height/2-(windowHeight/2)
 		});
+    } else if (notificationId == "event_log_imported") {
+        chrome.windows.create({
+            url: "eventlog.html",
+			type: "popup",
+			width: windowWidth,
+			height: windowHeight,
+			left: screen.width/2-(windowWidth/2),
+			top: screen.height/2-(windowHeight/2)
+		});
     }
 });
 
@@ -1066,11 +1075,12 @@ function terminateSimulation(finished, reason) {
 
     chrome.browserAction.setBadgeText({ text: "" });
 
-    send_message({
-        type: "nodestatus",
-        nodeid: last_node.id,
-        status: "stop"
-    });
+    if (!finished)
+        send_message({
+            type: "nodestatus",
+            nodeid: last_node.id,
+            status: "stop"
+        });
 
     if (bgSettings.clearbrowsingdata) {
         chrome.browsingData.remove({

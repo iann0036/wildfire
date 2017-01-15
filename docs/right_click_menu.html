@@ -117,7 +117,7 @@
         <li>Using Wildfire
             <ul>
                 <li><a href="/docs/getting_started.html">Getting Started</a></li>
-                <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
+                <li><a class="active" href="/docs/right_click_menu.html">Right-Click Menu</a></li>
                 <li><a href="/docs/event_log.html">Event Log</a></li>
                 <li><a href="/docs/simulation_log.html">Simulation Log</a></li>
                 <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
@@ -127,7 +127,6 @@
         <li>Events Reference
             <ul>
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
-                <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
                 <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
@@ -150,7 +149,7 @@
                 <li><a href="/docs/mouse_out.html">Mouse Out</a></li>
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
-                <li><a class="active" href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
+                <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
                 <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
             </ul>
         </li>
@@ -174,21 +173,26 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Clipboard Paste</h2>
+                <h2>Right-Click Menu</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 31, 2016
+                    Last Updated: January 13, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p style="margin-bottom: 2rem;">
-                    This event pastes the contents of the clipboard into the element currently active.
+                <p>
+                    By default, Wildfire installs right-click (context menu) options that allow you to execute simulations in your current tab. This can be particularly useful when automating short, repetitive actions in your normal browsing usage.
                 </p>
-                <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <p><img style="padding-top: 8px; padding-bottom: 8px; max-width: 428px; height: auto;" src="/docs/right_click_menu_1.png" /></p>
+                <p>
+                    The right-click menu will always have an option to run the current workflow and to open a Wildfire window to manage your favorites. Additionally, it will include the favorites you've allowed in the right-click menu.
+                </p>
+                <p>
+                    Simulations run via the right-click menu will still produce a Simulation Log just as normal simulations in their dedicated window do.
+                </p>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/clipboard_cut.html">&#8656; Clipboard Cut</a></p>
-                <p style="float: right;"><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/getting_started.html">&#8656; Getting Started</a></p>
+                <p style="float: right;"><a href="/docs/event_log.html">Event Log &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

@@ -147,14 +147,30 @@ document.getElementById('eventfileContainer').addEventListener('change', functio
 
     reader.onload = function(e) {
         var new_events = JSON.parse(decrypt(e.target.result));
-        chrome.storage.local.set({events: new_events});
-        chrome.storage.local.set({recording: false});
-        chrome.notifications.create("",{
-            type: "basic",
-            title: "Wildfire",
-            message: "Event Log Imported",
-            iconUrl: "icon-128.png"
+        chrome.storage.local.set({events: new_events},function(){
+            chrome.storage.local.set({recording: false});
+            chrome.notifications.create("event_log_imported",{
+                type: "basic",
+                title: "Wildfire",
+                message: "Event Log Imported",
+                iconUrl: "icon-128.png"
+            });
+            chrome.storage.local.remove('workflow',function(){
+                if (window.location.href.includes("eventlog.html")) {
+                    setTimeout(function(){
+                        location.reload();
+                    },1);
+                }
+                if (window.location.href.includes("workfloweditor.html")) {
+                    setTimeout(function(){
+                        $(window).unbind('beforeunload');
+                        $(window).unbind('unload');
+                        location.reload();
+                    },1);
+                }
+            });
         });
+
     }
 
     var file = document.getElementById('eventfileContainer').files[0];

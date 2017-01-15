@@ -51,13 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('recordButton').addEventListener('click', toggleRecording);
 
     updatePopupUI();
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
-        updateButton(); // changes could be used to improve performance
-    });
 });
 
 function updatePopupUI() {
     chrome.storage.local.get('simulating', function (simulating_result) {
+        console.log(simulating_result);
         chrome.storage.local.get('recording', function (result) {
             recording = result.recording;
             simulating = simulating_result.simulating;
