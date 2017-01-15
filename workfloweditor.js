@@ -8,7 +8,7 @@ var link_types = [
   "timer",
   "wait_for_element",
   "wait_for_title"
-]
+];
 
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
@@ -183,12 +183,12 @@ function selectedFigure(figure) {
       $('#sidePanelTypeSelect').attr('disabled','disabled');
     } else {
       var selecthtml = "";
-      for (event in mappingData) {
+      for (var event in mappingData) {
         if (event != "begin_recording")
           selecthtml += '<option ';
           if (figure.userData.evt == event)
             selecthtml += 'selected="selected" ';
-          selecthtml += 'value="' + event + '" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-' + mappingData[event].icon + '"/>' + mappingData[event].event_type + '</span>\'>' + mappingData[event].event_type + '</option>';
+          selecthtml += "value='" + event + "' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-" + mappingData[event].icon + "\"/>" + mappingData[event].event_type + "</span>'>" + mappingData[event].event_type + "</option>";
       }
       $('#sidePanelTypeSelect').html(selecthtml).selectpicker('refresh');
     }
