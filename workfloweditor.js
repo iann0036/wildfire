@@ -614,7 +614,8 @@ $('#workflowToolbarInitSimulation').click(function(){
       initWorkflowSimulation();
     });
 });
-$('#workflowToolbarFavorite').click(function(){
+
+function favoriteSwal() {
     saveToLocalStorage();
     swal({
         title: "Favorite Workflow",
@@ -625,7 +626,7 @@ $('#workflowToolbarFavorite').click(function(){
         inputPlaceholder: ""
     }, function (inputValue) {
         if (inputValue === false || inputValue.trim() === "") {
-            swal.showInputError("You need to enter a workflow name");
+            swal("Error", "You need to enter a workflow name", "error");
             return false;
         }
         chrome.storage.local.get('favorites', function (result) {
@@ -634,6 +635,14 @@ $('#workflowToolbarFavorite').click(function(){
                 if (!Array.isArray(favorites)) { // for safety only
                     favorites = [];
                 }
+
+                for (var i=0; i<favorites.length; i++) {
+                    if (favorites[i].name == inputValue.trim()) {
+                        swal("Error", "You already have a workflow with the same name", "error");
+                        return false;
+                    }
+                }
+
                 favorites.push({
                     name: inputValue.trim(),
                     workflow: workflow.workflow,
@@ -651,4 +660,5 @@ $('#workflowToolbarFavorite').click(function(){
             });
         });
     });
-});
+}
+$('#workflowToolbarFavorite').click(favoriteSwal);

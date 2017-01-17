@@ -296,7 +296,8 @@ function calculateUsage() {
                     chrome.storage.local.getBytesInUse([
                         'settings',
                         'recording',
-                        'simulating'
+                        'simulating',
+                        'scheduled'
                     ],function(metadata_usage){
                         $('#metadata-usage').text(bytesReadable(metadata_usage));
 
@@ -387,12 +388,12 @@ function populateFavoritesTable() {
         }
 
         if (favorites.length < 1)
-            $('#favoritesTable').html('<tr><td colspan="4" style="text-align: center;">Nothing has been favorited yet!</td></tr>');
+            $('#favoritesTable').html("<tr><td colspan='4' style='text-align: center;'>Nothing has been favorited yet!</td></tr>");
         else
             $('#favoritesTable').html("");
 
         for (var i=0; i<favorites.length; i++) {
-            var innerHTML = "<tr id=\"row" + (i+1) + "\">" +
+            var innerHTML = "<tr id=\"favoriteRow" + (i+1) + "\">" +
             "    <td>" + favorites[i].name + "</td>" +
             "    <td>" +
             "        <div class=\"checkbox-toggle\" style=\"margin-top: 8px; margin-bottom: 4px; margin-left: 36px;\">" +
@@ -459,8 +460,127 @@ function populateFavoritesTable() {
 
 populateFavoritesTable();
 
+function populateScheduledTable() {
+    chrome.storage.local.get('favorites', function (result) {
+        var favorites = result.favorites;
+        if (!Array.isArray(favorites)) { // for safety only
+            favorites = [];
+        }
+        chrome.storage.local.get('scheduled', function (result) {
+            var scheduled = result.scheduled;
+            if (!Array.isArray(scheduled)) { // for safety only
+                scheduled = [];
+            }
+
+            if (scheduled.length < 1)
+                $('#scheduledTable').html("<tr><td colspan='4' style='text-align: center;'>Nothing has been scheduled yet!</td></tr>");
+            else
+                $('#scheduledTable').html("");
+
+            for (var i=0; i<scheduled.length; i++) {
+                var repeat = "Never";
+                if (scheduled[i].repeat==5) repeat = "Every 5 Minutes";
+                if (scheduled[i].repeat==15) repeat = "Every 15 Minutes";
+                if (scheduled[i].repeat==30) repeat = "Every 30 Minutes";
+                if (scheduled[i].repeat==60) repeat = "Every Hour";
+                if (scheduled[i].repeat==240) repeat = "Every 4 Hours";
+                if (scheduled[i].repeat==1440) repeat = "Every 24 Hours";
+                
+                var workflowname = '<a href="/workfloweditor.html">Current Workflow</a>';
+                if (scheduled[i].workflow > -1)
+                    workflowname = favorites[scheduled[i].workflow].name;
+
+                var monthNames = [ "January", "February", "March", "April", "May", "June", 
+                       "July", "August", "September", "October", "November", "December" ];
+                var schDate = new Date(scheduled[i].date);
+                schDate = monthNames[schDate.getMonth()] + " " + schDate.getDate() + ", " + schDate.getFullYear() + " @ " + ((schDate.getHours() + 11) % 12 + 1) + ":" + (schDate.getMinutes() > 9 ? schDate.getMinutes() : "0" + schDate.getMinutes()) + " " + (schDate.getHours() >= 12 ? "PM" : "AM");
+
+                var innerHTML = "<tr id=\"scheduledRow" + (i+1) + "\">" +
+                "    <td>" + workflowname + "</td>" +
+                "    <td>" + schDate + "</td>" +
+                "    <td>" + repeat + "</td>" +
+                "    <td>" +
+                "        <a href=\"#\" id=\"deleteschedule" + (i+1) + "\">Delete</a>" +
+                "    </td>" +
+                "</tr>";
+
+                $('#scheduledTable').append(innerHTML);
+                $('#deleteschedule' + (i+1)).click(i, function(evt){
+                    swal({
+                        title: "Are you sure?",
+                        text: "This schedule will be deleted.",
+                        type: "warning",
+                        showCancelButton: true,
+                        cancelButtonClass: "btn-default",
+                        confirmButtonClass: "btn-danger",
+                        confirmButtonText: "Delete",
+                        closeOnConfirm: true
+                    }, function(evt) {
+                        chrome.storage.local.get('scheduled', function (result) {
+                            var scheduled = result.scheduled;
+                            scheduled.splice(evt.data, 1);
+                            chrome.storage.local.set({scheduled: scheduled});
+                            populateScheduledTable();
+                        });
+                    });
+                });
+            }
+        });
+    });
+}
+
+populateScheduledTable();
+
 if (window.location.hash == "#favorites") {
     setTimeout(function(){
         $('#favoritesTab').click();
     },1);
 }
+
+$('.datetimepicker-1').datetimepicker({
+    widgetPositioning: {
+        horizontal: 'right'
+    },
+    debug: false
+});
+
+$('#addScheduleSubmitButton').click(function(){
+    if ($('#scheduleDateTime').val()=="") {
+        swal("Error", "You must set the Date / Time of Simulation field", "error");
+        return;
+    }
+
+    // TODO - Validate this
+    var date_split_1 = $('#scheduleDateTime').val().split(" ");
+    var date_split_2 = date_split_1[0].split("/");
+    var date_split_3 = date_split_1[1].split(":");
+    var hours = date_split_3[0]%12;
+    if (date_split_1[2]=="PM")
+        hours += 12;
+    var date = new Date(parseInt(date_split_2[2]),parseInt(date_split_2[0])-1,parseInt(date_split_2[1]),parseInt(hours),parseInt(date_split_3[1]));
+    console.log(date);
+
+    chrome.storage.local.get('scheduled', function (result) {
+        var scheduled = result.scheduled;
+        if (!Array.isArray(scheduled)) { // for safety only
+            scheduled = [];
+        }
+
+        scheduled.push({
+            workflow: $('#scheduleWorkflow').val(),
+            date: date.getTime(),
+            repeat: $('#scheduleRepeat').val(),
+            created: Date.now()
+        });
+        chrome.storage.local.set({scheduled: scheduled},function(){
+            $('#scheduleWorkflow').val("-1");
+            $('#scheduleDateTime').val("");
+            $('#scheduleRepeat').val("0");
+            $('.modal').modal('toggle');
+
+            swal("Success", "You have successfully added a schedule", "success");
+
+            populateScheduledTable();
+        });
+    });
+});

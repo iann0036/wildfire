@@ -128,6 +128,14 @@
 							<li class="nav-item">
 								<a class="nav-link" href="#tabs-1-tab-3" role="tab" data-toggle="tab">
 									<span class="nav-link-in">
+										<span class="fa fa-calendar"></span>
+										Scheduled
+									</span>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#tabs-1-tab-4" role="tab" data-toggle="tab">
+									<span class="nav-link-in">
 										<span class="glyphicon glyphicon-hdd"></span>
 										Disk Usage
 									</span>
@@ -522,6 +530,91 @@
                         </div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="tabs-1-tab-3">
+                        <div class="card-block">
+                            <p class="card-text">
+                                Below you can manage simulations scheduled to run at certain times. Note that Chrome needs to be running to have the simulations run as scheduled.
+                                <h5 class="m-t-lg with-border">Scheduled Simulations</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <!--<th class="table-check">
+                                                    <div class="checkbox checkbox-only">
+                                                        <input type="checkbox" id="table-check-head">
+                                                        <label for="table-check-head"></label>
+                                                    </div>
+                                                </th>-->
+                                                <th>Workflow</th>
+                                                <th>Scheduled For</th>
+                                                <th>Repeat</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="scheduledTable">
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <br />
+                                <div style="text-align: right;">
+                                    <button id="addScheduledSim" data-toggle="modal" data-target=".scheduledAdd" class="btn btn-rounded btn-info">Add New Schedule</button>
+                                </div>
+                            </p>
+                            <div class="modal fade scheduledAdd" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                                <i class="font-icon-close-2"></i>
+                                            </button>
+                                            <h4 class="modal-title">Add Scheduled Simulation</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>
+                                                Enter the details of the workflow to be simulated below.
+                                            </p>
+                                            <fieldset class="form-group">
+                                                <label class="form-label semibold" for="scheduleWorkflow">Workflow</label>
+                                                <select id="scheduleWorkflow" class="form-control">
+                                                    <option value="-1">Current Workflow</option>
+                                                    <option>a</option>
+                                                </select>
+                                                <small class="text-muted">&nbsp;</small>
+                                            </fieldset>
+                                            <fieldset class="form-group">
+                                                <label class="form-label semibold" for="scheduleDateTime">Date / Time of Simulation</label>
+                                                <div class='input-group date datetimepicker-1'>
+                                                    <input id="scheduleDateTime" type='text' class="form-control" />
+                                                    <span class="input-group-addon">
+                                                        <i class="font-icon font-icon-calend"></i>
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">Click the calendar icon to choose your date and time.</small>
+                                            </fieldset>
+                                            <fieldset class="form-group">
+                                                <label class="form-label semibold" for="scheduleRepeat">Repeat</label>
+                                                <select id="scheduleRepeat" class="form-control">
+                                                    <option value="0">Never</option>
+                                                    <option value="5">Every 5 Minutes</option>
+                                                    <option>Every 15 Minutes</option>
+                                                    <option>Every 30 Minutes</option>
+                                                    <option>Every Hour</option>
+                                                    <option>Every 4 Hours</option>
+                                                    <option>Every 24 Hours</option>
+                                                </select>
+                                                <small class="text-muted">&nbsp;</small>
+                                            </fieldset>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cancel</button>
+                                            <button id="addScheduleSubmitButton" type="button" class="btn btn-rounded btn-primary">Add Schedule</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="tabs-1-tab-4">
                         <div class="card-block" style="padding-bottom: 8px;">
                             <p class="card-text">
                                 Below you can see how much data Wildfire is using on your disk. If you find that it is using too much disk space, you can clear some excessive usage here.
