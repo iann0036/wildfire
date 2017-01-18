@@ -247,8 +247,23 @@ $('#setting-flush-favorites').click(function(e) {
 	e.preventDefault();
 	$(this).attr('disabled','disabled');
     chrome.storage.local.set({favorites: []},function(){
-        populateFavoritesTable();
-        calculateUsage();
+        chrome.storage.local.get('scheduled', function (result) {
+            var scheduled = result.scheduled;
+            if (!Array.isArray(scheduled)) { // for safety only
+                scheduled = [];
+            }
+            for (var i=0; i<scheduled.length; i++) {
+                if (scheduled[i].workflow != -1) {
+                    scheduled.splice(i, 1);
+                    i--;
+                }
+            }
+            chrome.storage.local.set({scheduled: scheduled},function(){
+                populateFavoritesTable();
+                populateScheduledTable();
+                calculateUsage();
+            });
+        });
     });
 });
 $('#setting-flush-event-log-workflow').click(function(e) {
@@ -392,6 +407,13 @@ function populateFavoritesTable() {
         else
             $('#favoritesTable').html("");
 
+        // Schedule modal
+        $('#scheduleWorkflow').html("");
+        var default_opt = document.createElement("option");
+        default_opt.setAttribute("value", "-1");
+        default_opt.innerHTML = "Current Workflow";
+        $('#scheduleWorkflow').append(default_opt);
+
         for (var i=0; i<favorites.length; i++) {
             var innerHTML = "<tr id=\"favoriteRow" + (i+1) + "\">" +
             "    <td>" + favorites[i].name + "</td>" +
@@ -445,15 +467,43 @@ function populateFavoritesTable() {
                     confirmButtonClass: "btn-danger",
                     confirmButtonText: "Delete",
                     closeOnConfirm: true
-                }, function(evt) {
+                }, function(resp) {
+                    if (!resp)
+                        return;
                     chrome.storage.local.get('favorites', function (result) {
                         var favorites = result.favorites;
                         favorites.splice(evt.data, 1);
                         chrome.storage.local.set({favorites: favorites});
+
+                        chrome.storage.local.get('scheduled', function (result) {
+                            var scheduled = result.scheduled;
+                            if (!Array.isArray(scheduled)) { // for safety only
+                                scheduled = [];
+                            }
+                            for (var j=0; j<scheduled.length; j++) {
+                                if (scheduled[j].workflow == evt.data) {
+                                    scheduled.splice(j, 1);
+                                    j--;
+                                } else if (scheduled[j].workflow > evt.data) {
+                                    scheduled[j].workflow = scheduled[j].workflow - 1;
+                                }
+                            }
+                            chrome.storage.local.set({scheduled: scheduled},function(){
+                                calculateUsage();
+                            });
+                        });
+
                         populateFavoritesTable();
+                        populateScheduledTable();
                     });
                 });
             });
+
+            // Also populate the schedule create modal option
+            var opt = document.createElement("option");
+            opt.setAttribute("value", i);
+            opt.innerHTML = favorites[i].name;
+            $('#scheduleWorkflow').append(opt);
         }
     });
 }
@@ -515,12 +565,16 @@ function populateScheduledTable() {
                         confirmButtonClass: "btn-danger",
                         confirmButtonText: "Delete",
                         closeOnConfirm: true
-                    }, function(evt) {
+                    }, function(resp) {
+                        if (!resp)
+                            return;
                         chrome.storage.local.get('scheduled', function (result) {
                             var scheduled = result.scheduled;
                             scheduled.splice(evt.data, 1);
-                            chrome.storage.local.set({scheduled: scheduled});
-                            populateScheduledTable();
+                            chrome.storage.local.set({scheduled: scheduled},function(){
+                                populateScheduledTable();
+                                calculateUsage();
+                            });
                         });
                     });
                 });
@@ -558,7 +612,6 @@ $('#addScheduleSubmitButton').click(function(){
     if (date_split_1[2]=="PM")
         hours += 12;
     var date = new Date(parseInt(date_split_2[2]),parseInt(date_split_2[0])-1,parseInt(date_split_2[1]),parseInt(hours),parseInt(date_split_3[1]));
-    console.log(date);
 
     chrome.storage.local.get('scheduled', function (result) {
         var scheduled = result.scheduled;
