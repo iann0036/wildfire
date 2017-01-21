@@ -549,6 +549,7 @@ function populateScheduledTable() {
                 "    <td>" + workflowname + "</td>" +
                 "    <td>" + schDate + "</td>" +
                 "    <td>" + repeat + "</td>" +
+                "    <td>Local Machine</td>" +
                 "    <td>" +
                 "        <a href=\"#\" id=\"deleteschedule" + (i+1) + "\">Delete</a>" +
                 "    </td>" +
