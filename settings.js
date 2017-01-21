@@ -523,7 +523,7 @@ function populateScheduledTable() {
             }
 
             if (scheduled.length < 1)
-                $('#scheduledTable').html("<tr><td colspan='4' style='text-align: center;'>Nothing has been scheduled yet!</td></tr>");
+                $('#scheduledTable').html("<tr><td colspan='5' style='text-align: center;'>Nothing has been scheduled yet!</td></tr>");
             else
                 $('#scheduledTable').html("");
 
@@ -536,7 +536,7 @@ function populateScheduledTable() {
                 if (scheduled[i].repeat==240) repeat = "Every 4 Hours";
                 if (scheduled[i].repeat==1440) repeat = "Every 24 Hours";
                 
-                var workflowname = '<a href="/workfloweditor.html">Current Workflow</a>';
+                var workflowname = "<a href='/workfloweditor.html'>Current Workflow</a>";
                 if (scheduled[i].workflow > -1)
                     workflowname = favorites[scheduled[i].workflow].name;
 
