@@ -432,12 +432,12 @@ function readableEventDetail(event) {
     //    event_data = event_data.substr(0, 57) + "...";
 
     if (event.evt_data.inFrame) {
-        event_type += ' <span class="hint-circle blue" data-toggle="tooltip" data-placement="top" title="Detected this event within a frame">?</span>';
+        event_type += " <span class='hint-circle blue' data-toggle='tooltip' data-placement='top' title='Detected this event within a frame'>?</span>";
     }
 
     if (event.evt_data.csspathfull) {
         if (event.evt_data.csspathfull != "html > body") {
-            event_type += ' <span class="hint-circle grey" data-toggle="tooltip" data-placement="top" title="' + event.evt_data.csspathfull + '">?</span>';
+            event_type += " <span class='hint-circle grey' data-toggle='tooltip' data-placement='top' title='" + event.evt_data.csspathfull + "'>?</span>";
         }
     }
 
