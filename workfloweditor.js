@@ -178,7 +178,7 @@ function selectedFigure(figure) {
     if (figure.userData.evt == "begin_recording") {
       $('#sidePanelTypeSelect').attr('disabled','disabled');
       $('#sidePanelTypeSelect').html(
-        "<option value='begin_recording' data-content='<span class=\'user-item\'><img style=\'-webkit-border-radius: 0; border-radius: 0;\' src=\'/icons/dark-runner.png\'>Begin Recording</span>'>Begin Recording</option>"
+        "<option value='begin_recording' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-runner.png\"/>Begin Recording</span>'>Begin Recording</option>"
       ).selectpicker('refresh');
       $('#sidePanelTypeSelect').attr('disabled','disabled');
     } else {
@@ -197,21 +197,21 @@ function selectedFigure(figure) {
     $('#sidePanelTypeSelect').removeAttr('disabled');
     if (figure.userData.evt == "wait_for_element")
       $('#sidePanelTypeSelect').html(
-        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-        '<option selected="selected" value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
-        '<option value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
+        "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
+        "<option selected='selected' value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "wait_for_title")
       $('#sidePanelTypeSelect').html(
-        '<option value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
-        '<option selected="selected" value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
+        "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
+        "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
+        "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "timer")
       $('#sidePanelTypeSelect').html(
-        '<option selected="selected" value="timer" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-timer-clock.png"/>Timer</span>\'>Timer</option>' +
-        '<option value="wait_for_element" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/page-view.png"/>Wait For Element</span>\'>Wait For Element</option>' +
-        '<option value="wait_for_title" data-content=\'<span class="user-item"><img style="-webkit-border-radius: 0; border-radius: 0;" src="/icons/dark-title.png"/>Wait For Title</span>\'>Wait For Title</option>'
+        "<option selected='selected' value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
+        "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
       ).selectpicker('refresh');
   }
 
