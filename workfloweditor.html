@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="/theme/css/custom.css">
 </head>
 
-<body class="horizontal-navigation" style="background-color: #ffffff">
+<body class="horizontal-navigation" style="background-color: #ffffff; overflow-x: hidden;">
 <input id="eventfileContainer" accept=".WFIRE" type="file" style="display: none;" />
 <input id="simfileContainer" accept=".WFSIM" type="file" style="display: none;" />
 
@@ -104,14 +104,14 @@
         <a class="nav-link" href="/about.html">About</a>
     </li>
 </ul>
-
-<div style="padding-top: 136px; padding-left: 0px; float: left; position: absolute;">
+<div id="graphParent" style="padding-top: 136px; padding-left: 0px;">
     <div id="graph"></div>
 </div>
-<div class="form-group" style="right: 0px; padding-top: 136px; margin: 16px; float: right; position: absolute;">
+<div class="form-group" style="right: 20px; top: 136px; margin: 16px; position: fixed;">
     <div class="btn-toolbar" role="toolbar" aria-label="Toolbar">
         <div class="btn-group" role="group" aria-label="Event Actions">
             <button id="workflowToolbarAddNode" type="button" class="btn btn-default-outline"><i class="fa fa-plus-square-o"></i></button>
+            <button id="workflowToolbarAddSection" type="button" class="btn btn-default-outline"><i class="fa fa-object-group"></i></button>
             <!--<button type="button" class="btn btn-default-outline"><i class="fa fa-copy"></i></button>-->
             <button id="workflowToolbarDelete" type="button" class="btn btn-default-outline"><i class="fa fa-trash-o"></i></button>
         </div>
@@ -126,7 +126,7 @@
         </div>
     </div>
 </div>
-<div style="padding-top: 136px; width: 300px; float: left; position: absolute;">
+<div style="width: 300px; position: fixed; left: 0; top: 136px;">
     <div class="container-fluid" style="padding-top: 20px;">
         <section id="workflowsidepanel" class="card card-default" style="display: none;">
             <header class="card-header">
@@ -137,9 +137,11 @@
             </header>
             <div class="card-block" style="min-height: 120px;">
                 <p class="card-text">
-                    <label class="form-label semibold" for="sidePanelTypeSelect">Type</label>
-                    <select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
-                    </select><br /><br />
+                    <div id="sidePanelTypeSelectGroup">
+                        <label class="form-label semibold" for="sidePanelTypeSelect">Type</label>
+                        <select id="sidePanelTypeSelect" disabled="disabled" class="bootstrap-select">
+                        </select><br /><br />
+                    </div>
                     <span id="sidePanelEventDetails"></span>
                     <button id="deleteButtonSidepanel" type="button" class="btn btn-inline btn-danger">Delete</button>
                 </p>

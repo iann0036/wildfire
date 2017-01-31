@@ -8,7 +8,7 @@ var node;
 
 var CustomTracker = [];
 
-var CustomNode, CustomArrow;
+var CustomNode, CustomArrow, CustomSection;
 
 var message_port = chrome.runtime.connect({name: "sim"});
 send_message({action: "getstate"});
@@ -37,7 +37,7 @@ function defineCustoms() {
         init: function (attr) {
             this._super(attr);
 
-            setTimeout(function(self) { // need the timeout, some weird loss of scope issue
+            setTimeout(function(self) { // need the timeout, some weird loss of scope issue - 31/1/16: Needed because the userData isnt set when init is called
                 var event = self.userData.evt;
 
                 if (event == "begin_recording")
@@ -54,6 +54,40 @@ function defineCustoms() {
                     }
                 });
                 self.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
+            }, 1, this);
+        }
+    });
+
+    CustomSection = draw2d.shape.composite.Raft.extend({
+        NAME: "CustomSection",
+        init: function (width, height) {
+            this._super(width, height);
+
+            setTimeout(function(self) {
+                if (self.userData && self.userData.section) {
+                    var label = new draw2d.shape.basic.Label({
+                        text: self.userData.section_name,
+                        x: (window.innerWidth/2)-100,
+                        y: (window.innerHeight/2)-50,
+                        stroke: 0,
+                        fontFamily: "'Proxima Nova',sans-serif",
+                        bold: true,
+                        fontSize: 14,
+                        fontColor: "#888888"
+                    });
+                    
+                    self.toBack();
+                    self.add(label, new myRaftLabelLocator());
+                    self.setMinWidth(label.getWidth());
+                    self.setMinHeight(label.getHeight());
+
+                    /*canvas.editPolicy.grep(function(p){
+                        if(p.NAME === gridPolicy.NAME) {
+                            canvas.uninstallEditPolicy( gridPolicy );
+                            canvas.installEditPolicy( gridPolicy );
+                        }
+                    });*/
+                }
             }, 1, this);
         }
     });

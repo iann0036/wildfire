@@ -10,6 +10,26 @@ var link_types = [
   "wait_for_title"
 ];
 
+var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
+  NAME: "myRaftLabelLocator",
+  init: function() {
+      this._super();
+  },
+  relocate: function(index, target) {
+      var parent = target.getParent();
+      var boundingBox = parent.getBoundingBox();
+      var offset = (parent instanceof draw2d.Port) ? boundingBox.w/2 : 0;
+
+      var targetBoundingBox = target.getBoundingBox();
+      if (target instanceof draw2d.Port) {
+          target.setPosition(boundingBox.w/2-offset,0);
+      } else {
+          //target.setPosition(boundingBox.w/2-(targetBoundingBox.w/2)-offset,-(targetBoundingBox.h+2));
+          target.setPosition(0,0);
+      }
+  }
+});
+
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
     return;
@@ -31,7 +51,12 @@ function escapeOrDefault(value, defaultval) {
 }
 
 function getEventOptionsHtml(userdata) {
-  if (userdata.evt == "scroll") {
+  if (userdata.section) {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"section_name\">Section Name</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"section_name\" value=\"" + escapeOrDefault(userdata.section_name.replace(/\"/g,'&quot;'),"") + "\">" +
+    "    <br />" +
+    "</div>";
+  } else if (userdata.evt == "scroll") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scrollLeftEnd\">Scroll To</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
@@ -171,8 +196,12 @@ function getEventOptionsHtml(userdata) {
 function selectedFigure(figure) {
   $('#workflowsidepanel').attr('style','');
   $('#sidePanelTypeSelect').html('');
+  $('#sidePanelTypeSelectGroup').attr("style","display: block;");
 
-  if ($.inArray(figure.userData.evt,link_types)==-1) {
+  if (figure.userData.section) {
+    $('#sidePanelTitle').text("Section Properties");
+    $('#sidePanelTypeSelectGroup').attr("style","display: none;");
+  } else if ($.inArray(figure.userData.evt,link_types)==-1) {
     $('#sidePanelTitle').text("Event Properties");
     $('#sidePanelTypeSelect').removeAttr('disabled');
     if (figure.userData.evt == "begin_recording") {
@@ -268,11 +297,46 @@ function setDetailListeners() {
     userData['csspath'] = $('#event_detail_csspath').val();
     figure.setUserData(userData);
   });
+  $('#section_name').on('input', function() {
+    var userData = figure.userData;
+    userData['section_name'] = $('#section_name').val();
+    figure.setUserData(userData);
+    figure.getChildren().data[0].setText($('#section_name').val());
+  });
   $('.event-detail').on('input', function() {
     var userData = figure.userData;
     userData.evt_data[$(this).attr('data-event-detail')] = $(this).val();
     figure.setUserData(userData);
   });
+}
+
+function addSection(label) {
+  canvas.uninstallEditPolicy( gridPolicy );
+
+  var section = new CustomSection({
+    x: (window.innerWidth/2)-100,
+    y: (window.innerHeight/2)-50,
+    bgColor: "#f4f4f4",
+    color: "#888888",
+    stroke: 2,
+    width: 200,
+    height: 100,
+    userData: {
+      section: true,
+      section_name: ""
+    }
+  });
+  
+  canvas.add(section);
+
+  setTimeout(function(){
+    canvas.installEditPolicy( gridPolicy );
+  },2);
+
+  canvas.setCurrentSelection(section);
+  selectedFigure(section);
+
+  $('#section_name').focus();
 }
 
 function addNode(event) {
@@ -287,23 +351,7 @@ function addNode(event) {
     bgColor: bgColor,
     userData: event
   });
-  //node.installEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
-  /*
-  if (event.evt == "begin_recording")
-    node.setDeleteable(false);
-  var CustomIcon = draw2d.SetFigure.extend({
-    init : function(){ this._super(); },
-    createSet: function(){
-        this.canvas.paper.setStart();
-        this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
-            stroke: 0
-        });
-        this.canvas.paper.image("icons/" + mappingData[event.evt].icon, 12, 12, this.getWidth() - 24, this.getHeight() - 24);
-        return this.canvas.paper.setFinish();
-    }
-  });
-  node.add(new CustomIcon(), new draw2d.layout.locator.CenterLocator(node));
-  */
+
   var portConfig = {
     diameter: 7,
     bgColor: "#1E90FF"
@@ -322,11 +370,31 @@ function addNode(event) {
   topPort.setName("Top");
   node.addPort(topPort,new draw2d.layout.locator.TopLocator());
   
+  node.on("move",function(obj,ctx) {
+      canvasResize();
+  });
+
   return node;
 }
 
 function deselectedFigure(figure) {
   $('#workflowsidepanel').attr('style','display: none;');
+}
+
+function canvasResize() {
+    var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY()+f.getHeight();});
+    var height = Math.max(window.innerHeight-136,150 + Math.max.apply(Math,heights.asArray()));
+    if (canvas.getHeight() == height)
+      return;
+
+    $('#graph').attr('style','width: ' + window.innerWidth + 'px; height: ' + height + 'px; background-color: #ffffff;');
+    canvas.setDimension(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
+
+    var newRegion = new draw2d.policy.figure.RegionEditPolicy(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
+    canvas.getFigures().each(function(i, o) {
+      o.uninstallEditPolicy({NAME: "draw2d.policy.figure.RegionEditPolicy"});		
+      o.installEditPolicy(newRegion);
+    });
 }
 
 function exportCanvasImage() {
@@ -367,23 +435,28 @@ function exportCanvasImage() {
 $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
 
 function importJSON(json) {
-  canvas.clear();
-  var reader = new draw2d.io.json.Reader();
-  var importedjson = JSON.parse(decrypt(json));
-  reader.unmarshal(canvas, importedjson.canvas);
+    canvas.clear();
+    var reader = new draw2d.io.json.Reader();
+    var importedjson = JSON.parse(decrypt(json));
 
-  nodes = [];
-  for (var i=0; i<canvas.figures.data.length; i++) {
-    nodes.push(canvas.figures.data[i]);
-    canvas.figures.data[i].setResizeable(false);
-  }
+    reader.unmarshal(canvas, importedjson.canvas);
 
-  if (canvas.figures.data.length>60)
-    $('body').attr('style','background-color: #ffffff; overflow-y: scroll; overflow-x: hidden;');
-  else
-    $('body').attr('style','background-color: #ffffff;');
+    nodes = [];
+    for (var i=0; i<canvas.figures.data.length; i++) {
+        nodes.push(canvas.figures.data[i]);
+        canvas.figures.data[i].setResizeable(false);
+        canvas.figures.data[i].on("move",function(obj,ctx) {
+            canvasResize();
+        });
+    }
 
-  chrome.storage.local.set({events: importedjson.events});
+    chrome.storage.local.set({events: importedjson.events});
+
+    if (importedjson.cvsHeight) {
+        if (importedjson.cvsHeight != $('#graph').height()) {
+            canvasResize();
+        }
+    }
 }
 
 function loadFromLocalStorageOrCreateNew(eventresult) {
@@ -401,7 +474,8 @@ function saveToLocalStorage() {
         writer.marshal(canvas, function(json){
             var jsonTxt = JSON.stringify({
                 canvas: json,
-                events: events
+                events: events,
+                cvsHeight: $('#graph').height()
             });
             var text = encrypt(jsonTxt);
             chrome.storage.local.set({workflow: text},function(){
@@ -501,27 +575,32 @@ function connCreate(sourcePort, targetPort, userData) {
 }
 
 $(window).load(function () {
+    /* Init Page */
+    var width = window.innerWidth;
+    var height = window.innerHeight-136;
 
-  chrome.storage.local.get('events', function (result) {
-      if (!result.events)
-          result.events = [];
-      /* Init Page */
-      var width = window.innerWidth;
-      var height = window.innerHeight-136 + Math.max(0,Math.floor((result.events.length-60)/12)*80);
+    defineCustoms();
 
-      defineCustoms();
+    $('#graph').attr('style','width: ' + width + 'px; height: ' + height + 'px; background-color: #ffffff;');
 
-      if (result.events.length>60)
-        $('body').attr('style','background-color: #ffffff; overflow-y: scroll; overflow-x: hidden;');
+    window.addEventListener("contextmenu", function(e) { e.preventDefault(); });
 
-      $('#graph').attr('style','width: ' + width + 'px; height: ' + height + 'px; background-color: #ffffff;');
-      window.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    initCanvas();
 
-      canvas = new draw2d.Canvas("graph");
-      canvas.installEditPolicy( new draw2d.policy.connection.DragConnectionCreatePolicy({
-        createConnection: connCreate
-      }));
+    if (window.location.hash == "#launch") {
       setTimeout(function(){
+        initWorkflowSimulation();
+      },300);
+    }
+});
+
+function initCanvas() {
+    canvas = new draw2d.Canvas("graph");
+
+    canvas.installEditPolicy( new draw2d.policy.connection.DragConnectionCreatePolicy({
+        createConnection: connCreate
+    }));
+    setTimeout(function(){
         gridPolicy = new draw2d.policy.canvas.SnapToGridEditPolicy();
         gridPolicy.setGrid(5);
         gridPolicy.setGridColor("#ffffff");
@@ -529,28 +608,27 @@ $(window).load(function () {
         canvas.installEditPolicy( gridPolicy );
 
         saveToLocalStorage();
-      },100);
-      
-      canvas.on("select", function(emitter,event) {
+    },100);
+    
+    canvas.on("select", function(emitter,event) {
         if (event.figure!==null) {
             figure = event.figure;
             selectedFigure(event.figure);
         } else {
             deselectedFigure(event.figure);
         }
-      });
+    });
 
-      loadFromLocalStorageOrCreateNew(result);
-
-      if (window.location.hash == "#launch") {
-        setTimeout(function(){
-          initWorkflowSimulation();
-        },200);
-      }
-  });
-});
+    chrome.storage.local.get('events', function (result) {
+        if (!result.events)
+            result.events = [];
+        loadFromLocalStorageOrCreateNew(result);
+    });
+}
 
 function createNewWorkflowFromEvents(result) {
+    var nodey;
+
     if (result.events.length < 1) { // only happens on fresh install
         result.events.push({
             evt: 'begin_recording',
@@ -560,7 +638,7 @@ function createNewWorkflowFromEvents(result) {
     for (var i=0; i<result.events.length; i++) {
         var node = addNode(result.events[i]);
         var nodex = 295 + Math.min(80*(i%24), 80*12);
-        var nodey = 80 + 160*Math.floor(i/24);
+        nodey = 80 + 160*Math.floor(i/24);
         if (i%24 > 11) {
             nodey += 80;
             nodex -= 80*(i%12)+80;
@@ -595,11 +673,13 @@ function createNewWorkflowFromEvents(result) {
         );
         canvas.add(c);
     }
+
+    canvasResize();
 }
 
 $('#nodeLinkPanelX').click(function(){
     $('#workflowsidepanel').attr('style','display: none;');
-    // TODO: Deselect node/link
+    canvas.setCurrentSelection([]);
 });
 
 $('#workflowToolbarAddNode').click(function(){
@@ -608,6 +688,9 @@ $('#workflowToolbarAddNode').click(function(){
       time: 0
     }), window.innerWidth/2, window.innerHeight/3);
     nodes.push(node);
+});
+$('#workflowToolbarAddSection').click(function(){
+    addSection("");
 });
 $('#workflowToolbarInitSimulation').click(function(){
     saveToLocalStorage().then(function() {
