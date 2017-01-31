@@ -64,6 +64,7 @@ function defineCustoms() {
             this._super(width, height);
 
             setTimeout(function(self) {
+                self.setResizeable(true);
                 if (self.userData && self.userData.section) {
                     var label = new draw2d.shape.basic.Label({
                         text: self.userData.section_name,

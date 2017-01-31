@@ -3,6 +3,7 @@ var conn;
 var nodes = [];
 var figure;
 var gridPolicy;
+var delayedResizeCounter;
 
 var link_types = [
   "timer",
@@ -311,16 +312,19 @@ function setDetailListeners() {
 }
 
 function addSection(label) {
+  var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY()+f.getHeight();});
+  var y = 10 + Math.max.apply(Math,heights.asArray());
+
   canvas.uninstallEditPolicy( gridPolicy );
 
   var section = new CustomSection({
-    x: (window.innerWidth/2)-100,
-    y: (window.innerHeight/2)-50,
+    x: (window.innerWidth/2)-108,
+    y: y,
     bgColor: "#f4f4f4",
     color: "#888888",
     stroke: 2,
-    width: 200,
-    height: 100,
+    width: 232,
+    height: 80,
     userData: {
       section: true,
       section_name: ""
@@ -329,12 +333,19 @@ function addSection(label) {
   
   canvas.add(section);
 
+  section.on("move",function(obj,ctx) {
+      canvasResize();
+  });
+
   setTimeout(function(){
     canvas.installEditPolicy( gridPolicy );
   },2);
 
   canvas.setCurrentSelection(section);
   selectedFigure(section);
+
+  $(window).scrollTop($('body').height());
+  canvasResize();
 
   $('#section_name').focus();
 }
@@ -383,18 +394,21 @@ function deselectedFigure(figure) {
 
 function canvasResize() {
     var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY()+f.getHeight();});
-    var height = Math.max(window.innerHeight-136,150 + Math.max.apply(Math,heights.asArray()));
+    var height = Math.max(window.innerHeight-136,200 + Math.max.apply(Math,heights.asArray()));
     if (canvas.getHeight() == height)
       return;
 
-    $('#graph').attr('style','width: ' + window.innerWidth + 'px; height: ' + height + 'px; background-color: #ffffff;');
-    canvas.setDimension(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
+    clearTimeout(delayedResizeCounter);
+    delayedResizeCounter = setTimeout(function(){
+        $('#graph').attr('style','width: ' + window.innerWidth + 'px; height: ' + height + 'px; background-color: #ffffff;');
+        canvas.setDimension(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
 
-    var newRegion = new draw2d.policy.figure.RegionEditPolicy(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
-    canvas.getFigures().each(function(i, o) {
-      o.uninstallEditPolicy({NAME: "draw2d.policy.figure.RegionEditPolicy"});		
-      o.installEditPolicy(newRegion);
-    });
+        var newRegion = new draw2d.policy.figure.RegionEditPolicy(new draw2d.geo.Rectangle(0,0,window.innerWidth,height));
+        canvas.getFigures().each(function(i, o) {
+          o.uninstallEditPolicy({NAME: "draw2d.policy.figure.RegionEditPolicy"});		
+          o.installEditPolicy(newRegion);
+        });
+    },300);
 }
 
 function exportCanvasImage() {
@@ -457,6 +471,11 @@ function importJSON(json) {
             canvasResize();
         }
     }
+
+    setTimeout(function(){ // TODO: This is a dirty hack to avoid grid overlay on long loads
+      canvas.uninstallEditPolicy( gridPolicy );
+      canvas.installEditPolicy( gridPolicy );
+    },1000);
 }
 
 function loadFromLocalStorageOrCreateNew(eventresult) {
@@ -608,6 +627,7 @@ function initCanvas() {
         canvas.installEditPolicy( gridPolicy );
 
         saveToLocalStorage();
+        canvasResize();
     },100);
     
     canvas.on("select", function(emitter,event) {
@@ -683,14 +703,20 @@ $('#nodeLinkPanelX').click(function(){
 });
 
 $('#workflowToolbarAddNode').click(function(){
+    var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY();});
+    var y = Math.max.apply(Math,heights.asArray()) + 80;
+
     canvas.add(addNode({
       evt: 'end_recording',
       time: 0
-    }), window.innerWidth/2, window.innerHeight/3);
+    }), 775, y);
     nodes.push(node);
+    canvasResize();
+    $(window).scrollTop($('body').height());
 });
 $('#workflowToolbarAddSection').click(function(){
     addSection("");
+    $(window).scrollTop($('body').height());
 });
 $('#workflowToolbarInitSimulation').click(function(){
     saveToLocalStorage().then(function() {
