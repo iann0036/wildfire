@@ -12,10 +12,11 @@ var new_window;
 var sim_start_time;
 var terminated = false;
 var simulation_log = [];
-var waitForElementInterval, waitForTitleInterval;
+var waitForElementInterval, waitForTitleInterval, testExpressionInterval;
 var simulating = false;
 var last_node;
 var isFavSim = false;
+var simulation_variables = [];
 
 chrome.alarms.onAlarm.addListener(function(alarm){
     var name = alarm.name;
@@ -178,25 +179,19 @@ chrome.tabs.onUpdated.addListener(
 			chrome.storage.local.get('recording', function (isRecording) {
 				if (isRecording.recording) {
 					if (changeInfo.status == 'loading') {
-						chrome.storage.local.get('events', function (result) {
-							var events = result.events;
-							if (!Array.isArray(events)) {
-								events = [];
-							}
-							events.push({
-								tab: tab,
-								evt: 'tabchange',
-								evt_data: {
-									id: tabId,
-									openerTabId: changeInfo.openerTabId,
-									url: tab.url,
-									active: tab.active,
-									prerender: false
-								},
-								time: Date.now()
-							});
-							chrome.storage.local.set({events: events});
-						});
+                        events.push({
+                            tab: tab,
+                            evt: 'tabchange',
+                            evt_data: {
+                                id: tabId,
+                                openerTabId: changeInfo.openerTabId,
+                                url: tab.url,
+                                active: tab.active,
+                                prerender: false
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
 					}
 				}
 			});
@@ -210,25 +205,19 @@ chrome.tabs.onReplaced.addListener( // Pre-rendered
 			if (tab.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
 				chrome.storage.local.get('recording', function (isRecording) {
 					if (isRecording.recording) {
-						chrome.storage.local.get('events', function (result) {
-							var events = result.events;
-							if (!Array.isArray(events)) {
-								events = [];
-							}
-							events.push({
-								tab: tab,
-								evt: 'tabchange',
-								evt_data: {
-									id: tab.id,
-									openerTabId: tab.id,
-									url: tab.url,
-									active: tab.active,
-									prerender: true
-								},
-								time: Date.now()
-							});
-							chrome.storage.local.set({events: events});
-						});
+                        events.push({
+                            tab: tab,
+                            evt: 'tabchange',
+                            evt_data: {
+                                id: tab.id,
+                                openerTabId: tab.id,
+                                url: tab.url,
+                                active: tab.active,
+                                prerender: true
+                            },
+                            time: Date.now()
+                        });
+                        chrome.storage.local.set({events: events});
 					}
 				});
 			}
@@ -252,6 +241,17 @@ function updateExtIcon() {
 			chrome.browserAction.setBadgeText({ text: "" });
             recording = false;
         }
+    });
+}
+
+
+function updateEvents() {
+    chrome.storage.local.get('events', function (result) {
+        var new_events = result.events;
+        if (!Array.isArray(new_events)) { // for safety only
+            new_events = [];
+        }
+        events = new_events;
     });
 }
 
@@ -317,12 +317,29 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 		setContextMenus();
     if (changes.scheduled != undefined)
 		configureAlarms();
+    if (changes.events != undefined) {
+        if (changes.events.newValue.length != events.length) {
+            updateEvents();
+        }
+    }
 });
 
 updateExtIcon();
 updateBgSettings();
 updateProxy();
 configureAlarms();
+updateEvents();
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.action == "addEvent") {
+        events.push({
+            evt: request.evt,
+            evt_data: request.evt_data,
+            time: request.time
+        });
+        chrome.storage.local.set({events: events});
+    }
+});
 
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
 	if (request.action == "registrationStatus") {
@@ -503,6 +520,7 @@ function begin_fav_sim(fav_index, curr_window) { ////////////////////
     new_window = curr_window;
     isFavSim = true;
     simulation_log = [];
+    simulation_variables = [];
 
     chrome.storage.local.set({simulating: true});
 
@@ -532,6 +550,7 @@ function begin_sim() {
 }
 
 function begin_sim_with_option(fav_index) {
+    simulation_variables = [];
     sim_start_time = Date.now();
     terminated = false;
     isFavSim = false;
@@ -683,6 +702,8 @@ function logResultAndRaceLinks(result, failure, node) {
 						waitForElement(resolve, links[i].userData.csspath, links[i]);
 					} else if (links[i].userData.evt == "wait_for_title") {
 						waitForTitle(resolve, links[i].userData.title, links[i]);
+                    } else if (links[i].userData.evt == "test_expression") {
+						testExpression(resolve, links[i].userData.expr, links[i]);
 					} else {
 						reject();
 					}
@@ -711,6 +732,7 @@ function logResultAndRaceLinks(result, failure, node) {
 		.then(function(winning_link) {
 			clearInterval(waitForElementInterval);
 			clearInterval(waitForTitleInterval);
+			clearInterval(testExpressionInterval);
 			if (!terminated) {
 				if (failure)
 					send_message({
@@ -957,6 +979,26 @@ function execEvent(node) {
                     });
                 });
             });
+        case 'setvar':
+            return new Promise(function(resolve, reject) {
+                try {
+                    var parser = new Parser();
+                    simulation_variables[node.userData.evt_data.var] = parser.evaluate(node.userData.evt_data.expr,simulation_variables);
+                    resolve({
+                        error: false,
+                        results: null,
+                        id: node.id,
+                        time: Date.now()
+                    });
+                } catch(err) {
+                    reject({
+                        error: true,
+                        results: ["Error processing expression: " + err.message],
+                        id: node.id,
+                        time: Date.now()
+                    });
+                }
+            });
         case 'recaptcha':
             return new Promise(function(resolve, reject) {
                 code = 'if ($(".g-recaptcha").length > 0) { var sitekey = $(".g-recaptcha").attr("data-sitekey"); var url = location.host; sitekey; } else { throw "NOCAPTCHAFOUND"; }';
@@ -1111,6 +1153,20 @@ function waitForTitle(resolve, expected_title, returnvar) {
 		} catch(err) {
 			; //TODO: Process this
 		}
+    }, 100);
+}
+
+function testExpression(resolve, expression, returnvar) {
+    testExpressionInterval = setInterval(function(){
+        var activeTab = 0;
+        try {
+            var parser = new Parser();
+            var result = parser.evaluate(expression,simulation_variables);
+            if (result === true)
+                resolve(returnvar);
+        } catch(err) {
+            ; //TODO: Process this
+        }
     }, 100);
 }
 

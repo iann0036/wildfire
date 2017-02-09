@@ -11,11 +11,6 @@ var mappingData = {
         event_type: 'End Recording',
         icon: 'winner-runner-arriving-to-end-line.png'
     },
-    /*setvar: {
-        bgColor: '#4988CF',
-        event_type: 'Set Variable',
-        icon: 'variable.png'
-    },*/
     click: {
         bgColor: '#556270',
         event_type: 'Mouse Click',
@@ -30,6 +25,11 @@ var mappingData = {
         bgColor: '#CBE86B',
         event_type: 'Data Input',
         icon: 'text-entry-box.png'
+    },
+    setvar: {
+        bgColor: '#3FB8AF',
+        event_type: 'Set Variable',
+        icon: 'equality-sign.png'
     },
     change: {
         bgColor: '#98462A',
@@ -123,7 +123,7 @@ var mappingData = {
     },
     recaptcha: {
         bgColor: '#CBD8DE',
-        event_type: 'Solve reCAPTCHA <i style="color: #f29824;" class="fa fa-star"></i>',
+        event_type: 'Solve reCAPTCHA [P]',
         icon: 'tiles-view.png'
     }
 };
@@ -410,6 +410,12 @@ function readableEventDetail(event) {
         case 'setproxy':
             event_type = "Set Proxy Settings";
             event_data = "&nbsp;";
+            minorEvent = false;
+            event.evt_data.url = "";
+            break;
+        case 'setvar':
+            event_type = "Set Variable";
+            event_data = "The variable <code>" + event.evt_data.var + "</code> was set";
             minorEvent = false;
             event.evt_data.url = "";
             break;

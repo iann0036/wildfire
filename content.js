@@ -271,35 +271,29 @@ var scrollStartTop;
 var scrollStartLeft;
 
 function finishScrollEvent() {
-    chrome.storage.local.get('events', function (result) {
-        scrollObject = document.body; // temp fix
+    scrollObject = document.body; // temp fix
 
-        var events = result.events;
-        if (!Array.isArray(events)) { // for safety only
-            events = [];
-        }
-        events.push({
-            evt: 'scroll',
-            evt_data: {
-                bubbles: false, // TODO: Investigate
-                cancelable: false, // TODO: Investigate
-                scrollTopStart: scrollStartTop,
-                scrollTopEnd: scrollObject.scrollTop,
-                scrollLeftStart: scrollStartLeft,
-                scrollLeftEnd: scrollObject.scrollLeft,
-                inFrame: getFrameIndex(),
-                url: window.location.href,
-                scrollTime: Date.now()-scrollStartTime,
-                endtime: Date.now()
-            },
-            time: scrollStartTime
-        });
-        chrome.storage.local.set({events: events});
-
-        scrollObject = null;
-        scrollStartTop = null; // not necessary
-        scrollStartLeft = null; // not necessary
+    chrome.runtime.sendMessage({
+        action: "addEvent",
+        evt: "scroll",
+        evt_data: {
+            bubbles: false, // TODO: Investigate
+            cancelable: false, // TODO: Investigate
+            scrollTopStart: scrollStartTop,
+            scrollTopEnd: scrollObject.scrollTop,
+            scrollLeftStart: scrollStartLeft,
+            scrollLeftEnd: scrollObject.scrollLeft,
+            inFrame: getFrameIndex(),
+            url: window.location.href,
+            scrollTime: Date.now()-scrollStartTime,
+            endtime: Date.now()
+        },
+        time: scrollStartTime
     });
+
+    scrollObject = null;
+    scrollStartTop = null; // not necessary
+    scrollStartLeft = null; // not necessary
 }
 
 function updateScrollEvent(e) {
@@ -358,39 +352,16 @@ function addDocumentEventListener(eventName) {
             eventName = "clipboard_paste";
 		if (eventName=="wfSubmit")
 			eventName = "submit";
-		
+
 		setTimeout(function () {
 			chrome.storage.local.get('recording', function (isRecording) {
 				if (isRecording.recording) {
-					chrome.storage.local.get('events', function (result) {
-						var events = result.events;
-						if (!Array.isArray(events)) { // for safety only
-							events = [];
-						}
-                        // Below adds new tab automatically, using alternative mechanisms for this
-                        /*
-                        if (events.length == 1) {
-                            events.push({
-                                tab: null,
-                                evt: 'tabchange',
-                                evt_data: {
-                                    id: 1,
-                                    openerTabId: null,
-                                    url: evt_data.url,
-                                    active: true,
-                                    prerender: false
-                                },
-                                time: events[0].time + 10
-                            });
-                        }
-                        */
-                        events.push({
-                            evt: eventName,
-                            evt_data: evt_data,
-                            time: Date.now()
-                        });
-                        chrome.storage.local.set({events: events});
-					});
+                    chrome.runtime.sendMessage({
+                        action: "addEvent",
+                        evt: eventName,
+                        evt_data: evt_data,
+                        time: Date.now()
+                    });
 				}
 			});
 		}, 1);

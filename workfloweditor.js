@@ -8,7 +8,8 @@ var delayedResizeCounter;
 var link_types = [
   "timer",
   "wait_for_element",
-  "wait_for_title"
+  "wait_for_title",
+  "test_expression"
 ];
 
 var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
@@ -187,6 +188,10 @@ function getEventOptionsHtml(userdata) {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_title\">Title</label>" +
     "    <input type=\"text\" class=\"form-control\" id=\"event_detail_title\" value=\"" + escapeOrDefault(userdata.title,"") + "\">" +
     "</div>";
+  } else if (userdata.evt == "test_expression") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_expression\">Expression</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_expression\" value=\"" + escapeOrDefault(userdata.expr,"") + "\">" +
+    "</div>";
   }
 
   console.log("Unprocessable Event Options: " + userdata.evt);
@@ -229,19 +234,29 @@ function selectedFigure(figure) {
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option selected='selected' value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "wait_for_title")
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
+        "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "timer")
       $('#sidePanelTypeSelect').html(
         "<option selected='selected' value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+      ).selectpicker('refresh');
+    else if (figure.userData.evt == "test_expression")
+      $('#sidePanelTypeSelect').html(
+        "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
+        "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option selected='selected' value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
   }
 
@@ -291,6 +306,11 @@ function setDetailListeners() {
   $('#event_detail_title').on('input', function() {
     var userData = figure.userData;
     userData['title'] = $('#event_detail_title').val();
+    figure.setUserData(userData);
+  });
+  $('#event_detail_expression').on('input', function() {
+    var userData = figure.userData;
+    userData['expr'] = $('#event_detail_expression').val();
     figure.setUserData(userData);
   });
   $('#event_detail_csspath').on('input', function() {
