@@ -1149,6 +1149,8 @@ function testExpression(resolve, expression, returnvar) {
     testExpressionInterval = setInterval(function(){
         var activeTab = 0;
         try {
+            expression = expression.replace("=","==").replace("====","==");
+
             var parser = new Parser();
             var result = parser.evaluate(expression,simulation_variables);
             if (result === true)
