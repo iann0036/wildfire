@@ -1299,6 +1299,10 @@ function Parser() {
     atan2: Math.atan2,
     'if': condition,
     gamma: gamma
+    // # For all, test for numeric and convert to int
+    // Element attribute value
+    // Element inner TEXT (trimmed)
+    // GET params
   };
 
   this.consts = {

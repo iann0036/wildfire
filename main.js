@@ -70,7 +70,7 @@ function updateWorkflowData() {
 	return new Promise(function(resolve,reject){
 		chrome.storage.local.get('workflow', function (workflow) {
             chrome.storage.local.get('events', function (events_result) {
-                if (!events_result.events || events_result.events.length<3) {
+                if (!events_result.events || events_result.events.length<2) {
                     chrome.notifications.create("no_recorded_events",{
                         type: "basic",
                         title: "Wildfire",
@@ -1056,7 +1056,6 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                 results: null,
                 id: node.id,
                 time: Date.now()
-                //event: node
             });
         }
 
@@ -1080,14 +1079,6 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                             break;
                         }
                     }
-                    
-                    /*eventExecutionTimeoutCounter = setTimeout(function(i){
-                        simulation_log.push({
-                            index: i,
-                            error: true
-                        });
-                        terminateSimulation(false, "Event timeout");
-                    }, event_execution_timeout, i);*/
 
                     code = "try { " + code + "; } catch(err) { new Object({error: err.message, errorstack: err.stack}); }";
 
@@ -1102,7 +1093,6 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                                 results: results,
                                 id: node.id,
                                 time: Date.now()
-                                //event: node
                             });
                         } else {
                             reject({
@@ -1110,7 +1100,6 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                                 results: results,
                                 id: node.id,
                                 time: Date.now()
-                                //event: node
                             });
                         }
                     });
