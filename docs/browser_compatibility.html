@@ -110,7 +110,7 @@
         <li>Introduction
             <ul>
                 <li><a href="/docs/how_wildfire_works.html">How Wildfire Works</a></li>
-                <li><a href="/docs/browser_compatibility.html">Browser Compatibility</a></li>
+                <li><a class="active" href="/docs/browser_compatibility.html">Browser Compatibility</a></li>
                 <li><a href="/docs/extension_updates.html">Extension Updates</a></li>
                 <li><a href="/docs/getting_support.html">Getting Support</a></li>
             </ul>
@@ -128,7 +128,6 @@
         <li>Events Reference
             <ul>
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
-                <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
                 <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
@@ -151,7 +150,7 @@
                 <li><a href="/docs/mouse_out.html">Mouse Out</a></li>
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
-                <li><a class="active" href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
+                <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
                 <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
             </ul>
         </li>
@@ -175,21 +174,31 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Clipboard Paste</h2>
+                <h2>Browser Compatibility</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 31, 2016
+                    Last Updated: February 12, 2016
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p style="margin-bottom: 2rem;">
-                    This event pastes the contents of the clipboard into the element currently active.
+                <p>
+                    Wildfire is currently available on Google Chrome and Mozilla Firefox. As browser implementations differ, some features of Wildfire may be unavailable for every browser. Below is a list of incompatible features per browser:
                 </p>
-                <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <br />
+                <h4>Mozilla Firefox</h4>
+                <ul>
+                    <li>The amount of stored simulations allowed is greatly reduced in Firefox.</li>
+                    <li>The right-click menu is not supported.</li>
+                    <li>The Set Proxy Settings event type is not supported.</li>
+                    <li>The Clipboard Copy event type is not supported.</li>
+                    <li>The Clipboard Cut event type is not supported.</li>
+                    <li>The Clipboard Paste event type is not supported.</li>
+                    <li>The Clear Browsing Data option is not supported for Firefox versions less than 53.0.</li>
+                    <li>The Purge Cookies event type is not supported for Firefox versions less than 50.0.</li>
+                </ul>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/clipboard_cut.html">&#8656; Clipboard Cut</a></p>
-                <p style="float: right;"><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/how_wildfire_works.html">&#8656; How Wildfire Works</a></p>
+                <p style="float: right;"><a href="/docs/extension_updates.html">Extension Updates &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

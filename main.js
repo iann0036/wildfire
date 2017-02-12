@@ -113,7 +113,6 @@ function updateWorkflowDataToFavorite(favorite_index) {
         return updateWorkflowData();
 	return new Promise(function(resolve,reject){
 		chrome.storage.local.get('favorites', function (favorites) {
-            console.log("Starting executiong of " + favorites.favorites[favorite_index].name);
 			var wfobj = JSON.parse(decrypt(favorites.favorites[favorite_index].workflow));
 			var canvas_elements = wfobj.canvas;
 			
@@ -135,47 +134,71 @@ function updateWorkflowDataToFavorite(favorite_index) {
 
 chrome.notifications.onClicked.addListener(function(notificationId){
     if (notificationId == "no_workflow_available") {
-        chrome.windows.create({
-			url: "workfloweditor.html",
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("workfloweditor.html"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("workfloweditor.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
     } else if (notificationId == "sim_complete") {
-        chrome.windows.create({
-            url: "simulations.html#0",
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("simulations.html#0"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("simulations.html#0"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
     } else if (notificationId == "no_recorded_events") {
-        chrome.windows.create({
-            url: "docs/getting_started.html",
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("docs/getting_started.html"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("docs/getting_started.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
     } else if (notificationId == "event_log_imported") {
-        chrome.windows.create({
-            url: "eventlog.html",
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("eventlog.html"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("eventlog.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
     }
 });
 
 chrome.tabs.onUpdated.addListener(
     function (tabId, changeInfo, tab) {
-		if (tab.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
+		if (!tab.url.startsWith("chrome-extension://" + chrome.runtime.id) && !tab.url.startsWith("moz-extension://" + chrome.runtime.id)) {
 			chrome.storage.local.get('recording', function (isRecording) {
 				if (isRecording.recording) {
 					if (changeInfo.status == 'loading') {
@@ -199,10 +222,10 @@ chrome.tabs.onUpdated.addListener(
 	}
 );
 
-chrome.tabs.onReplaced.addListener( // Pre-rendered
+chrome.tabs.onReplaced !== undefined && chrome.tabs.onReplaced.addListener( // Pre-rendered - special handling for not present in FF
     function (addedTabId, removedTabId) {
 		chrome.tabs.get(addedTabId, function (tab) {
-			if (tab.url.substring(0,51) != "chrome-extension://" + chrome.runtime.id) {
+			if (!tab.url.startsWith("chrome-extension://" + chrome.runtime.id) && !tab.url.startsWith("moz-extension://" + chrome.runtime.id)) {
 				chrome.storage.local.get('recording', function (isRecording) {
 					if (isRecording.recording) {
                         events.push({
@@ -257,7 +280,7 @@ function updateEvents() {
 
 function updateProxy() {
     chrome.storage.local.get('proxy', function (proxy) {
-		if (proxy && proxy.proxy) {
+		if (proxy && proxy.proxy && chrome.proxy) {
 			if (proxy.proxy.clear)
 				chrome.proxy.settings.clear({});
 			else {
@@ -288,7 +311,7 @@ function updateProxy() {
     });
 }
 
-chrome.webRequest.onAuthRequired.addListener(
+chrome.webRequest.onAuthRequired !== undefined && chrome.webRequest.onAuthRequired.addListener( // special handling for not present in FF
 	function(details) {
 		if (proxyAuthEnable) {
 			return({
@@ -341,6 +364,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
 });
 
+/*
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
 	if (request.action == "registrationStatus") {
 		if (bgSettings != null) {
@@ -358,7 +382,7 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 		var windowWidth = 1280;
 		var windowHeight = 800;
 		chrome.windows.create({
-			url: "dashboard.html",
+			url: chrome.extension.getURL("dashboard.html"),
 			type: "popup",
 			width: windowWidth,
 			height: windowHeight,
@@ -377,18 +401,25 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 		});
 	}
 });
+*/
 
-chrome.runtime.onInstalled.addListener(function(details){
+chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListener(function(details){ // special handling - not present in FF
     chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
-        chrome.windows.create({
-			url: "docs/getting_started.html",
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("docs/getting_started.html"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("docs/getting_started.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;
         /*chrome.notifications.create("",{
@@ -443,14 +474,20 @@ function setContextMenus() {
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
 					"documentUrlPatterns": ["http://*/*","https://*/*"],
 					"onclick": function(){
-						chrome.windows.create({
-							url: "/settings.html#favorites",
-							type: "popup",
-							width: windowWidth,
-							height: windowHeight,
-							left: screen.width/2-(windowWidth/2),
-							top: screen.height/2-(windowHeight/2)
-						});
+                        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                            chrome.windows.create({
+                                url: chrome.extension.getURL("settings.html#favorites"),
+                                type: "popup",
+                                width: windowWidth,
+                                height: windowHeight,
+                                left: screen.width/2-(windowWidth/2),
+                                top: screen.height/2-(windowHeight/2)
+                            });
+                        } else {
+                            window.open(chrome.extension.getURL("settings.html#favorites"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+                        }
 					}
 				});
 			}
@@ -566,33 +603,42 @@ function begin_sim_with_option(fav_index) {
 		if (bgSettings.incognito && isAllowedIncognito)
 			incognito = true;
 
-		var url = "chrome-extension://" + chrome.runtime.id + "/new.html";
+		var url = chrome.extension.getURL("new.html");
 		/*if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
 			url = events[1].evt_data.url;
 		}*/
 		
-		chrome.windows.create({
+        var window_options = {
 			"url":url,
-			"focused":true,
 			"left":0,
 			"top":0,
 			"width":1920,
 			"height":1080,
 			"incognito":incognito
-		}, function(simulation_window) {
+		};
+        if (typeof InstallTrigger === 'undefined') // NOT Firefox
+            window_options["focused"] = true;
+
+		chrome.windows.create(window_options, function(simulation_window) {
 			new_window = simulation_window;
 			if (bgSettings.runminimized) {
 				chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
 					state: "minimized"
 				});
-			}
+			} else {
+                chrome.windows.update(new_window.id, { // https://bugs.chromium.org/p/chromium/issues/detail?id=459841
+					state: "maximized"
+				});
+            }
 			
 			setTimeout(function(new_window){
-				chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-					for (var i=1; i<tabs.length; i++) {
-						chrome.tabs.remove(tabs[i].id);
-					}
-				});
+                if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                    chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                        for (var i=1; i<tabs.length; i++) {
+                            chrome.tabs.remove(tabs[i].id);
+                        }
+                    });
+                }
 			}, 100, new_window);
 
 			timeoutObject = setTimeout(function() {
@@ -938,7 +984,8 @@ function execEvent(node) {
         case 'tabchange':
             return new Promise(function(resolve, reject) {
                 var activeTab = 0;
-                chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+
+                function changeActiveTab(tabs) {
                     for (var i=0; i<tabs.length; i++) {
                         if (tabs[i].active)
                             activeTab = i;
@@ -953,7 +1000,17 @@ function execEvent(node) {
                         id: node.id,
                         time: Date.now()
                     });
-                });
+                }
+
+                if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                    chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                        changeActiveTab(tabs);
+                    });
+                } else {
+                    browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                        changeActiveTab(tabs);
+                    });
+                }
             });
         case 'select':
             if (bgSettings.simulateselect) {
@@ -1063,7 +1120,8 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
             var frameId = 0;
 
             var activeTab = 0;
-            chrome.tabs.getAllInWindow(new_window.id, function(tabs){
+
+            function runCodeInActiveTab(tabs) {
                 for (var i=0; i<tabs.length; i++) {
                     if (tabs[i].active)
                         activeTab = i;
@@ -1104,7 +1162,17 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                         }
                     });
                 });
-            });
+            }
+
+            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                    runCodeInActiveTab(tabs);
+                });
+            } else {
+                browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                    runCodeInActiveTab(tabs);
+                });
+            }
         } catch(err) {
             reject({
                 error: true,
@@ -1121,8 +1189,8 @@ function waitForTitle(resolve, expected_title, returnvar) {
     waitForTitleInterval = setInterval(function(){
         var activeTab = 0;
 		try {
-			chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-				try{
+            function waitForTitleInActiveTab(tabs) {
+                try {
 					for (var i=0; i<tabs.length; i++) {
 						if (tabs[i].active)
 							activeTab = i;
@@ -1138,7 +1206,17 @@ function waitForTitle(resolve, expected_title, returnvar) {
 				} catch(err) {
 					; //TODO: Process this
 				}
-			});
+            }
+
+            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                    waitForTitleInActiveTab(tabs);
+                });
+            } else {
+                browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                    waitForTitleInActiveTab(tabs);
+                });
+            }
 		} catch(err) {
 			; //TODO: Process this
 		}
@@ -1165,8 +1243,8 @@ function waitForElement(resolve, csspath, returnvar) {
     waitForElementInterval = setInterval(function(){
         var activeTab = 0;
 		try {
-			chrome.tabs.getAllInWindow(new_window.id, function(tabs){
-				try {
+            function waitForElementInActiveTab(tabs) {
+                try {
 					for (var i=0; i<tabs.length; i++) {
 						if (tabs[i].active)
 							activeTab = i;
@@ -1182,7 +1260,18 @@ function waitForElement(resolve, csspath, returnvar) {
 				} catch(err) {
 					; //TODO: Process this
 				}
-			});
+            }
+
+            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                    waitForElementInActiveTab(tabs);
+                });
+            } else {
+                browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                    waitForElementInActiveTab(tabs);
+                });
+            }
+
 		} catch(err) {
 			; //TODO: Process this
 		}

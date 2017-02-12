@@ -21,14 +21,20 @@ function toggleRecording() {
                     evt_data: {}
                 });
                 chrome.storage.local.set({events: events}, function() {
-                    chrome.windows.create({
-                        url: "workfloweditor.html",
-                        type: "popup",
-                        width: 1280,
-                        height: 800,
-                        left: screen.width/2-640,
-                        top: screen.height/2-400
-                    });
+                    if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                        chrome.windows.create({
+                            url: chrome.extension.getURL("workfloweditor.html"),
+                            type: "popup",
+                            width: 1280,
+                            height: 800,
+                            left: screen.width/2-640,
+                            top: screen.height/2-400
+                        });
+                    } else {
+                        window.open(chrome.extension.getURL("workfloweditor.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                            "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                            ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+                    }
                     window.close();
                 });
             });
@@ -55,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function updatePopupUI() {
     chrome.storage.local.get('simulating', function (simulating_result) {
-        console.log(simulating_result);
         chrome.storage.local.get('recording', function (result) {
             recording = result.recording;
             simulating = simulating_result.simulating;
@@ -80,14 +85,20 @@ var windowHeight = 800;
 
 window.onload = function() {
     document.getElementById('dashLink').onclick = function () {
-        chrome.windows.create({
-            url: "dashboard.html",
-            type: "popup",
-            width: windowWidth,
-            height: windowHeight,
-            left: screen.width/2-(windowWidth/2),
-            top: screen.height/2-(windowHeight/2)
-        });
+        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+            chrome.windows.create({
+                url: chrome.extension.getURL("dashboard.html"),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else {
+            window.open(chrome.extension.getURL("dashboard.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        }
         window.close();
     };
 }

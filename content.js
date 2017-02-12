@@ -63,7 +63,7 @@ chrome.storage.local.get('settings', function (settings) {
     }
 
     /* Duplicate hover CSS classes */
-    if (window.location.href.substring(0, 19) != "chrome-extension://" && all_settings.emulatehover) {
+    if (window.location.href.substring(0, 19) != "chrome-extension://" && window.location.href.substring(0, 16) != "moz-extension://" && all_settings.emulatehover) {
         var styles = document.styleSheets;
         for (var i = 0, len = styles.length; i < len; i++) {
             var rules = styles[i].cssRules;
@@ -144,6 +144,9 @@ function getFrameIndex() {
 }
 
 function processPath(elementPath) {
+    if (!elementPath)
+        return "";
+
     var numPathElements = elementPath.length;
     var path = [];
     
@@ -328,7 +331,7 @@ function addDocumentEventListener(eventName) {
 			button: e.button,
 			bubbles: e.bubbles,
 			cancelable: e.cancelable,
-			innerText: e.srcElement.innerText,
+			innerText: e.srcElement.innerText || "",
 			inFrame: getFrameIndex(),
 			url: window.location.href
 		};

@@ -26,11 +26,11 @@ var mappingData = {
         event_type: 'Data Input',
         icon: 'text-entry-box.png'
     },
-    setvar: {
+    /*setvar: {
         bgColor: '#3FB8AF',
         event_type: 'Set Variable',
         icon: 'equality-sign.png'
-    },
+    },*/
     change: {
         bgColor: '#98462A',
         event_type: 'Change',
@@ -421,7 +421,7 @@ function readableEventDetail(event) {
             break;
         case 'tabchange':
             event_type = "Changed Tabs";
-            if (event.evt_data.url=="chrome://newtab/")
+            if (event.evt_data.url=="chrome://newtab/" || event.evt_data.url=="about:newtab")
                 event_type = "Opened New Tab";
             minorEvent = false;
             break;

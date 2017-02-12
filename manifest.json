@@ -4,7 +4,7 @@
   "version": "1.1.8",
   "manifest_version": 2,
   "author": "wildfire.ai",
-  "description": "Record browser actions then replay within Chrome. Craft your own custom automation workflows.",
+  "description": "Record browser actions then replay immediately. Craft your own custom automation workflows.",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "icons": {
     "16": "icon-16.png",
@@ -24,6 +24,11 @@
     }
   ],
   "browser_action": {
+    "browser_style": false,
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png"
+    },
     "default_popup": "popup.html"
   },
   "permissions": [
@@ -49,5 +54,11 @@
   "web_accessible_resources": ["embedded.js"],
   "externally_connectable": {
     "matches": ["https://cloud.wildfire.ai/*"]
+  },
+  "applications": {
+    "gecko": {
+      "id": "support@wildfire.ai",
+      "strict_min_version": "48.0"
+    }
   }
 }
