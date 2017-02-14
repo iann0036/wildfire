@@ -60,5 +60,6 @@
       "id": "support@wildfire.ai",
       "strict_min_version": "48.0"
     }
-  }
+  },
+  "minimum_opera_version": "33.0"
 }

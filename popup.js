@@ -82,6 +82,10 @@ function updatePopupUI() {
 var triggerLoopClicked = false;
 var windowWidth = 1280;
 var windowHeight = 800;
+if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
+    windowWidth*=window.devicePixelRatio;
+    windowHeight*=window.devicePixelRatio;
+}
 
 window.onload = function() {
     document.getElementById('dashLink').onclick = function () {

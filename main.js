@@ -18,6 +18,11 @@ var last_node;
 var isFavSim = false;
 var simulation_variables = [];
 
+if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
+    windowWidth*=window.devicePixelRatio;
+    windowHeight*=window.devicePixelRatio;
+}
+
 chrome.alarms.onAlarm.addListener(function(alarm){
     var name = alarm.name;
     if (name.startsWith("scheduled_")) {
@@ -432,6 +437,8 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
 });
 
 function setContextMenus() {
+    if (typeof InstallTrigger !== 'undefined') // Firefox
+        return;
 	chrome.storage.local.get('favorites', function (result) {
         var favorites = result.favorites;
         if (!Array.isArray(favorites)) { // for safety only
