@@ -39,6 +39,19 @@ chrome.alarms.onAlarm.addListener(function(alarm){
     }
 });
 
+function resolveVariable(str) {
+    str = String(str).replace("'", "\\'");
+    if (str.length < 2)
+        return str;
+    if (str[0] != '$')
+        return str;
+    if (str[1] == '$')
+        return str.substring(1);
+    if (simulation_variables[str.substring(1)] === undefined)
+        return "";
+    return simulation_variables[str.substring(1)];
+}
+
 function configureAlarms() {
     chrome.alarms.clearAll(function(){
         chrome.storage.local.get('scheduled', function (result) {
@@ -837,115 +850,117 @@ function execEvent(node) {
             });
         case 'mousedown':
             if (bgSettings.simulatemousedown) {
-            code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
-                ",'mousedown', { clientX: " +
-                node.userData.evt_data.clientX +
-                ", clientY: " +
-                node.userData.evt_data.clientY +
-                " });";
+                code = "simulate(" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
+                    ",'mousedown', { clientX: " +
+                    resolveVariable(node.userData.evt_data.clientX) +
+                    ", clientY: " +
+                    resolveVariable(node.userData.evt_data.clientY) +
+                    " });";
             }
             break;
         case 'scroll':
             if (bgSettings.simulatescroll) {
-            code = "$('html, body').animate({" +
-                "scrollTop: " + node.userData.evt_data.scrollTopEnd + "," +
-                "scrollLeft: " + node.userData.evt_data.scrollLeftEnd +
-                "}, " + (node.userData.evt_data.scrollTime || 0.1) + ");";
+                code = "$('html, body').animate({" +
+                    "scrollTop: " + resolveVariable(node.userData.evt_data.scrollTopEnd) + "," +
+                    "scrollLeft: " + resolveVariable(node.userData.evt_data.scrollLeftEnd) +
+                    "}, " + (resolveVariable(node.userData.evt_data.scrollTime) || 0.1) + ");";
             }
             break;
         case 'mouseup':
             if (bgSettings.simulatemouseup) {
-            code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
-                ",'mouseup', { clientX: " +
-                node.userData.evt_data.clientX +
-                ", clientY: " +
-                node.userData.evt_data.clientY +
-                " });";
+                code = "simulate(" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
+                    ",'mouseup', { clientX: " +
+                    resolveVariable(node.userData.evt_data.clientX) +
+                    ", clientY: " +
+                    resolveVariable(node.userData.evt_data.clientY) +
+                    " });";
             }
             break;
         case 'mouseover':
             if (bgSettings.simulatemouseover) {
                 code = "simulate(" +
-                    "$('" + node.userData.evt_data.csspath + "')[0]" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseover', { clientX: " +
-                    node.userData.evt_data.clientX +
+                    resolveVariable(node.userData.evt_data.clientX) +
                     ", clientY: " +
-                    node.userData.evt_data.clientY +
-                    " }); simulateHoverElement('" + node.userData.evt_data.csspath + "');";
+                    resolveVariable(node.userData.evt_data.clientY) +
+                    " }); simulateHoverElement('" + resolveVariable(node.userData.evt_data.csspath) + "');";
             }
             break;
         case 'mouseout':
             if (bgSettings.simulatemouseout) {
                 code = "simulate(" +
-                    "$('" + node.userData.evt_data.csspath + "')[0]" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseout', { clientX: " +
-                    node.userData.evt_data.clientX +
+                    resolveVariable(node.userData.evt_data.clientX) +
                     ", clientY: " +
-                    node.userData.evt_data.clientY +
+                    resolveVariable(node.userData.evt_data.clientY) +
                     " }); stopSimulateHover();";
             }
             break;
         case 'click':
             if (bgSettings.simulateclick) {
-            code = "$('" + node.userData.evt_data.csspath + "').click();";
+                if (node.userData.evt_data.button == 1) { // middle click
+                    code = "jQuery('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].dispatchEvent(new MouseEvent(\"click\",{\"button\": 1, \"which\": 1}));";
+                } else {
+                    code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].click();";
+                }
             }
             break;
         case 'focusin':
             if (bgSettings.simulatefocusin) {
-            code = "$('" + node.userData.evt_data.csspath + "').focus();";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
             }
             break;
         case 'focusout':
             if (bgSettings.simulatefocusout) {
-            code = "$('" + node.userData.evt_data.csspath + "').blur();";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').blur();";
             }
             break;
         case 'keydown':
             if (bgSettings.simulatekeydown) {
-            code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
-                ",'keydown', { keyCode: " +
-                node.userData.evt_data.keyCode +
-                " });";
+                code = "simulate(" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
+                    ",'keydown', { keyCode: " +
+                    resolveVariable(node.userData.evt_data.keyCode) +
+                    " });";
             }
             break;
         case 'keyup':
             if (bgSettings.simulatekeyup) {
-            code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
-                ",'keyup', { keyCode: " +
-                node.userData.evt_data.keyCode +
-                " });";
+                code = "simulate(" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
+                    ",'keyup', { keyCode: " +
+                    resolveVariable(node.userData.evt_data.keyCode) +
+                    " });";
             }
             break;
         case 'keypress':
             if (bgSettings.simulatekeypress) {
-            code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
-                ",'keypress', { keyCode: " +
-                node.userData.evt_data.keyCode +
-                " });";
+                code = "simulate(" +
+                    "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
+                    ",'keypress', { keyCode: " +
+                    resolveVariable(node.userData.evt_data.keyCode) +
+                    " });";
             }
             break;
         case 'submit':
             code = "simulate(" +
-                "$('" + node.userData.evt_data.csspath + "')[0]" +
+                "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                 ",'submit', {});";
             break;
         case 'change':
             if (bgSettings.simulatechange) {
-            code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                node.userData.evt_data.value.replace("'", "\\'") + "');";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('" +
+                    resolveVariable(node.userData.evt_data.value);
             }
             break;
         case 'input':
             if (bgSettings.simulateinput) {
-            code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                node.userData.evt_data.value.replace("'", "\\'") + "');";
-            /*code = "$('" + node.userData.evt_data.csspath + "').val('" +
-                node.userData.evt_data.value.replace("'", "\\'") + "');";*/
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('"
+                    + resolveVariable(node.userData.evt_data.value) + "');";
             }
             break;
         case 'clipboard_cut':
@@ -962,7 +977,7 @@ function execEvent(node) {
                 chrome.cookies.getAll({}, function(cookies){
                     var cookiepurgeresults = [];
                     for (var i=0; i<cookies.length; i++) {
-                        if (cookies[i].domain.includes(node.userData.evt_data.searchterm)) {
+                        if (cookies[i].domain.includes(resolveVariable(node.userData.evt_data.searchterm))) {
                             var domain = cookies[i].domain;
                             if (domain[0] == ".")
                                 domain = domain.substring(0);
@@ -998,7 +1013,7 @@ function execEvent(node) {
                             activeTab = i;
                     }
                     chrome.tabs.update(tabs[activeTab].id, {
-                        url: node.userData.evt_data.url
+                        url: resolveVariable(node.userData.evt_data.url)
                     });
                     
                     resolve({
@@ -1021,17 +1036,17 @@ function execEvent(node) {
             });
         case 'select':
             if (bgSettings.simulateselect) {
-            code = "$('" + node.userData.evt_data.csspath + "').select();";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').select();";
             }
             break;
         case 'setproxy':
             return new Promise(function(resolve, reject) {
                 chrome.storage.local.set({proxy: {
-                    username: node.userData.evt_data.username,
-                    password: node.userData.evt_data.password,
-                    scheme: node.userData.evt_data.scheme,
-                    host: node.userData.evt_data.host,
-                    port: node.userData.evt_data.port,
+                    username: resolveVariable(node.userData.evt_data.username),
+                    password: resolveVariable(node.userData.evt_data.password),
+                    scheme: resolveVariable(node.userData.evt_data.scheme),
+                    host: resolveVariable(node.userData.evt_data.host),
+                    port: resolveVariable(node.userData.evt_data.port),
                     ignore: [],
                     clear: false
                 }},function(){
@@ -1045,19 +1060,69 @@ function execEvent(node) {
             });
         case 'setvar':
             return new Promise(function(resolve, reject) {
-                try {
-                    var parser = new Parser();
-                    simulation_variables[node.userData.evt_data.var] = parser.evaluate(node.userData.evt_data.expr,simulation_variables);
-                    resolve({
-                        error: false,
-                        results: null,
-                        id: node.id,
-                        time: Date.now()
+                if (node.userData.evt_data.usage == "expression") {
+                    try {
+                        var parser = new Parser();
+                        simulation_variables[node.userData.evt_data.var] = parser.evaluate(node.userData.evt_data.expr,simulation_variables);
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    } catch(err) {
+                        console.log(err);
+                        reject({
+                            error: true,
+                            results: ["Error processing expression: " + err.message],
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    }
+                } else if (node.userData.evt_data.usage == "innertext") {
+                    runCode("$('" + node.userData.evt_data.expr + "').text()", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: [JSON.stringify(simulation_variables[node.userData.evt_data.var])],
+                            id: node.id,
+                            time: Date.now()
+                        });
                     });
-                } catch(err) {
+                } else if (node.userData.evt_data.usage == "attrval") {
+                    runCode("$('" + node.userData.evt_data.expr + "').val()", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                } else if (node.userData.evt_data.usage == "urlparam") {
+                    runCode("QueryString." + node.userData.evt_data.expr, node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                } else if (node.userData.evt_data.usage == "title") {
+                    runCode("document.title", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                } else {
                     reject({
                         error: true,
-                        results: ["Error processing expression: " + err.message],
+                        results: ["Unknown value type in Set Variable"],
                         id: node.id,
                         time: Date.now()
                     });
@@ -1066,21 +1131,21 @@ function execEvent(node) {
         case 'recaptcha':
             return new Promise(function(resolve, reject) {
                 code = 'if ($(".g-recaptcha").length > 0) { var sitekey = $(".g-recaptcha").attr("data-sitekey"); var url = location.host; sitekey; } else { throw "NOCAPTCHAFOUND"; }';
-                runCode(code).then(function(result){
+                runCode(code, node).then(function(result){
                     var sitekey = result.results[0];
-                    runCode("location.host").then(function(result) {
+                    runCode("location.host", node).then(function(result) {
                         $.ajax({
                             method: "POST",
                             url: "https://api.wildfire.ai/v1/premium-recaptcha",
                             data: sitekey + "," + result.results[0] + "," + bgSettings.cloudapikey || ""
                         }).always(function(resp) {
-                            runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');").then(function(result){
+                            runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');", node).then(function(result){
                             var runcode = "var script = document.createElement('script');\
                                 script.setAttribute(\"type\", \"application/javascript\");\
                                 script.textContent = \"eval($('.g-recaptcha').attr('data-callback') + '(\\\"" + resp.responseText + "\\\")');\";\
                                 document.documentElement.appendChild(script);\
                                 document.documentElement.removeChild(script);";
-                            runCode(runcode).then(function(result){
+                            runCode(runcode, node).then(function(result){
                                 resolve({
                                     error: false,
                                     results: [resp.responseText],

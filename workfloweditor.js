@@ -74,7 +74,7 @@ function getEventOptionsHtml(userdata) {
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
-  } else if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown" || userdata.evt == "mouseover" || userdata.evt == "mouseout") {
+  } else if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
@@ -84,7 +84,25 @@ function getEventOptionsHtml(userdata) {
     "        <div class=\"input-group-addon\">y</div>" +
     "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
     "    </div><br />" +
-    "    <label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <label class=\"form-label semibold\" for=\"event_middlebutton\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_middlebutton\">" +
+		"      <label for=\"event_middlebutton\">Use Middle Mouse Button</label>" +
+	  "    </div>" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "mouseover" || userdata.evt == "mouseout") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
+    "    <div class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">x</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
+    "    </div>" +
+    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">y</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
+    "    </div>" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "focusin" || userdata.evt == "focusout" || userdata.evt == "submit" || userdata.evt == "select") {
@@ -141,7 +159,15 @@ function getEventOptionsHtml(userdata) {
   } else if (userdata.evt == "setvar") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"var\">Variable</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"var\" id=\"var\" value=\"" + escapeOrDefault(userdata.evt_data.var,"") + "\">" +
-    "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"expr\">Value / Expression</label>" +
+    "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_usage\">Value Type</label>" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"usage\" id=\"event_usage\">" +
+    "        <option value=\"expression\">Expression</option>" +
+    "        <option value=\"innertext\">Element Text</option>" +
+    "        <option value=\"attrval\">Element Attribute Value</option>" +
+    "        <option value=\"urlparam\">URL Parameter</option>" +
+    "        <option value=\"title\">Document Title</option>" +
+    "    </select>" +
+    "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"expr\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"expr\" id=\"expr\" value=\"" + escapeOrDefault(userdata.evt_data.expr,"") + "\">" +
     "    <br />" +
     "</div>";
@@ -154,7 +180,7 @@ function getEventOptionsHtml(userdata) {
     return "";
   } else if (userdata.evt == "setproxy") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scheme\">Proxy Type</label>" +
-    "    <select class=\"form-control event-detail\" data-event-detail=\"keyCode\" id=\"event_scheme\">" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"scheme\" id=\"event_scheme\">" +
     "        <option value=\"http\">HTTP</option>" +
     "        <option value=\"https\">HTTPS</option>" +
     "        <option value=\"socks4\">SOCKS4</option>" +
@@ -234,22 +260,22 @@ function selectedFigure(figure) {
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option selected='selected' value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"// +
-        //"<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "wait_for_title")
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"// +
-        //"<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "timer")
       $('#sidePanelTypeSelect').html(
         "<option selected='selected' value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
-        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>"// +
-        //"<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "test_expression")
       $('#sidePanelTypeSelect').html(
@@ -260,8 +286,22 @@ function selectedFigure(figure) {
       ).selectpicker('refresh');
   }
 
-  // Set details call and listen for select changes
+  // Set details call
   $('#sidePanelEventDetails').html(getEventOptionsHtml(figure.userData));
+
+  // Setup select values properly
+  if (figure.userData && figure.userData.evt_data) {
+      if (figure.userData.evt_data.scheme) {
+        $('#event_scheme').val(figure.userData.evt_data.scheme);
+      }
+      if (figure.userData.evt_data.usage) {
+        $('#event_usage').val(figure.userData.evt_data.usage);
+      }
+      if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
+        $('#event_middlebutton').prop('checked', true);
+      }
+  }
+  // Listen for changes
   $('#sidePanelTypeSelect').change(function(){
     changeType();
   });
@@ -328,6 +368,22 @@ function setDetailListeners() {
     var userData = figure.userData;
     userData.evt_data[$(this).attr('data-event-detail')] = $(this).val();
     figure.setUserData(userData);
+  });
+  $('.event-detail').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data[$(this).attr('data-event-detail')] = $(this).val();
+    figure.setUserData(userData);
+  });
+  $('#event_middlebutton').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.button = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_usage').on('change', function() {
+    if (figure.userData.evt_data.usage == "title")
+      $('#expr').attr("disabled","disabled");
+    else
+      $('#expr').removeAttr("disabled");
   });
 }
 

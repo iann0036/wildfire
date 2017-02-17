@@ -26,11 +26,11 @@ var mappingData = {
         event_type: 'Data Input',
         icon: 'text-entry-box.png'
     },
-    /*setvar: {
+    setvar: {
         bgColor: '#3FB8AF',
         event_type: 'Set Variable',
         icon: 'equality-sign.png'
-    },*/
+    },
     change: {
         bgColor: '#98462A',
         event_type: 'Change',
