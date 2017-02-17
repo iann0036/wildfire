@@ -133,7 +133,7 @@
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
-                <li><a href="/docs/set_variable.html">Set Variable</a></li>
+                <li><a class="active" href="/docs/set_variable.html">Set Variable</a></li>
 
                 <li><a href="/docs/change.html">Change</a></li>
                 <li><a href="/docs/element_focus.html">Element Focus</a></li>
@@ -154,7 +154,7 @@
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
                 <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
-                <li><a class="active" href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
+                <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
             </ul>
         </li>
         <li>Links Reference
@@ -178,21 +178,67 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Solve reCAPTCHA</h2>
+                <h2>Set Variable</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: February 17, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event will solve a reCAPTCHA on the current tab. This action will take approximately 10 seconds. This action will only be available for Wildfire Cloud paid subscribers in the future.
+                    This event sets a variable value that can be used later in the simulation as field value (if preceeded with a '$' sign in the field) or within an <a href="/docs/expressions.html">expression</a>.
                 </p>
                 <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Variable</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The variable name to set. This name should start with a letter and should only contain letters, numbers, dashes and underscores. Note that you should NOT begin this field with a '$' symbol.</p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Value Type</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>
+                        <strong><i>Expression:</i></strong> Evaluate an expression and use the result.<br />
+                        <strong><i>Element Text:</i></strong> Use the readable text within an element.<br />
+                        <strong><i>Element Value:</i></strong> Use the value attribute of an element.<br />
+                        <strong><i>URL Parameter:</i></strong> Use the value of a URL parameter.<br />
+                        <strong><i>Document Title:</i></strong> Use the current documents title.
+                        </p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Value</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>
+                        <strong><i>Expression:</i></strong> The <a href="/docs/expressions/html">expression</a> to be evaluated.<br />
+                        <strong><i>Element Text:</i></strong> The CSS selector of the element to get the text of.<br />
+                        <strong><i>Element Value:</i></strong> The CSS selector of the element to get the value of.<br />
+                        <strong><i>URL Parameter:</i></strong> The name of the URL parameter to get the value of.<br />
+                        <strong><i>Document Title:</i></strong> This field is not valid for the Document Title value type.
+                        </p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/clipboard_paste.html">&#8656; Clipboard Paste</a></p>
-                <p style="float: right;"><a href="/docs/timer.html">Timer &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/data_input.html">&#8656; Data Input</a></p>
+                <p style="float: right;"><a href="/docs/change.html">Change &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

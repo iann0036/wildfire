@@ -154,7 +154,7 @@
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
                 <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
-                <li><a class="active" href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
+                <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
             </ul>
         </li>
         <li>Links Reference
@@ -162,7 +162,7 @@
                 <li><a href="/docs/timer.html">Timer</a></li>
                 <li><a href="/docs/wait_for_element.html">Wait For Element</a></li>
                 <li><a href="/docs/wait_for_title.html">Wait For Title</a></li>
-                <li><a href="/docs/test_expression.html">Test Expression</a></li>
+                <li><a class="active" href="/docs/test_expression.html">Test Expression</a></li>
             </ul>
         </li>
         <li>Wildfire Cloud
@@ -178,21 +178,31 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Solve reCAPTCHA</h2>
+                <h2>Test Expression</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: February 17, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event will solve a reCAPTCHA on the current tab. This action will take approximately 10 seconds. This action will only be available for Wildfire Cloud paid subscribers in the future.
+                    This link evaluates the expression and will succeed if the expression is valid and true. Generally, the expression should include an <code>==</code>, <code>!=</code>, <code><</code>, <code><=</code>, <code>>=</code> or <code>></code> symbol. See the <a href="/docs/expressions.html">Expressions</a> page for more information on the syntax of expressions.
                 </p>
                 <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Expression</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The expression to be evaluated. Note that variables should NOT use the "$var" syntax and should instead use just "var".</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/clipboard_paste.html">&#8656; Clipboard Paste</a></p>
-                <p style="float: right;"><a href="/docs/timer.html">Timer &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/wait_for_element.html">&#8656; Wait For Element</a></p>
+                <p style="float: right;"><a href="/docs/cloud_overview.html">Cloud Overview &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

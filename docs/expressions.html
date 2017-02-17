@@ -133,6 +133,7 @@
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tabs.html">Change Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
+                <li><a href="/docs/set_variable.html">Set Variable</a></li>
 
                 <li><a href="/docs/change.html">Change</a></li>
                 <li><a href="/docs/element_focus.html">Element Focus</a></li>
@@ -161,6 +162,7 @@
                 <li><a href="/docs/timer.html">Timer</a></li>
                 <li><a href="/docs/wait_for_element.html">Wait For Element</a></li>
                 <li><a href="/docs/wait_for_title.html">Wait For Title</a></li>
+                <li><a href="/docs/test_expression.html">Test Expression</a></li>
             </ul>
         </li>
         <li>Wildfire Cloud
@@ -185,7 +187,122 @@
             <div class="text-block text-block-typical">
                 <p>
                     When simple workflows don't provide the flexibility to perform the more advanced tasks, the Expressions feature may provide a higher degree of control.
+                    Expressions can contain variables which can be set and links can use expression logic to determine the workflow direction.
                 </p>
+                <br /><h4>Constructing an Expression</h4>
+                <p>
+                    Expressions can either be constructed either in order to have the result assigned to a variable (<a href="/docs/set_variable.html">Set Variable</a>) or in order to test whether the expression is true (<a href="/docs/test_expression.html">Test Expression</a>).
+                </p>
+                <p>
+                    <img style="padding-top: 8px; padding-bottom: 8px; max-width: 285px; height: auto;" src="/docs/expressions_1.png" />
+                    <img style="padding-top: 8px; padding-bottom: 8px; max-width: 285px; height: auto;" src="/docs/expressions_2.png" />
+                    <img style="padding-top: 8px; padding-bottom: 8px; max-width: 285px; height: auto;" src="/docs/expressions_3.png" />
+                </p>
+                <p>
+                    The above images show how a variable can be set, tested against and used as a field value.
+                </p>
+                <p><ul>
+                    <li>We initially use the Set Variable event with the expression "1+1" which literally sets the variable "pagenumber" to the value of 2.</li>
+                    <li>We can then use the Test Expression link type to ensure the "pagenumber" variable is at least 1 (Test Expressions must always be a true/false query).</li>
+                    <li>Finally, we use the "pagenumber" variable as the value for an input by prepending the '$' sign to the variable name.</li>
+                </ul></p>
+                <p>You cannot evaluate queries outside of the Set Variable and Text Expression types. You can only use preset variables by themselves.</p>
+                <blockquote class="blockquote" style="margin-top: 1rem;margin-right: 0px;margin-bottom: 2rem;margin-left: 0px;">
+                    <p style="margin-bottom: 0;">If you need to use the literal '$' symbol as the first character of a value, prepend an additional dollar sign to ensure it's not used as a variable. For example, to set a value to a price, enter it like <code>$$1.23</code>.</p>
+                </blockquote>
+                <h4>Syntax</h4>
+                <p>
+                    You can group together operations and even evaluate functions within an expression, similar to the way a mathematical formula works. Below is a table of the available operators, in the order they are processed:
+                </p>
+                <table id="table-sm" class="table table-bordered table-hover table-sm">
+                    <thead>
+                    <tr>
+                        <th>Operator(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>(<i>&lt;sub-expression&gt;</i>)</td>
+                        <td>Grouping (order of operations)</td>
+                    </tr>
+                    <tr>
+                        <td><i>f</i>()</td>
+                        <td>Function Calls (see below for full list)</td>
+                    </tr>
+                    <tr>
+                        <td><i>x</i>!</td>
+                        <td>Factorial</td>
+                    </tr>
+                    <tr>
+                        <td><i>x</i>^<i>y</i></td>
+                        <td>Exponentiation (to the power of)</td>
+                    </tr>
+                    <tr>
+                        <td>* , / , %</td>
+                        <td>Multiplication, Division and Modulus (remainder)</td>
+                    </tr>
+                    <tr>
+                        <td>+ , -</td>
+                        <td>Plus and Minus (plus can also be used to join strings)</td>
+                    </tr>
+                    <tr>
+                        <td>== , != , >= , <= , > , <</td>
+                        <td>Equals, Not Equals etc.</td>
+                    </tr>
+                    <tr>
+                        <td>and</td>
+                        <td>Logical and (used in Text Expressions to join queries)</td>
+                    </tr>
+                    <tr>
+                        <td>or</td>
+                        <td>Logical or (used in Text Expressions to join queries)</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <p>And the following is a table of the available functions:</p>
+                <table id="table-sm" class="table table-bordered table-hover table-sm">
+                    <thead>
+                    <tr>
+                        <th>Function</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>if(<i>c</i>,<i>a</i>,<i>b</i>)</td>
+                        <td>If c is true, the result is a, otherwise the result is b</td>
+                    </tr>
+                    <tr>
+                        <td>random(<i>n</i>)</td>
+                        <td>Get a random number in the range 0 - n (If n is zero, or not provided, it defaults to 1)</td>
+                    </tr>
+                    <tr>
+                        <td>min(<i>a</i>,<i>b</i>,<i>…</i>)</td>
+                        <td>Get the smallest (minimum) number in the list</td>
+                    </tr>
+                    <tr>
+                        <td>max(<i>a</i>,<i>b</i>,<i>…</i>)</td>
+                        <td>Get the largest (maximum) number in the list</td>
+                    </tr>
+                    <tr>
+                        <td>length(<i>x</i>)</td>
+                        <td>The amount of text characters in x</td>
+                    </tr>
+                    <tr>
+                        <td>ceil(<i>n</i>)</td>
+                        <td>n rounded up to the nearest whole number</td>
+                    </tr>
+                    <tr>
+                        <td>floor(<i>n</i>)</td>
+                        <td>n rounded down to the nearest whole number</td>
+                    </tr>
+                    <tr>
+                        <td>contains(<i>a</i>,<i>b</i>)</td>
+                        <td>Whether the text a contains the text b</td>
+                    </tr>
+                    </tbody>
+                </table>
                 <hr style="margin-bottom: 1rem;" />
                 <p style="float: left;"><a href="/docs/settings.html">&#8656; Settings</a></p>
                 <p style="float: right;"><a href="/docs/begin_recording.html">Begin Recording &#8658;</a></p>

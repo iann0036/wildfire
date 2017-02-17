@@ -163,7 +163,7 @@ function getEventOptionsHtml(userdata) {
     "    <select class=\"form-control event-detail\" data-event-detail=\"usage\" id=\"event_usage\">" +
     "        <option value=\"expression\">Expression</option>" +
     "        <option value=\"innertext\">Element Text</option>" +
-    "        <option value=\"attrval\">Element Attribute Value</option>" +
+    "        <option value=\"attrval\">Element Value</option>" +
     "        <option value=\"urlparam\">URL Parameter</option>" +
     "        <option value=\"title\">Document Title</option>" +
     "    </select>" +

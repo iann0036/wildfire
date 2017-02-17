@@ -460,6 +460,9 @@ function factorial(a) { // a!
 function stringLength(s) {
   return String(s).length;
 }
+function contains(a,b) {
+  return String(a).contains(String(b));
+}
 
 function hypot() {
   var sum = 0;
@@ -1298,11 +1301,8 @@ function Parser() {
     pow: Math.pow,
     atan2: Math.atan2,
     'if': condition,
-    gamma: gamma
-    // # For all, test for numeric and convert to int
-    // Element attribute value
-    // Element inner TEXT (trimmed)
-    // GET params
+    gamma: gamma,
+    contains: contains
   };
 
   this.consts = {

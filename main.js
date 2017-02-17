@@ -41,6 +41,7 @@ chrome.alarms.onAlarm.addListener(function(alarm){
 
 function resolveVariable(str) {
     str = String(str).replace("'", "\\'");
+
     if (str.length < 2)
         return str;
     if (str[0] != '$')
@@ -49,7 +50,7 @@ function resolveVariable(str) {
         return str.substring(1);
     if (simulation_variables[str.substring(1)] === undefined)
         return "";
-    return simulation_variables[str.substring(1)];
+    return simulation_variables[str.substring(1)].replace("'", "\\'");
 }
 
 function configureAlarms() {
@@ -763,11 +764,11 @@ function logResultAndRaceLinks(result, failure, node) {
 			nodeConnectionPromises.push(
 				new Promise(function(resolve, reject) {
 					if (links[i].userData.evt == "timer") {
-						setTimeout(resolve, links[i].userData.wait_time, links[i]);
+						setTimeout(resolve, resolveVariable(links[i].userData.wait_time), links[i]);
 					} else if (links[i].userData.evt == "wait_for_element") {
-						waitForElement(resolve, links[i].userData.csspath, links[i]);
+						waitForElement(resolve, resolveVariable(links[i].userData.csspath), links[i]);
 					} else if (links[i].userData.evt == "wait_for_title") {
-						waitForTitle(resolve, links[i].userData.title, links[i]);
+						waitForTitle(resolve, resolveVariable(links[i].userData.title), links[i]);
                     } else if (links[i].userData.evt == "test_expression") {
 						testExpression(resolve, links[i].userData.expr, links[i]);
 					} else {
@@ -1007,6 +1008,9 @@ function execEvent(node) {
             return new Promise(function(resolve, reject) {
                 var activeTab = 0;
 
+                if (!node.userData.evt_data.url.startsWith("http"))
+                    node.userData.evt_data.url = "http://" + node.userData.evt_data.url;
+
                 function changeActiveTab(tabs) {
                     for (var i=0; i<tabs.length; i++) {
                         if (tabs[i].active)
@@ -1060,6 +1064,9 @@ function execEvent(node) {
             });
         case 'setvar':
             return new Promise(function(resolve, reject) {
+                if (node.userData.evt_data.usage === undefined) // was never initially set
+                    node.userData.evt_data.usage = "expression";
+
                 if (node.userData.evt_data.usage == "expression") {
                     try {
                         var parser = new Parser();
@@ -1071,7 +1078,6 @@ function execEvent(node) {
                             time: Date.now()
                         });
                     } catch(err) {
-                        console.log(err);
                         reject({
                             error: true,
                             results: ["Error processing expression: " + err.message],
