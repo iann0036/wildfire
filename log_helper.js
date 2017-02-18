@@ -18,7 +18,17 @@ var mappingData = {
     },
     tabchange: {
         bgColor: '#9265C6',
-        event_type: 'Change Tabs',
+        event_type: 'New/Change Tab',
+        icon: 'web-tabs.png'
+    },
+    tabremove: {
+        bgColor: '#8937B2',
+        event_type: 'Remove Tab',
+        icon: 'web-tabs.png'
+    },
+    tabswitch: {
+        bgColor: '#924FAD',
+        event_type: 'Switch Tabs',
         icon: 'web-tabs.png'
     },
     input: {
@@ -420,9 +430,17 @@ function readableEventDetail(event) {
             event.evt_data.url = "";
             break;
         case 'tabchange':
-            event_type = "Changed Tabs";
+            event_type = "Changed Tab";
             if (event.evt_data.url=="chrome://newtab/" || event.evt_data.url=="about:newtab")
                 event_type = "Opened New Tab";
+            minorEvent = false;
+            break;
+        case 'tabremove':
+            event_type = "Removed Tab";
+            minorEvent = false;
+            break;
+        case 'tabswitch':
+            event_type = "Switched Tabs";
             minorEvent = false;
             break;
         default:

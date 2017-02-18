@@ -131,7 +131,9 @@
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
                 <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
-                <li><a class="active" href="/docs/change_tabs.html">Change Tabs</a></li>
+                <li><a href="/docs/change_tab.html">New/Change Tab</a></li>
+                <li><a class="active" href="/docs/remove_tab.html">Remove Tab</a></li>
+                <li><a href="/docs/switch_tabs.html">Switch Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
                 <li><a href="/docs/set_variable.html">Set Variable</a></li>
 
@@ -178,31 +180,59 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Change Tabs</h2>
+                <h2>Remove Tab</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: February 19, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event will simulate a URL change and begin to navigate to the new location specified.
+                    This event will close the tab specified.
                 </p>
                 <h4>Options</h4>
                 <div class="row" style="padding-top: 10px;">
                     <div class="col-md-4">
                         <p style="text-align: right;">
-                            <strong>URL</strong><br />
+                            <strong>Method</strong><br />
                             <span class="color-blue-grey-lighter">&nbsp;</span>
                         </p>
                     </div>
                     <div class="col-md-8">
-                        <p>The destination URL to navigate to.</p>
+                        <p>
+                        <strong><i>Active Tab:</i></strong> Closes the currently active tab.<br />
+                        <strong><i>URL:</i></strong> Closes the tab that matches the URL provided (may close multiple).<br />
+                        <strong><i>Index:</i></strong> Closes the tab that matches the index provided.
+                        </p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>URL</strong><br />
+                            <span class="color-blue-grey-lighter">optional</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The URL of the tab(s) to close. This field is only available when the method is "URL".</p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Index</strong><br />
+                            <span class="color-blue-grey-lighter">optional</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The numerical index of the tab to close (leftmost tab is '0', second tab is '1' etc.). This field is only available when the method is "Index".</p>
                     </div>
                 </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/mouse_click.html">&#8656; Mouse Click</a></p>
-                <p style="float: right;"><a href="/docs/data_input.html">Data Input &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/change_tab.html">&#8656; New/Change Tab</a></p>
+                <p style="float: right;"><a href="/docs/switch_tabs.html">Switch Tabs &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

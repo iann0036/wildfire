@@ -172,10 +172,42 @@ function getEventOptionsHtml(userdata) {
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"expr\" id=\"expr\" value=\"" + escapeOrDefault(userdata.evt_data.expr,"") + "\">" +
     "    <br />" +
     "</div>";
+  } else if (userdata.evt == "tabswitch") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_method\">Method</label>" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"method\" id=\"event_method\">" +
+    "        <option value=\"url\">By URL</option>" +
+    "        <option value=\"index\">By Index</option>" +
+    "    </select>" +
+    "    </div><div id=\"urlFieldGroup\" style=\"display: none;\" class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"") + "\">" +
+    "    <br />" +
+    "    </div><div id=\"indexFieldGroup\" style=\"display: none;\"  class=\"form-group\"><label class=\"form-label semibold\" for=\"index\">Index</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"index\" id=\"index\" value=\"" + escapeOrDefault(userdata.evt_data.index,"") + "\">" +
+    "    <br />" +
+    "    </div>";
+  } else if (userdata.evt == "tabremove") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_method\">Method</label>" +
+    "    <select class=\"form-control event-detail\" data-event-detail=\"method\" id=\"event_method\">" +
+    "        <option value=\"active\">Use Current Tab</option>" +
+    "        <option value=\"url\">By URL</option>" +
+    "        <option value=\"index\">By Index</option>" +
+    "    </select>" +
+    "    </div><div id=\"urlFieldGroup\" style=\"display: none;\" class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"") + "\">" +
+    "    <br />" +
+    "    </div><div id=\"indexFieldGroup\" style=\"display: none;\"  class=\"form-group\"><label class=\"form-label semibold\" for=\"index\">Index</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"index\" id=\"index\" value=\"" + escapeOrDefault(userdata.evt_data.index,"") + "\">" +
+    "    <br />" +
+    "    </div>";
   } else if (userdata.evt == "tabchange") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"about:blank") + "\">" +
     "    <br />" +
+    "    <label class=\"form-label semibold\" for=\"event_newtab\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_newtab\">" +
+		"      <label for=\"event_newtab\">Open in New Tab</label>" +
+	  "    </div>" +
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording" || userdata.evt == "clipboard_cut" || userdata.evt == "clipboard_copy" || userdata.evt == "clipboard_paste") {
     return "";
@@ -305,6 +337,16 @@ function selectedFigure(figure) {
       if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
         $('#event_middlebutton').prop('checked', true);
       }
+      if (figure.userData.evt_data.newtab) {
+        $('#event_newtab').prop('checked', true);
+      }
+      if (figure.userData.evt_data.method) {
+        $('#event_method').val(figure.userData.evt_data.method);
+        if (figure.userData.evt_data.method == "index")
+          $('#indexFieldGroup').removeAttr("style");
+        if (figure.userData.evt_data.method == "url")
+          $('#urlFieldGroup').removeAttr("style");
+      }
   }
   // Listen for changes
   $('#sidePanelTypeSelect').change(function(){
@@ -384,11 +426,24 @@ function setDetailListeners() {
     userData.evt_data.button = $(this).is(":checked");
     figure.setUserData(userData);
   });
+  $('#event_newtab').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.newtab = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
   $('#event_usage').on('change', function() {
     if (figure.userData.evt_data.usage == "title" || figure.userData.evt_data.usage == "url")
       $('#expr').attr("disabled","disabled");
     else
       $('#expr').removeAttr("disabled");
+  });
+  $('#event_method').on('change', function() {
+    $('#indexFieldGroup').attr("style","display: none;");
+    $('#urlFieldGroup').attr("style","display: none;");
+    if (figure.userData.evt_data.method == "index")
+      $('#indexFieldGroup').removeAttr("style");
+    if (figure.userData.evt_data.method == "url")
+      $('#urlFieldGroup').removeAttr("style");
   });
 }
 

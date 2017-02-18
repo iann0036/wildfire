@@ -119,7 +119,7 @@
             <ul>
                 <li><a href="/docs/getting_started.html">Getting Started</a></li>
                 <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
-                <li><a class="active" href="/docs/event_log.html">Event Log</a></li>
+                <li><a href="/docs/event_log.html">Event Log</a></li>
                 <li><a href="/docs/simulation_log.html">Simulation Log</a></li>
                 <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
                 <li><a href="/docs/settings.html">Settings</a></li>
@@ -133,7 +133,7 @@
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tab.html">New/Change Tab</a></li>
                 <li><a href="/docs/remove_tab.html">Remove Tab</a></li>
-                <li><a href="/docs/switch_tabs.html">Switch Tabs</a></li>
+                <li><a class="active" href="/docs/switch_tabs.html">Switch Tabs</a></li>
                 <li><a href="/docs/data_input.html">Data Input</a></li>
                 <li><a href="/docs/set_variable.html">Set Variable</a></li>
 
@@ -180,34 +180,58 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Event Log</h2>
+                <h2>Switch Tabs</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: January 15, 2017
+                    Last Updated: February 19, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    The Event Log is a list of all events recorded during a recording. The details of the event as well as additional related data will be available. Should you need to remove any events, you can do so directly from here.
+                    This event will switch to the tab specified.
                 </p>
-                <h4>Components</h4>
-                <p style="padding-left: 4%;">
-                    <strong>1.</strong>&nbsp;&nbsp;Checkbox for selecting all events<br />
-                    <strong>2.</strong>&nbsp;&nbsp;Type of event<br />
-                    <strong>3.</strong>&nbsp;&nbsp;Checkbox for selecting individual events<br />
-                    <strong>4.</strong>&nbsp;&nbsp;Minor event details (CSS selector, frame information)<br />
-                    <strong>5.</strong>&nbsp;&nbsp;Details of the event<br />
-                    <strong>6.</strong>&nbsp;&nbsp;Additional event information<br />
-                    <strong>7.</strong>&nbsp;&nbsp;Button to delete the event<br />
-                    <strong>8.</strong>&nbsp;&nbsp;Button to download the EventLog<br />
-                    <strong>9.</strong>&nbsp;&nbsp;Button to delete all checked events
-                </p>
-                <p>
-                    <img src="/docs/event_log_1_x.png" style="padding-top: 8px; padding-bottom: 8px; width: 100%;" />
-                </p>
+                <h4>Options</h4>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Method</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>
+                        <strong><i>URL:</i></strong> Switches to the tab that matches the URL provided.<br />
+                        <strong><i>Index:</i></strong> Switches to the tab that matches the index provided.
+                        </p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>URL</strong><br />
+                            <span class="color-blue-grey-lighter">optional</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The URL of the tab to switch to. This field is only available when the method is "URL".</p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Index</strong><br />
+                            <span class="color-blue-grey-lighter">optional</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The numerical index of the tab to switch to (leftmost tab is '0', second tab is '1' etc.). This field is only available when the method is "Index".</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/right_click_menu.html">&#8656; Right-Click Menu</a></p>
-                <p style="float: right;"><a href="/docs/simulation_log.html">Simulation Log &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/remove_tab.html">&#8656; Remove Tab</a></p>
+                <p style="float: right;"><a href="/docs/data_input.html">Data Input &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

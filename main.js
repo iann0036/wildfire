@@ -17,6 +17,7 @@ var simulating = false;
 var last_node;
 var isFavSim = false;
 var simulation_variables = [];
+var tracked_tabs = [];
 
 if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
     windowWidth*=window.devicePixelRatio;
@@ -38,6 +39,12 @@ chrome.alarms.onAlarm.addListener(function(alarm){
         },5000);
     }
 });
+
+function updateTrackedTabs() {
+    chrome.tabs.query({}, function (tabs) {
+        tracked_tabs = tabs;
+    });
+}
 
 function resolveVariable(str) {
     str = String(str).replace("'", "\\'");
@@ -215,6 +222,76 @@ chrome.notifications.onClicked.addListener(function(notificationId){
     }
 });
 
+chrome.tabs.onActivated.addListener(
+    function (activeInfo) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                setTimeout(function() { // delay to ensure tabremove goes first
+                    if (events[events.length-1].evt == "tabremove" || (events[events.length-1].evt == "tabchange" && events[events.length-1].evt_data.id == activeInfo.tabId)) // ignore double events
+                        return;
+
+                    var tab_index = -1;
+                    var tab_url = "";
+                    for (var i=0; i<tracked_tabs.length; i++) {
+                        if (tracked_tabs[i].id == activeInfo.tabId) {
+                            tab_index = tracked_tabs[i].index;
+                            tab_url = tracked_tabs[i].url;
+                        }
+                    }
+                    events.push({
+                        tab: tracked_tabs[i],
+                        evt: 'tabswitch',
+                        evt_data: {
+                            id: activeInfo.tabId,
+                            index: tab_index,
+                            url: tab_url,
+                            active: 0,
+                            method: "url"
+                        },
+                        time: Date.now()
+                    });
+                    chrome.storage.local.set({events: events});
+                    updateTrackedTabs();
+                }, 500);
+            }
+        });
+    }
+);
+
+chrome.tabs.onRemoved.addListener(
+    function (tabId, removeInfo) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            if (isRecording.recording) {
+                var tab_index = -1;
+                var tab_url = "";
+                var tab_active = 0;
+
+                for (var i=0; i<tracked_tabs.length; i++) {
+                    if (tracked_tabs[i].id == tabId) {
+                        tab_index = tracked_tabs[i].index;
+                        tab_url = tracked_tabs[i].url;
+                        tab_active = tracked_tabs[i].active;
+                    }
+                }
+                events.push({
+                    tab: tracked_tabs[i],
+                    evt: 'tabremove',
+                    evt_data: {
+                        id: tabId,
+                        index: tab_index,
+                        url: tab_url,
+                        active: tab_active,
+                        method: (tab_active ? "active" : "url")
+                    },
+                    time: Date.now()
+                });
+                chrome.storage.local.set({events: events});
+                updateTrackedTabs();
+            }
+        });
+    }
+);
+
 chrome.tabs.onUpdated.addListener(
     function (tabId, changeInfo, tab) {
 		if (!tab.url.startsWith("chrome-extension://" + chrome.runtime.id) && !tab.url.startsWith("moz-extension://" + chrome.runtime.id)) {
@@ -226,6 +303,7 @@ chrome.tabs.onUpdated.addListener(
                             evt: 'tabchange',
                             evt_data: {
                                 id: tabId,
+                                newtab: (tab.url == "chrome://newtab/" || tab.url == "about:newtab" || tab.url == "chrome://startpage/"),
                                 openerTabId: changeInfo.openerTabId,
                                 url: tab.url,
                                 active: tab.active,
@@ -235,6 +313,7 @@ chrome.tabs.onUpdated.addListener(
                         });
                         chrome.storage.local.set({events: events});
 					}
+                    updateTrackedTabs();
 				}
 			});
 		}
@@ -252,6 +331,7 @@ chrome.tabs.onReplaced !== undefined && chrome.tabs.onReplaced.addListener( // P
                             evt: 'tabchange',
                             evt_data: {
                                 id: tab.id,
+                                newtab: (tab.url == "chrome://newtab/"),
                                 openerTabId: tab.id,
                                 url: tab.url,
                                 active: tab.active,
@@ -260,6 +340,7 @@ chrome.tabs.onReplaced !== undefined && chrome.tabs.onReplaced.addListener( // P
                             time: Date.now()
                         });
                         chrome.storage.local.set({events: events});
+                        updateTrackedTabs();
 					}
 				});
 			}
@@ -347,9 +428,11 @@ chrome.webRequest.onAuthRequired !== undefined && chrome.webRequest.onAuthRequir
 );
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
-	if (changes.recording != undefined)
+	if (changes.recording != undefined) {
     	updateExtIcon();
-	if (changes.settings != undefined) {
+        updateTrackedTabs();
+	}
+    if (changes.settings != undefined) {
 		updateBgSettings();
 		setContextMenus();
 	}
@@ -1004,11 +1087,119 @@ function execEvent(node) {
                     });
                 });
             });
+        case 'tabremove':
+            return new Promise(function(resolve, reject) {
+                function removeTab(tabs) {
+                    var removedTab = null;
+
+                    for (var i=0; i<tabs.length; i++) {
+                        if (resolveVariable(node.userData.evt_data.method) == "active") {
+                            if (tabs[i].active) {
+                                removedTab = i;
+                                chrome.tabs.remove(tabs[removedTab].id); // wrap it so it can remove multiple tabs
+                            }
+                        } else if (resolveVariable(node.userData.evt_data.method) == "url") {
+                            if (tabs[i].url == resolveVariable(node.userData.evt_data.url)) {
+                                removedTab = i;
+                                chrome.tabs.remove(tabs[removedTab].id);
+                            }
+                        } else if (resolveVariable(node.userData.evt_data.method) == "index") {
+                            if (tabs[i].index == resolveVariable(node.userData.evt_data.index)) {
+                                removedTab = i;
+                                chrome.tabs.remove(tabs[removedTab].id);
+                            }
+                        } else if (resolveVariable(node.userData.evt_data.method) == "id") {
+                            if (tabs[i].id == resolveVariable(node.userData.evt_data.id)) {
+                                removedTab = i;
+                                chrome.tabs.remove(tabs[removedTab].id);
+                            }
+                        }
+                    }
+
+                    if (removedTab==null)
+                        reject({
+                            error: true,
+                            results: ["Could not find the tab to remove"],
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    
+                    resolve({
+                        error: false,
+                        results: null,
+                        id: node.id,
+                        time: Date.now()
+                    });
+                }
+
+                if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                    chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                        removeTab(tabs);
+                    });
+                } else {
+                    browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                        removeTab(tabs);
+                    });
+                }
+            });
+        case 'tabswitch':
+            return new Promise(function(resolve, reject) {
+                function switchTabs(tabs) {
+                    var newActiveTab = null;
+
+                    for (var i=0; i<tabs.length; i++) {
+                        if (resolveVariable(node.userData.evt_data.method) == "active") {
+                            if (tabs[i].active)
+                                newActiveTab = i;
+                        } else if (resolveVariable(node.userData.evt_data.method) == "url") {
+                            if (tabs[i].url == resolveVariable(node.userData.evt_data.url))
+                                newActiveTab = i;
+                        } else if (resolveVariable(node.userData.evt_data.method) == "index") {
+                            if (tabs[i].index == resolveVariable(node.userData.evt_data.index))
+                                newActiveTab = i;
+                        } else if (resolveVariable(node.userData.evt_data.method) == "id") {
+                            if (tabs[i].id == resolveVariable(node.userData.evt_data.id))
+                                newActiveTab = i;
+                        }
+                    }
+
+                    if (newActiveTab==null)
+                        reject({
+                            error: true,
+                            results: ["Could not find the tab to switch to"],
+                            id: node.id,
+                            time: Date.now()
+                        });
+
+                    chrome.tabs.update(tabs[newActiveTab].id, {
+                        active: true
+                    });
+                    
+                    resolve({
+                        error: false,
+                        results: null,
+                        id: node.id,
+                        time: Date.now()
+                    });
+                }
+
+                if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                    chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                        switchTabs(tabs);
+                    });
+                } else {
+                    browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                        switchTabs(tabs);
+                    });
+                }
+            });
         case 'tabchange':
             return new Promise(function(resolve, reject) {
                 var activeTab = 0;
 
-                if (!node.userData.evt_data.url.startsWith("http"))
+                node.userData.evt_data.url = resolveVariable(node.userData.evt_data.url);
+
+                if (!node.userData.evt_data.url.startsWith("http") && !node.userData.evt_data.url.startsWith("about") && !node.userData.evt_data.url.startsWith("chrome") && !node.userData.evt_data.url.startsWith("moz"))
                     node.userData.evt_data.url = "http://" + node.userData.evt_data.url;
 
                 function changeActiveTab(tabs) {
@@ -1016,9 +1207,16 @@ function execEvent(node) {
                         if (tabs[i].active)
                             activeTab = i;
                     }
-                    chrome.tabs.update(tabs[activeTab].id, {
-                        url: resolveVariable(node.userData.evt_data.url)
-                    });
+                    if (resolveVariable(node.userData.evt_data.newtab) && tabs[activeTab].url != chrome.extension.getURL("new.html")) {
+                        chrome.tabs.create({
+                            windowId: new_window.id,
+                            url: node.userData.evt_data.url
+                        });
+                    } else {
+                        chrome.tabs.update(tabs[activeTab].id, {
+                            url: resolveVariable(node.userData.evt_data.url)
+                        });
+                    }
                     
                     resolve({
                         error: false,
