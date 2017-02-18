@@ -1125,6 +1125,16 @@ function execEvent(node) {
                             time: Date.now()
                         });
                     });
+                } else if (node.userData.evt_data.usage == "url") {
+                    runCode("document.url", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
                 } else {
                     reject({
                         error: true,

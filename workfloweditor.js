@@ -166,6 +166,7 @@ function getEventOptionsHtml(userdata) {
     "        <option value=\"attrval\">Element Value</option>" +
     "        <option value=\"urlparam\">URL Parameter</option>" +
     "        <option value=\"title\">Document Title</option>" +
+    "        <option value=\"url\">Document URL</option>" +
     "    </select>" +
     "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"expr\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"expr\" id=\"expr\" value=\"" + escapeOrDefault(userdata.evt_data.expr,"") + "\">" +
@@ -296,6 +297,10 @@ function selectedFigure(figure) {
       }
       if (figure.userData.evt_data.usage) {
         $('#event_usage').val(figure.userData.evt_data.usage);
+        if (figure.userData.evt_data.usage == "title" || figure.userData.evt_data.usage == "url")
+          $('#expr').attr("disabled","disabled");
+        else
+          $('#expr').removeAttr("disabled");
       }
       if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
         $('#event_middlebutton').prop('checked', true);
@@ -380,7 +385,7 @@ function setDetailListeners() {
     figure.setUserData(userData);
   });
   $('#event_usage').on('change', function() {
-    if (figure.userData.evt_data.usage == "title")
+    if (figure.userData.evt_data.usage == "title" || figure.userData.evt_data.usage == "url")
       $('#expr').attr("disabled","disabled");
     else
       $('#expr').removeAttr("disabled");

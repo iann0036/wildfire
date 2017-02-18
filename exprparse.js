@@ -463,6 +463,9 @@ function stringLength(s) {
 function contains(a,b) {
   return String(a).contains(String(b));
 }
+function startswith(a,b) {
+  return String(a).startsWith(String(b));
+}
 
 function hypot() {
   var sum = 0;
@@ -1302,7 +1305,8 @@ function Parser() {
     atan2: Math.atan2,
     'if': condition,
     gamma: gamma,
-    contains: contains
+    contains: contains,
+    startswith: startswith
   };
 
   this.consts = {
