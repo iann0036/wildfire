@@ -496,7 +496,7 @@ function populateEvents(result) {
         var eventNodeTd = document.createElement("td");
         eventNodeTd.setAttribute('style','text-align: center;');
         eventNodeTd.setAttribute('colspan','8');
-        eventNodeTd.innerHTML = "No event yet!";
+        eventNodeTd.innerHTML = "No events yet!";
         eventNode.appendChild(eventNodeTd);
         document.getElementById('events').appendChild(eventNode);
     } else {

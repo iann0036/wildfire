@@ -232,7 +232,7 @@ function getEventOptionsHtml(userdata) {
     return "";
   } else if (userdata.evt == "timer" || userdata.evt === undefined) {
     if (userdata.wait_time === undefined)
-      userdata.wait_time = 0; // TODO probably not necessary with the escapeOrDefault
+      userdata.wait_time = 0;
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_timer\">Timer</label>" +
     "    <div class=\"input-group\">" +
     "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + escapeOrDefault(userdata.wait_time/1000,"0") + "\">" +

@@ -467,6 +467,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 /*
+(function(history){
+    var pushState = history.pushState;
+    history.pushState = function(state) {
+        if (typeof history.onpushstate == "function") {
+            history.onpushstate({state: state});
+        }
+        events.push({
+            evt: "historypush",
+            evt_data: state,
+            time: Date.now()
+        });
+        chrome.storage.local.set({events: events});
+        return pushState.apply(history, arguments);
+    }
+})(window.history);
+*/
+
+/*
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
 	if (request.action == "registrationStatus") {
 		if (bgSettings != null) {
@@ -1207,7 +1225,7 @@ function execEvent(node) {
                         if (tabs[i].active)
                             activeTab = i;
                     }
-                    if (resolveVariable(node.userData.evt_data.newtab) && tabs[activeTab].url != chrome.extension.getURL("new.html")) {
+                    if (node.userData.evt_data.newtab && tabs[activeTab].url != chrome.extension.getURL("new.html")) {
                         chrome.tabs.create({
                             windowId: new_window.id,
                             url: node.userData.evt_data.url
@@ -1489,9 +1507,7 @@ function waitForTitle(resolve, expected_title, returnvar) {
 						if (results && results[0] && results[0]==expected_title)
 							resolve(returnvar);
 					});
-				} catch(err) {
-					; //TODO: Process this
-				}
+				} catch(err) {;}
             }
 
             if (typeof InstallTrigger === 'undefined') { // NOT Firefox
@@ -1503,9 +1519,7 @@ function waitForTitle(resolve, expected_title, returnvar) {
                     waitForTitleInActiveTab(tabs);
                 });
             }
-		} catch(err) {
-			; //TODO: Process this
-		}
+		} catch(err) {;}
     }, 100);
 }
 
@@ -1519,9 +1533,7 @@ function testExpression(resolve, expression, returnvar) {
             var result = parser.evaluate(expression,simulation_variables);
             if (result === true)
                 resolve(returnvar);
-        } catch(err) {
-            ; //TODO: Process this
-        }
+        } catch(err) {;}
     }, 100);
 }
 
@@ -1543,9 +1555,7 @@ function waitForElement(resolve, csspath, returnvar) {
 						if (results && results[0])
 							resolve(returnvar);
 					});
-				} catch(err) {
-					; //TODO: Process this
-				}
+				} catch(err) {;}
             }
 
             if (typeof InstallTrigger === 'undefined') { // NOT Firefox
@@ -1558,9 +1568,7 @@ function waitForElement(resolve, csspath, returnvar) {
                 });
             }
 
-		} catch(err) {
-			; //TODO: Process this
-		}
+		} catch(err) {;}
     }, 100);
 }
 

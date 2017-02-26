@@ -172,7 +172,7 @@ function updateNodeProcessIcon(nodeid, status) {
 }
 
 function initWorkflowSimulation() {
-    if (!events || events.length<2) { // TODO: test events?
+    if (!events || events.length<2) { // TODO: test events? eventually get rid of events requirement :/
         swal({
             title: "No events found",
             text: "You haven't recorded any actions yet!",
