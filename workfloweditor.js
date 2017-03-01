@@ -151,6 +151,11 @@ function getEventOptionsHtml(userdata) {
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
+  } else if (userdata.evt == "customjs") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"code\">Code</label>" +
+    "    <textarea rows=\"8\" style=\"resize: none;white-space: nowrap;\" required class=\"form-control event-detail\" data-event-detail=\"code\" id=\"code\">" + escapeOrDefault(userdata.evt_data.code,"") + "</textarea>" +
+    "    <br />" +
+    "</div>";
   } else if (userdata.evt == "purgecookies") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"searchterm\">Domain Search Term</label>" +
     "    <input type=\"text\" required class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + escapeOrDefault(userdata.evt_data.searchterm,"example.com") + "\">" +

@@ -71,6 +71,11 @@ var mappingData = {
         event_type: 'Key Press',
         icon: 'keyboard-key-a.png'
     },
+    customjs: {
+        bgColor: '#D4B0D6',
+        event_type: 'Custom Function',
+        icon: 'js-document.png'
+    },
     purgecookies: {
         bgColor: '#7D3F32',
         event_type: 'Purge Cookies',
@@ -441,6 +446,10 @@ function readableEventDetail(event) {
             break;
         case 'tabswitch':
             event_type = "Switched Tabs";
+            minorEvent = false;
+            break;
+        case 'customjs':
+            event_type = "Ran Custom Function";
             minorEvent = false;
             break;
         default:

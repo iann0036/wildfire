@@ -162,7 +162,7 @@ function updateNodeProcessIcon(nodeid, status) {
         custom = new CustomStop();
     }
     for (var i=0; i<nodes.length; i++) {
-        if (nodes[i].id == nodeid) {
+        if (nodes[i].id !== undefined && nodes[i].id == nodeid) {
             node = nodes[i];
             break;
         }

@@ -47,13 +47,13 @@ function updateTrackedTabs() {
 }
 
 function resolveVariable(str) {
-    str = String(str).replace("'", "\\'");
+    var newstr = String(str).replace("'", "\\'");
 
-    if (str.length < 2)
+    if (newstr.length < 2)
         return str;
-    if (str[0] != '$')
+    if (newstr[0] != '$')
         return str;
-    if (str[1] == '$')
+    if (newstr[1] == '$')
         return str.substring(1);
     if (simulation_variables[str.substring(1)] === undefined)
         return "";
@@ -134,6 +134,42 @@ function updateWorkflowData() {
 	});
 }
 
+function openUI(url) {
+    if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+        chrome.tabs.query({
+            windowType: "popup"
+        }, function(tabs){
+            var opened = false;
+            for (var i=0; i<tabs.length; i++) {
+                if (tabs[i].url.includes(chrome.runtime.id)) {
+                    opened = true;
+                    chrome.tabs.update(tabs[i].id, {
+                        url: chrome.extension.getURL(url)
+                    }, function() {
+                        chrome.windows.update(tabs[i].windowId,{
+                            focused: true
+                        });
+                    });
+                    break;
+                }
+            }
+            if (!opened)
+                chrome.windows.create({
+                    url: chrome.extension.getURL(url),
+                    type: "popup",
+                    width: windowWidth,
+                    height: windowHeight,
+                    left: screen.width/2-(windowWidth/2),
+                    top: screen.height/2-(windowHeight/2)
+                });
+        });
+    } else {
+        window.open(chrome.extension.getURL(url), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
+            "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+            ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+    }
+}
+
 function updateWorkflowDataToFavorite(favorite_index) {
     if (favorite_index == -1)
         return updateWorkflowData();
@@ -160,65 +196,13 @@ function updateWorkflowDataToFavorite(favorite_index) {
 
 chrome.notifications.onClicked.addListener(function(notificationId){
     if (notificationId == "no_workflow_available") {
-        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-            chrome.windows.create({
-                url: chrome.extension.getURL("workfloweditor.html"),
-                type: "popup",
-                width: windowWidth,
-                height: windowHeight,
-                left: screen.width/2-(windowWidth/2),
-                top: screen.height/2-(windowHeight/2)
-            });
-        } else {
-            window.open(chrome.extension.getURL("workfloweditor.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-        }
+        openUI("workfloweditor.html");
     } else if (notificationId == "sim_complete") {
-        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-            chrome.windows.create({
-                url: chrome.extension.getURL("simulations.html#0"),
-                type: "popup",
-                width: windowWidth,
-                height: windowHeight,
-                left: screen.width/2-(windowWidth/2),
-                top: screen.height/2-(windowHeight/2)
-            });
-        } else {
-            window.open(chrome.extension.getURL("simulations.html#0"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-        }
+        openUI("simulations.html#0");
     } else if (notificationId == "no_recorded_events") {
-        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-            chrome.windows.create({
-                url: chrome.extension.getURL("docs/getting_started.html"),
-                type: "popup",
-                width: windowWidth,
-                height: windowHeight,
-                left: screen.width/2-(windowWidth/2),
-                top: screen.height/2-(windowHeight/2)
-            });
-        } else {
-            window.open(chrome.extension.getURL("docs/getting_started.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-        }
+        openUI("docs/getting_started.html");
     } else if (notificationId == "event_log_imported") {
-        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-            chrome.windows.create({
-                url: chrome.extension.getURL("eventlog.html"),
-                type: "popup",
-                width: windowWidth,
-                height: windowHeight,
-                left: screen.width/2-(windowWidth/2),
-                top: screen.height/2-(windowHeight/2)
-            });
-        } else {
-            window.open(chrome.extension.getURL("eventlog.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-        }
+        openUI("eventlog.html");
     }
 });
 
@@ -526,20 +510,7 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListener(function(details){ // special handling - not present in FF
     chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
-        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-            chrome.windows.create({
-                url: chrome.extension.getURL("docs/getting_started.html"),
-                type: "popup",
-                width: windowWidth,
-                height: windowHeight,
-                left: screen.width/2-(windowWidth/2),
-                top: screen.height/2-(windowHeight/2)
-            });
-        } else {
-            window.open(chrome.extension.getURL("docs/getting_started.html"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-        }
+        openUI("docs/getting_started.html");
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;
         /*chrome.notifications.create("",{
@@ -596,20 +567,7 @@ function setContextMenus() {
 					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
 					"documentUrlPatterns": ["http://*/*","https://*/*"],
 					"onclick": function(){
-                        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-                            chrome.windows.create({
-                                url: chrome.extension.getURL("settings.html#favorites"),
-                                type: "popup",
-                                width: windowWidth,
-                                height: windowHeight,
-                                left: screen.width/2-(windowWidth/2),
-                                top: screen.height/2-(windowHeight/2)
-                            });
-                        } else {
-                            window.open(chrome.extension.getURL("settings.html#favorites"), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-                                "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
-                                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-                        }
+                        openUI("settings.html#favorites");
 					}
 				});
 			}
@@ -855,7 +813,9 @@ function logResultAndRaceLinks(result, failure, node) {
 			nodeid: node.id,
 			status: "tick"
 		});
-		terminateSimulation(true, "");
+        setTimeout(function(){
+		    terminateSimulation(true, "");
+        }, 100);
 		return;
 	}
 
@@ -1259,6 +1219,9 @@ function execEvent(node) {
                 code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').select();";
             }
             break;
+        case 'customjs':
+            code = resolveVariable(node.userData.evt_data.code);
+            break;
         case 'setproxy':
             return new Promise(function(resolve, reject) {
                 chrome.storage.local.set({proxy: {
@@ -1266,7 +1229,7 @@ function execEvent(node) {
                     password: resolveVariable(node.userData.evt_data.password),
                     scheme: resolveVariable(node.userData.evt_data.scheme),
                     host: resolveVariable(node.userData.evt_data.host),
-                    port: resolveVariable(node.userData.evt_data.port),
+                    port: Math.round(resolveVariable(node.userData.evt_data.port)),
                     ignore: [],
                     clear: false
                 }},function(){
@@ -1310,12 +1273,26 @@ function execEvent(node) {
                             id: node.id,
                             time: Date.now()
                         });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
                     });
                 } else if (node.userData.evt_data.usage == "attrval") {
                     runCode("$('" + node.userData.evt_data.expr + "').val()", node).then(function(result){
                         simulation_variables[node.userData.evt_data.var] = result.results[0];
                         resolve({
                             error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
                             results: null,
                             id: node.id,
                             time: Date.now()
@@ -1330,6 +1307,13 @@ function execEvent(node) {
                             id: node.id,
                             time: Date.now()
                         });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
                     });
                 } else if (node.userData.evt_data.usage == "title") {
                     runCode("document.title", node).then(function(result){
@@ -1340,12 +1324,26 @@ function execEvent(node) {
                             id: node.id,
                             time: Date.now()
                         });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
                     });
                 } else if (node.userData.evt_data.usage == "url") {
                     runCode("document.url", node).then(function(result){
                         simulation_variables[node.userData.evt_data.var] = result.results[0];
                         resolve({
                             error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
                             results: null,
                             id: node.id,
                             time: Date.now()
@@ -1449,7 +1447,7 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                         frameId: frameId,
                         matchAboutBlank: true
                     }, function(results){
-                        if (results && results.length==1 && results[0]!==null && !results[0].error) {
+                        if (results && results.length==1 && ((results[0]!==null && !results[0].error) || results[0]===null)) {
                             resolve({
                                 error: false,
                                 results: results,

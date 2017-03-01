@@ -129,7 +129,7 @@
         <li>Events Reference
             <ul>
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
-                <li><a class="active" href="/docs/end_recording.html">End Recording</a></li>
+                <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tab.html">New/Change Tab</a></li>
                 <li><a href="/docs/remove_tab.html">Remove Tab</a></li>
@@ -143,7 +143,7 @@
                 <li><a href="/docs/key_down.html">Key Down</a></li>
                 <li><a href="/docs/key_up.html">Key Up</a></li>
                 <li><a href="/docs/key_press.html">Key Press</a></li>
-                <li><a href="/docs/custom_function.html">Custom Function</a></li>
+                <li><a class="active" href="/docs/custom_function.html">Custom Function</a></li>
                 <li><a href="/docs/purge_cookies.html">Purge Cookies</a></li>
                 <li><a href="/docs/set_proxy_settings.html">Set Proxy Settings</a></li>
                 <li><a href="/docs/expressions.html">Expressions</a></li>
@@ -181,21 +181,31 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>End Recording</h2>
+                <h2>Custom Function</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: February 28, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event represents an expected end to the simulation. It will exit the simulation immediately and will ignore any outgoing links. You may have more than one of these in your workflow.
+                    This event executes custom Javascript code.
                 </p>
-                <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <h4>Event Options</h4>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Code</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The Javascript code to be executed.</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/begin_recording.html">&#8656; Begin Recording</a></p>
-                <p style="float: right;"><a href="/docs/mouse_click.html">Mouse Click &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/key_press.html">&#8656; Key Press</a></p>
+                <p style="float: right;"><a href="/docs/purge_cookies.html">Purge Cookies &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->
