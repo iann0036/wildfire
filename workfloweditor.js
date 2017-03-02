@@ -74,7 +74,29 @@ function getEventOptionsHtml(userdata) {
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
-  } else if (userdata.evt == "click" || userdata.evt == "mouseup" || userdata.evt == "mousedown") {
+  } else if (userdata.evt == "click") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
+    "    <div class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">x</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
+    "    </div>" +
+    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <div class=\"input-group-addon\">y</div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
+    "    </div><br />" +
+    "    <label class=\"form-label semibold\" for=\"event_downloadlinks\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_downloadlinks\">" +
+		"      <label for=\"event_downloadlinks\">Download Links</label>" +
+	  "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_middlebutton\">" +
+		"      <label for=\"event_middlebutton\">Use Middle Mouse Button</label>" +
+	  "    </div>" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
+    "</div>";
+  } else if (userdata.evt == "mouseup" || userdata.evt == "mousedown") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
@@ -342,6 +364,9 @@ function selectedFigure(figure) {
       if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
         $('#event_middlebutton').prop('checked', true);
       }
+      if (figure.userData.evt_data.downloadlinks && figure.userData.evt_data.downloadlinks == 1) {
+        $('#event_downloadlinks').prop('checked', true);
+      }
       if (figure.userData.evt_data.newtab) {
         $('#event_newtab').prop('checked', true);
       }
@@ -429,6 +454,11 @@ function setDetailListeners() {
   $('#event_middlebutton').on('change', function() {
     var userData = figure.userData;
     userData.evt_data.button = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_downloadlinks').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.downloadlinks = $(this).is(":checked");
     figure.setUserData(userData);
   });
   $('#event_newtab').on('change', function() {

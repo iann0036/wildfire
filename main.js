@@ -159,13 +159,13 @@ function openUI(url) {
                     type: "popup",
                     width: windowWidth,
                     height: windowHeight,
-                    left: screen.width/2-(windowWidth/2),
-                    top: screen.height/2-(windowHeight/2)
+                    left: Math.round(screen.width/2-(windowWidth/2)),
+                    top: Math.round(screen.height/2-(windowHeight/2))
                 });
         });
     } else {
-        window.open(chrome.extension.getURL(url), "wildfire", "left=" + screen.width/2-(windowWidth/2) +
-            "top=" + screen.height/2-(windowHeight/2) + ",width=" + windowWidth + ",height=" + windowHeight +
+        window.open(chrome.extension.getURL(url), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +
+            "top=" + Math.round(screen.height/2-(windowHeight/2)) + ",width=" + windowWidth + ",height=" + windowHeight +
             ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
     }
 }
@@ -964,11 +964,19 @@ function execEvent(node) {
             break;
         case 'click':
             if (bgSettings.simulateclick) {
+                code = "";
+
+                if (node.userData.evt_data.downloadlinks)
+                    code += "if ($('" + resolveVariable(node.userData.evt_data.csspath) + "').prop('tagName') == 'A'){ var downloadattrstatus = $('" + resolveVariable(node.userData.evt_data.csspath) + "').attr('download'); $('" + resolveVariable(node.userData.evt_data.csspath) + "').attr('download',''); };"
+
                 if (node.userData.evt_data.button == 1) { // middle click
-                    code = "jQuery('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].dispatchEvent(new MouseEvent(\"click\",{\"button\": 1, \"which\": 1}));";
+                    code += "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].dispatchEvent(new MouseEvent(\"click\",{\"button\": 1, \"which\": 1}));";
                 } else {
-                    code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].click();";
+                    code += "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0].click();";
                 }
+
+                if (node.userData.evt_data.downloadlinks)
+                    code += "if ($('" + resolveVariable(node.userData.evt_data.csspath) + "').prop('tagName') == 'A'){ if (downloadattrstatus===undefined) { $('" + resolveVariable(node.userData.evt_data.csspath) + "').removeAttr('download'); }; };";
             }
             break;
         case 'focusin':
