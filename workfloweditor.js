@@ -70,7 +70,7 @@ function getEventOptionsHtml(userdata) {
     "    </div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_scrollTime\">Scroll Time</label>" +
     "    <div class=\"input-group\">" +
-    "        <input type=\"text\" class=\"form-control\" data-event-detail=\"scrollTime\" id=\"event_scrollTime\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTime/1000,"0") + "\">" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_scrollTime\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTime/1000,"0") + "\">" +
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
@@ -466,6 +466,12 @@ function setDetailListeners() {
     userData.evt_data.newtab = $(this).is(":checked");
     figure.setUserData(userData);
   });
+  $('#event_scrollTime').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.scrollTime = ($(this).val() * 1000);
+    figure.setUserData(userData);
+  });
+  
   $('#event_usage').on('change', function() {
     if (figure.userData.evt_data.usage == "title" || figure.userData.evt_data.usage == "url")
       $('#expr').attr("disabled","disabled");

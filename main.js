@@ -139,29 +139,14 @@ function openUI(url) {
         chrome.tabs.query({
             windowType: "popup"
         }, function(tabs){
-            var opened = false;
-            for (var i=0; i<tabs.length; i++) {
-                if (tabs[i].url.includes(chrome.runtime.id)) {
-                    opened = true;
-                    chrome.tabs.update(tabs[i].id, {
-                        url: chrome.extension.getURL(url)
-                    }, function() {
-                        chrome.windows.update(tabs[i].windowId,{
-                            focused: true
-                        });
-                    });
-                    break;
-                }
-            }
-            if (!opened)
-                chrome.windows.create({
-                    url: chrome.extension.getURL(url),
-                    type: "popup",
-                    width: windowWidth,
-                    height: windowHeight,
-                    left: Math.round(screen.width/2-(windowWidth/2)),
-                    top: Math.round(screen.height/2-(windowHeight/2))
-                });
+            chrome.windows.create({
+                url: chrome.extension.getURL(url),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: Math.round(screen.width/2-(windowWidth/2)),
+                top: Math.round(screen.height/2-(windowHeight/2))
+            });
         });
     } else {
         window.open(chrome.extension.getURL(url), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +

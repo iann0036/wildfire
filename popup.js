@@ -24,35 +24,19 @@ function toggleRecording() {
                     chrome.tabs.query({
                         windowType: "popup"
                     },function(tabs){
-                        var opened = false;
-                        for (var i=0; i<tabs.length; i++) {
-                            if (tabs[i].url.includes(chrome.runtime.id)) {
-                                opened = true;
-                                chrome.tabs.update(tabs[i].id, {
-                                    url: chrome.extension.getURL("workfloweditor.html")
-                                }, function() {
-                                    chrome.windows.update(tabs[i].windowId,{
-                                        focused: true
-                                    });
-                                });
-                                break;
-                            }
-                        }
-                        if (!opened) {
-                            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
-                                chrome.windows.create({
-                                    url: chrome.extension.getURL("workfloweditor.html"),
-                                    type: "popup",
-                                    width: windowWidth,
-                                    height: windowHeight,
-                                    left: Math.round(screen.width/2-(windowWidth/2)),
-                                    top: Math.round(screen.height/2-(windowHeight/2))
-                                });
-                            } else {
-                                window.open(chrome.extension.getURL("workfloweditor.html"), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +
-                                    "top=" + Math.round(screen.height/2-(windowHeight/2)) + ",width=" + windowWidth + ",height=" + windowHeight +
-                                    ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
-                            }
+                        if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                            chrome.windows.create({
+                                url: chrome.extension.getURL("workfloweditor.html"),
+                                type: "popup",
+                                width: windowWidth,
+                                height: windowHeight,
+                                left: Math.round(screen.width/2-(windowWidth/2)),
+                                top: Math.round(screen.height/2-(windowHeight/2))
+                            });
+                        } else {
+                            window.open(chrome.extension.getURL("workfloweditor.html"), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +
+                                "top=" + Math.round(screen.height/2-(windowHeight/2)) + ",width=" + windowWidth + ",height=" + windowHeight +
+                                ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
                         }
                         window.close();
                     });
@@ -113,21 +97,7 @@ window.onload = function() {
             chrome.tabs.query({
                 windowType: "popup"
             },function(tabs){
-                var opened = false;
-                for (var i=0; i<tabs.length; i++) {
-                    if (tabs[i].url.includes(chrome.runtime.id)) {
-                        opened = true;
-                        chrome.tabs.update(tabs[i].id, {
-                            url: chrome.extension.getURL("dashboard.html")
-                        }, function() {
-                            chrome.windows.update(tabs[i].windowId,{
-                                focused: true
-                            });
-                        });
-                        break;
-                    }
-                }
-                if (!opened)
+                if (typeof InstallTrigger === 'undefined') { // NOT Firefox
                     chrome.windows.create({
                         url: chrome.extension.getURL("dashboard.html"),
                         type: "popup",
@@ -136,6 +106,11 @@ window.onload = function() {
                         left: Math.round(screen.width/2-(windowWidth/2)),
                         top: Math.round(screen.height/2-(windowHeight/2))
                     });
+                } else {
+                    window.open(chrome.extension.getURL("dashboard.html"), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +
+                        "top=" + Math.round(screen.height/2-(windowHeight/2)) + ",width=" + windowWidth + ",height=" + windowHeight +
+                        ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+                }
                 window.close();
             });
         } else {
