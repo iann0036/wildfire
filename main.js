@@ -453,18 +453,20 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 })(window.history);
 */
 
-/*
+
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
 	if (request.action == "registrationStatus") {
 		if (bgSettings != null) {
 			sendResponse({
 				"success": true,
 				"account": bgSettings.account,
-				"cloudapikey": bgSettings.cloudapikey
+				"cloudapikey": bgSettings.cloudapikey,
+                "version": chrome.runtime.getManifest().version
 			});
 		} else {
 			sendResponse({
-				"success": false
+				"success": false,
+                "version": chrome.runtime.getManifest().version
 			});
 		}
 	} else if (request.action == "openExtension") {
@@ -486,16 +488,24 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 			chrome.storage.local.set({settings: bgSettings});
 		});
 		sendResponse({
-			"success": true
+			"success": true,
+                "version": chrome.runtime.getManifest().version
 		});
 	}
 });
-*/
 
 chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListener(function(details){ // special handling - not present in FF
     chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
-        openUI("docs/getting_started.html");
+        if (navigator.userAgent.includes("Wildfire")) {
+            setTimeout(function(){
+                chrome.windows.getCurrent({}, function () {
+                    begin_fav_sim(-1, curr_window);
+                });
+            },5000);
+        } else {
+            openUI("docs/getting_started.html");
+        }
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;
         /*chrome.notifications.create("",{
@@ -562,7 +572,7 @@ function setContextMenus() {
 
 setTimeout(function(){
     setContextMenus();
-},10);
+},2000);
 
 function send_message(msg) {
     try {

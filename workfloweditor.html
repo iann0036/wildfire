@@ -68,10 +68,12 @@
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-header-add" style="min-width: 200px;">
                                 <div class="dropdown-header">Simulation</div>
                                 
-                                <a class="dropdown-item" href="/workfloweditor.html#launch" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Simulation</a>
+                                <a class="dropdown-item" href="#" id="simulateButton2"><span class="font-icon font-icon-revers"></span> Run Simulation</a>
                                 <div class="dropdown-header">Import/Export</div>
                                 <a class="dropdown-item" href="#" id="importEventLogButton"><span class="font-icon font-icon-upload-2"></span> Import Event Log</a>
                                 <a class="dropdown-item" href="#" id="downloadEventLogButton2"><span class="font-icon font-icon-download-3"></span> Export Event Log</a>
+                                <a class="dropdown-item" href="#" id="importWorkflowButton"><span class="font-icon font-icon-upload-2"></span> Import Workflow</a>
+                                <a class="dropdown-item" href="#" id="exportWorkflowButton"><span class="font-icon font-icon-download-3"></span> Export Workflow</a>
                             </div>
                         </div>
                     </div><!--.site-header-collapsed-in-->
@@ -118,6 +120,7 @@
         <div class="btn-group" role="group" aria-label="Workflow Actions">
             <button id="workflowToolbarInitSimulation" type="button" class="btn btn-default-outline"><i class="fa fa-play-circle-o"></i></button>
             <button id="workflowToolbarFavorite" type="button" class="btn btn-default-outline"><i class="fa fa-star"></i></button>
+            <button style="display: none;" id="workflowToolbarCloudUpload" type="button" class="btn btn-default-outline"><i class="fa fa-cloud-upload"></i></button>
             <button id="workflowToolbarNew" type="button" class="btn btn-default-outline"><i class="fa fa-file-o"></i></button>
             <button id="workflowToolbarImport" type="button" class="btn btn-default-outline"><i class="fa fa-folder-open-o"></i></button>
             <button id="workflowToolbarSave" type="button" class="btn btn-default-outline"><i class="fa fa-save"></i></button>

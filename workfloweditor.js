@@ -44,7 +44,7 @@ $('#workflowToolbarDelete').click(function(){deleteSelection();});
 $('#deleteButtonSidepanel').click(function(){deleteSelection();});
 
 function escapeOrDefault(value, defaultval) {
-  if (value) {
+  if (value || value === "") {
     if (isNaN(value))
       return value.replace(/\"/g,'&quot;');
     return value;
@@ -147,7 +147,7 @@ function getEventOptionsHtml(userdata) {
         chars += "      <option value=\"" + i + "\">" + String.fromCharCode(i) + "</option>";
     }
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_keyCode\">Key</label>" +
-    "    <select class=\"form-control event-detail\" data-event-detail=\"keyCode\" id=\"event_keyCode\">" +
+    "    <select class=\"form-control\" id=\"event_keyCode\">" +
     "      <option value=\"0\">&nbsp;</option>" +
     "      <option value=\"8\">Backspace</option>" +
     "      <option value=\"9\">Tab</option>" +
@@ -354,6 +354,9 @@ function selectedFigure(figure) {
       if (figure.userData.evt_data.scheme) {
         $('#event_scheme').val(figure.userData.evt_data.scheme);
       }
+      if (figure.userData.evt_data.keyCode) {
+        $('#event_keyCode').val(figure.userData.evt_data.keyCode);
+      }
       if (figure.userData.evt_data.usage) {
         $('#event_usage').val(figure.userData.evt_data.usage);
         if (figure.userData.evt_data.usage == "title" || figure.userData.evt_data.usage == "url")
@@ -454,6 +457,11 @@ function setDetailListeners() {
   $('#event_middlebutton').on('change', function() {
     var userData = figure.userData;
     userData.evt_data.button = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_keyCode').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.keyCode = $(this).val();
     figure.setUserData(userData);
   });
   $('#event_downloadlinks').on('change', function() {
@@ -588,27 +596,37 @@ function canvasResize() {
     },300);
 }
 
-function exportCanvasImage() {
-    canvas.setCurrentSelection(null);
-    var xCoords = [];
-    var yCoords = [];
-    canvas.getFigures().each(function(i,f){
-        var b = f.getBoundingBox();
-        xCoords.push(b.x, b.x+b.w);
-        yCoords.push(b.y, b.y+b.h);
-    });
-    var minX   = Math.min.apply(Math, xCoords) - 30;
-    var minY   = Math.min.apply(Math, yCoords) - 30;
-    var width  = Math.max.apply(Math, xCoords)-minX + 30;
-    var height = Math.max.apply(Math, yCoords)-minY + 30;
+function getCanvasImage() {
+    return new Promise(function(resolve, reject) {
+        canvas.setCurrentSelection(null);
+        var xCoords = [];
+        var yCoords = [];
+        canvas.getFigures().each(function(i,f){
+            var b = f.getBoundingBox();
+            xCoords.push(b.x, b.x+b.w);
+            yCoords.push(b.y, b.y+b.h);
+        });
+        var minX   = Math.min.apply(Math, xCoords) - 30;
+        var minY   = Math.min.apply(Math, yCoords) - 30;
+        var width  = Math.max.apply(Math, xCoords)-minX + 30;
+        var height = Math.max.apply(Math, yCoords)-minY + 30;
 
-    canvas.getAllPorts().each(function(i,p){ // hide figure ports for screenshot
-        p.setVisible(false);
+        canvas.getAllPorts().each(function(i,p){ // hide figure ports for screenshot
+            p.setVisible(false);
+        });
+        gridPolicy.setGrid(1); // sexy hack to make background white
+        
+        var writer = new draw2d.io.png.Writer();
+        writer.marshal(canvas,function(png){
+            gridPolicy.setGrid(5); // reset sexy hack
+
+            resolve(png);
+        }, new draw2d.geo.Rectangle(minX,minY,width,height));
     });
-    gridPolicy.setGrid(1); // sexy hack to make background white
-    
-    var writer = new draw2d.io.png.Writer();
-    writer.marshal(canvas,function(png){
+}
+
+function exportCanvasImage() {
+    getCanvasImage().then(function(png){
         var filename = "WildfireWorkflowImage_" + Math.floor(Date.now() / 1000) + ".png";
 
         var element = document.createElement('a');
@@ -619,9 +637,7 @@ function exportCanvasImage() {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
-
-        gridPolicy.setGrid(5); // reset sexy hack
-    }, new draw2d.geo.Rectangle(minX,minY,width,height));
+    });
 }
 $('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
 
@@ -786,8 +802,27 @@ $(window).load(function () {
     if (window.location.hash == "#launch") {
       setTimeout(function(){
         initWorkflowSimulation();
-      },300);
+      },500);
+    } else if (window.location.hash == "#export") {
+      setTimeout(function(){
+        exportJSON();
+      },800);
     }
+
+    $('#simulateButton2').click(function(){
+      initWorkflowSimulation();
+    });
+    $('#importWorkflowButton').click(function(){
+      $('#simfileContainer').click();
+    });
+    $('#exportWorkflowButton').click(function(){
+      exportJSON();
+    });
+
+    chrome.storage.local.get('settings', function (result) {
+        if (result.settings.account != "" && result.settings.account !== undefined)
+            $('#workflowToolbarCloudUpload').attr('style','display: block;');
+    });
 });
 
 function initCanvas() {
@@ -948,3 +983,46 @@ function favoriteSwal() {
     });
 }
 $('#workflowToolbarFavorite').click(favoriteSwal);
+
+function cloudUploadSwal() {
+    saveToLocalStorage();
+    swal({
+        title: "Upload Workflow",
+        text: "Enter your workflow name:",
+        type: "input",
+        showCancelButton: true,
+        closeOnConfirm: false,
+        inputPlaceholder: ""
+    }, function (inputValue) {
+        if (inputValue === false || inputValue.trim() === "") {
+            swal("Error", "You need to enter a workflow name", "error");
+            return false;
+        }
+
+        getCanvasImage().then(function(png){
+            chrome.storage.local.get('workflow', function (workflow) {
+                $.ajax({
+                    method: "POST",
+                    url: "https://cloud.wildfire.ai/api/upload",
+                    data: {
+                        name: inputValue.trim(),
+                        workflow: workflow.workflow,
+                        time: Date.now(),
+                        api_key: all_settings.cloudapikey,
+                        account: all_settings.account,
+                        version: chrome.runtime.getManifest().version,
+                        image: png
+                    }
+                }).always(function(resp) {
+                    swal({
+                        title: "Done",
+                        text: "Your <b>" + inputValue.trim() + "</b> workflow has been uploaded to the Wildfire Cloud.",
+                        type: "success",
+                        html: true
+                    });
+                });
+            });
+        });
+    });
+}
+$('#workflowToolbarCloudUpload').click(cloudUploadSwal);
