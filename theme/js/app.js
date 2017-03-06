@@ -324,8 +324,13 @@ $(document).ready(function(){
 	========================================================================== */
 
 	// Tooltip
-	$('[data-toggle="tooltip"]').tooltip({
-		html: true
+	$(function() {
+		setTimeout(function(){
+			$('[data-toggle="tooltip"]').tooltip({
+				html: true,
+				trigger: "hover"
+			});
+		},100);
 	});
 
 	// Popovers

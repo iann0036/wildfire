@@ -40,7 +40,9 @@ function deleteSelection() {
   canvas.remove(figure);
   canvas.setCurrentSelection(null);
 }
-$('#workflowToolbarDelete').click(function(){deleteSelection();});
+$('#workflowToolbarDelete').click(function(){
+    deleteSelection();
+});
 $('#deleteButtonSidepanel').click(function(){deleteSelection();});
 
 function escapeOrDefault(value, defaultval) {
@@ -639,7 +641,9 @@ function exportCanvasImage() {
         document.body.removeChild(element);
     });
 }
-$('#workflowToolbarExportImage').click(function(){exportCanvasImage();});
+$('#workflowToolbarExportImage').click(function(){
+    exportCanvasImage();
+});
 
 function importJSON(json) {
     canvas.clear();
@@ -731,8 +735,12 @@ function exportJSON() {
   });
 }
 
-$('#workflowToolbarNew').click(function(){flushWorkflow();});
-$('#workflowToolbarSave').click(function(){exportJSON();});
+$('#workflowToolbarNew').click(function(){
+    flushWorkflow();
+});
+$('#workflowToolbarSave').click(function(){
+    exportJSON();
+});
 $('#workflowToolbarImport').click(function() {
     $('#simfileContainer').click();
 });
@@ -999,6 +1007,8 @@ function cloudUploadSwal() {
             return false;
         }
 
+        $('.confirm').attr('disabled','');
+
         getCanvasImage().then(function(png){
             chrome.storage.local.get('workflow', function (workflow) {
                 $.ajax({
@@ -1020,6 +1030,7 @@ function cloudUploadSwal() {
                         type: "success",
                         html: true
                     });
+                    $('.confirm').removeAttr('disabled');
                 });
             });
         });

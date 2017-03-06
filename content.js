@@ -26,6 +26,12 @@ var QueryString = function(){
 var all_settings;
 chrome.storage.local.get('settings', function (settings) {
     all_settings = settings.settings;
+	
+	/* Sanity Checks */
+	if (all_settings === undefined)
+		return;
+	if (all_settings.recordscroll === undefined)
+		return;
     
     /* Main */
     if (all_settings.recordscroll) {
