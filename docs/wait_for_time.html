@@ -130,7 +130,7 @@
         <li>Events Reference
             <ul>
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
-                <li><a class="active" href="/docs/end_recording.html">End Recording</a></li>
+                <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tab.html">New/Change Tab</a></li>
                 <li><a href="/docs/remove_tab.html">Remove Tab</a></li>
@@ -167,7 +167,7 @@
                 <li><a href="/docs/wait_for_element.html">Wait For Element</a></li>
                 <li><a href="/docs/wait_for_title.html">Wait For Title</a></li>
                 <li><a href="/docs/test_expression.html">Test Expression</a></li>
-                <li><a href="/docs/wait_for_time.html">Wait For Time</a></li>
+                <li><a class="active" href="/docs/wait_for_time.html">Wait For Time</a></li>
             </ul>
         </li>
         <li>Wildfire Cloud
@@ -183,21 +183,31 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>End Recording</h2>
+                <h2>Wait For Time</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: March 9, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event represents an expected end to the simulation. It will exit the simulation immediately and will ignore any outgoing links. You may have more than one of these in your workflow.
+                    This link waits for the time to match the predefined value. Time is matched down to the second and uses the system time.
                 </p>
                 <h4>Options</h4>
-                <p style="padding-top: 10px;">There are no options for this event type.</p>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Time</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The time to wait to match. This value should use the format <code>12:34:56 PM</code>.</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/begin_recording.html">&#8656; Begin Recording</a></p>
-                <p style="float: right;"><a href="/docs/mouse_click.html">Mouse Click &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/test_expression.html">&#8656; Test Expression</a></p>
+                <p style="float: right;"><a href="/docs/cloud_overview.html">Cloud Overview &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

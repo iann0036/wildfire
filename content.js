@@ -91,6 +91,14 @@ chrome.storage.local.get('settings', function (settings) {
         (document.head || document.documentElement).appendChild(s);
     }
 
+    if (all_settings.suppressalerts) {
+        chrome.storage.local.get('simulating', function (simulating) {
+            if (simulating.simulating) {
+                document.getElementsByTagName('head')[0].setAttribute('wf_suppressalerts','');
+            }
+        });
+    }
+
     /* Duplicate hover CSS classes */
     if (window.location.href.substring(0, 19) != "chrome-extension://" && window.location.href.substring(0, 16) != "moz-extension://" && all_settings.emulatehover) {
         var styles = document.styleSheets;

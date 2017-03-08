@@ -51,7 +51,8 @@ chrome.storage.local.get('settings', function (settings) {
         "customsubmit": true,
         "runminimized": false,
         "incognito": false,
-        "rightclick": true
+        "rightclick": true,
+        "suppressalerts": false
     };
     if (settings.settings != null)
         all_settings = $.extend(all_settings,settings.settings);
@@ -136,43 +137,49 @@ function decrypt(str) {
   return CryptoJS.AES.decrypt(str, generatePassphrase()).toString(CryptoJS.enc.Utf8);
 }
 
-document.getElementById('downloadEventLogButton2').addEventListener('click', function() {
-    downloadEventLog();
-});
-document.getElementById('importEventLogButton').addEventListener('click', function() {
-    $('#eventfileContainer').click();
-});
-document.getElementById('eventfileContainer').addEventListener('change', function() {
-    var reader = new FileReader();
+if (document.getElementById('downloadEventLogButton2')) {
+    document.getElementById('downloadEventLogButton2').addEventListener('click', function() {
+        downloadEventLog();
+    });
+}
+if (document.getElementById('importEventLogButton')) {
+    document.getElementById('importEventLogButton').addEventListener('click', function() {
+        $('#eventfileContainer').click();
+    });
+}
+if (document.getElementById('eventfileContainer')) {
+    document.getElementById('eventfileContainer').addEventListener('change', function() {
+        var reader = new FileReader();
 
-    reader.onload = function(e) {
-        var new_events = JSON.parse(decrypt(e.target.result));
-        chrome.storage.local.set({events: new_events},function(){
-            chrome.storage.local.set({recording: false});
-            chrome.notifications.create("event_log_imported",{
-                type: "basic",
-                title: "Wildfire",
-                message: "Event Log Imported",
-                iconUrl: "icon-128.png"
+        reader.onload = function(e) {
+            var new_events = JSON.parse(decrypt(e.target.result));
+            chrome.storage.local.set({events: new_events},function(){
+                chrome.storage.local.set({recording: false});
+                chrome.notifications.create("event_log_imported",{
+                    type: "basic",
+                    title: "Wildfire",
+                    message: "Event Log Imported",
+                    iconUrl: "icon-128.png"
+                });
+                chrome.storage.local.remove('workflow',function(){
+                    if (window.location.href.includes("eventlog.html")) {
+                        setTimeout(function(){
+                            location.reload();
+                        },1);
+                    }
+                    if (window.location.href.includes("workfloweditor.html")) {
+                        setTimeout(function(){
+                            $(window).unbind('beforeunload');
+                            $(window).unbind('unload');
+                            location.reload();
+                        },1);
+                    }
+                });
             });
-            chrome.storage.local.remove('workflow',function(){
-                if (window.location.href.includes("eventlog.html")) {
-                    setTimeout(function(){
-                        location.reload();
-                    },1);
-                }
-                if (window.location.href.includes("workfloweditor.html")) {
-                    setTimeout(function(){
-                        $(window).unbind('beforeunload');
-                        $(window).unbind('unload');
-                        location.reload();
-                    },1);
-                }
-            });
-        });
 
-    }
+        }
 
-    var file = document.getElementById('eventfileContainer').files[0];
-    reader.readAsText(file);
-});
+        var file = document.getElementById('eventfileContainer').files[0];
+        reader.readAsText(file);
+    });
+}

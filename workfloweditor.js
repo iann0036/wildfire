@@ -9,7 +9,8 @@ var link_types = [
   "timer",
   "wait_for_element",
   "wait_for_title",
-  "test_expression"
+  "test_expression",
+  "wait_for_time"
 ];
 
 var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
@@ -280,6 +281,11 @@ function getEventOptionsHtml(userdata) {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_expression\">Expression</label>" +
     "    <input type=\"text\" class=\"form-control\" id=\"event_detail_expression\" value=\"" + escapeOrDefault(userdata.expr,"") + "\">" +
     "</div>";
+  } else if (userdata.evt == "wait_for_time") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_waittilltime\">Time</label>" +
+    "    <input type=\"text\" class=\"form-control\" id=\"event_detail_waittilltime\" value=\"" + escapeOrDefault(userdata.waittilltime,"12:00:00 AM") + "\">" +
+    "</div>";
+		"</div>";
   }
 
   console.log("Unprocessable Event Options: " + userdata.evt);
@@ -323,29 +329,42 @@ function selectedFigure(figure) {
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option selected='selected' value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
         "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
-        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>" +
+        "<option value='wait_for_time' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-wall-clock.png\"/>Wait For Time</span>'>Wait For Time</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "wait_for_title")
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
         "<option selected='selected' value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
-        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>" +
+        "<option value='wait_for_time' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-wall-clock.png\"/>Wait For Time</span>'>Wait For Time</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "timer")
       $('#sidePanelTypeSelect').html(
         "<option selected='selected' value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
         "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
-        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>" +
+        "<option value='wait_for_time' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-wall-clock.png\"/>Wait For Time</span>'>Wait For Time</option>"
       ).selectpicker('refresh');
     else if (figure.userData.evt == "test_expression")
       $('#sidePanelTypeSelect').html(
         "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
         "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
         "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
-        "<option selected='selected' value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>"
+        "<option selected='selected' value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>" +
+        "<option value='wait_for_time' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-wall-clock.png\"/>Wait For Time</span>'>Wait For Time</option>"
       ).selectpicker('refresh');
+    else if (figure.userData.evt == "wait_for_time") {
+      $('#sidePanelTypeSelect').html(
+        "<option value='timer' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-timer-clock.png\"/>Timer</span>'>Timer</option>" +
+        "<option value='wait_for_element' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/page-view.png\"/>Wait For Element</span>'>Wait For Element</option>" +
+        "<option value='wait_for_title' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-title.png\"/>Wait For Title</span>'>Wait For Title</option>" +
+        "<option value='test_expression' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-equation.png\"/>Test Expression</span>'>Test Expression</option>" +
+        "<option selected='selected' value='wait_for_time' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-wall-clock.png\"/>Wait For Time</span>'>Wait For Time</option>"
+      ).selectpicker('refresh');
+    }
   }
 
   // Set details call
@@ -423,6 +442,11 @@ function setDetailListeners() {
   $('#event_detail_timer').on('input', function() {
     var userData = figure.userData;
     userData['wait_time'] = $('#event_detail_timer').val() * 1000;
+    figure.setUserData(userData);
+  });
+  $('#event_detail_waittilltime').on('input', function() {
+    var userData = figure.userData;
+    userData['waittilltime'] = $('#event_detail_waittilltime').val();
     figure.setUserData(userData);
   });
   $('#event_detail_title').on('input', function() {
@@ -1010,27 +1034,31 @@ function cloudUploadSwal() {
         $('.confirm').attr('disabled','');
 
         getCanvasImage().then(function(png){
-            chrome.storage.local.get('workflow', function (workflow) {
-                $.ajax({
-                    method: "POST",
-                    url: "https://cloud.wildfire.ai/api/upload",
-                    data: {
-                        name: inputValue.trim(),
-                        workflow: workflow.workflow,
-                        time: Date.now(),
-                        api_key: all_settings.cloudapikey,
-                        account: all_settings.account,
-                        version: chrome.runtime.getManifest().version,
-                        image: png
-                    }
-                }).always(function(resp) {
-                    swal({
-                        title: "Done",
-                        text: "Your <b>" + inputValue.trim() + "</b> workflow has been uploaded to the Wildfire Cloud.",
-                        type: "success",
-                        html: true
+            chrome.storage.local.get('events', function (events) {
+                chrome.storage.local.get('workflow', function (workflow) {
+                    chrome.storage.local.get('settings', function (settings) {
+                        $.ajax({
+                            method: "POST",
+                            url: "https://cloud.wildfire.ai/api/upload",
+                            data: {
+                                name: inputValue.trim(),
+                                workflow: workflow.workflow,
+                                time: Date.now(),
+                                api_key: all_settings.cloudapikey,
+                                account: all_settings.account,
+                                version: chrome.runtime.getManifest().version,
+                                image: png
+                            }
+                        }).always(function(resp) {
+                            swal({
+                                title: "Done",
+                                text: "Your <b>" + inputValue.trim() + "</b> workflow has been uploaded to the Wildfire Cloud.",
+                                type: "success",
+                                html: true
+                            });
+                            $('.confirm').removeAttr('disabled');
+                        });
                     });
-                    $('.confirm').removeAttr('disabled');
                 });
             });
         });

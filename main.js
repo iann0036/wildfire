@@ -12,7 +12,7 @@ var new_window;
 var sim_start_time;
 var terminated = false;
 var simulation_log = [];
-var waitForElementInterval, waitForTitleInterval, testExpressionInterval;
+var waitForElementInterval, waitForTitleInterval, testExpressionInterval, waitForTimeInterval;
 var simulating = false;
 var last_node;
 var isFavSim = false;
@@ -432,6 +432,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             time: request.time
         });
         chrome.storage.local.set({events: events});
+    } else if (request.action == "loadCloudWorkflow") {
+        chrome.storage.local.set({events: '{"events":[{"evt":"begin_recording","evt_data":{},"time":0},{"evt":"end_recording","evt_data":{},"time":1}]}'},function(){
+            chrome.storage.local.set({workflow: request.workflow},function(){
+                chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                    begin_fav_sim(-1, curr_window);
+                });
+            });
+        });
     }
 });
 
@@ -498,11 +506,9 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
     chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
         if (navigator.userAgent.includes("Wildfire")) {
-            setTimeout(function(){
-                chrome.windows.getCurrent({}, function () {
-                    begin_fav_sim(-1, curr_window);
-                });
-            },5000);
+            chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                chrome.tabs.update(curr_window.tabs[0].id, {url: chrome.extension.getURL("new.html")});
+            });
         } else {
             openUI("docs/getting_started.html");
         }
@@ -572,7 +578,7 @@ function setContextMenus() {
 
 setTimeout(function(){
     setContextMenus();
-},2000);
+},5000);
 
 function send_message(msg) {
     try {
@@ -827,6 +833,8 @@ function logResultAndRaceLinks(result, failure, node) {
 						waitForTitle(resolve, resolveVariable(links[i].userData.title), links[i]);
                     } else if (links[i].userData.evt == "test_expression") {
 						testExpression(resolve, links[i].userData.expr, links[i]);
+					} else if (links[i].userData.evt == "wait_for_time") {
+						waitForTime(resolve, links[i].userData.waittilltime, links[i]);
 					} else {
 						reject();
 					}
@@ -855,6 +863,7 @@ function logResultAndRaceLinks(result, failure, node) {
 		.then(function(winning_link) {
 			clearInterval(waitForElementInterval);
 			clearInterval(waitForTitleInterval);
+			clearInterval(waitForTimeInterval);
 			clearInterval(testExpressionInterval);
 			if (!terminated) {
 				if (failure)
@@ -1019,7 +1028,7 @@ function execEvent(node) {
         case 'change':
             if (bgSettings.simulatechange) {
                 code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('" +
-                    resolveVariable(node.userData.evt_data.value);
+                    resolveVariable(node.userData.evt_data.value) + "');";
             }
             break;
         case 'input':
@@ -1490,6 +1499,24 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
     });
 }
 
+function waitForTime(resolve, time, returnvar) {
+    waitForTimeInterval = setInterval(function(){
+        if (time === undefined)
+            time = "12:00:00 AM";
+        
+        var b = time.match(/\d+/g);
+        if (!b) return;
+
+        var d = new Date();
+        d.setHours(b[0]>12? b[0] : b[0]%12 + (/p/i.test(time)? 12 : 0), // hours
+             /\d/.test(b[1])? b[1] : 0,     // minutes
+             /\d/.test(b[2])? b[2] : 0);    // seconds
+        
+        if (d.toTimeString() == new Date().toTimeString())
+            resolve(returnvar);
+    }, 100);
+}
+
 function waitForTitle(resolve, expected_title, returnvar) {
     waitForTitleInterval = setInterval(function(){
         var activeTab = 0;
@@ -1656,6 +1683,11 @@ function terminateSimulation(finished, reason) {
                 chrome.storage.local.set({simulations: simulations});
                 if (!bgSettings.leavesimulationopen && !isFavSim)
                     chrome.windows.remove(new_window.id,function(){});
+                if (navigator.userAgent.includes("Wildfire")) {
+                    chrome.tabs.update(null,{
+                        url: chrome.extension.getURL("blank.html")
+                    });
+                }
             });
         });
     } catch(err) {
