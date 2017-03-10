@@ -1681,13 +1681,14 @@ function terminateSimulation(finished, reason) {
                     favorite: isFavSim
                 });
                 chrome.storage.local.set({simulations: simulations});
-                if (!bgSettings.leavesimulationopen && !isFavSim)
-                    chrome.windows.remove(new_window.id,function(){});
                 if (navigator.userAgent.includes("Wildfire")) {
-                    chrome.tabs.update(null,{
-                        url: chrome.extension.getURL("blank.html")
+                    chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs){
+                        chrome.tabs.update(tabs[0].id,{
+                            url: chrome.extension.getURL("blank.html")
+                        });
                     });
-                }
+                } else if (!bgSettings.leavesimulationopen && !isFavSim)
+                    chrome.windows.remove(new_window.id,function(){});
             });
         });
     } catch(err) {

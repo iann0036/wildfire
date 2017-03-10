@@ -36,9 +36,13 @@ var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
     return;
-  if ($.inArray(figure.userData.evt,link_types)==-1)
+  
+  var node = canvas.getPrimarySelection();
+  var command = new draw2d.command.CommandDelete(node);
+  canvas.getCommandStack().execute(command);
+  /*if ($.inArray(figure.userData.evt,link_types)==-1)
     figure.resetPorts();
-  canvas.remove(figure);
+  canvas.remove(figure);*/
   canvas.setCurrentSelection(null);
 }
 $('#workflowToolbarDelete').click(function(){
@@ -541,8 +545,11 @@ function addSection(label) {
       section_name: ""
     }
   });
+
+  var command = new draw2d.command.CommandAdd(canvas, section, (window.innerWidth/2)-108, y);
+  canvas.getCommandStack().execute(command);
   
-  canvas.add(section);
+  //canvas.add(section);
 
   section.on("move",function(obj,ctx) {
       canvasResize();
@@ -950,10 +957,13 @@ $('#workflowToolbarAddNode').click(function(){
     var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY();});
     var y = Math.max.apply(Math,heights.asArray()) + 80;
 
-    canvas.add(addNode({
+    var node = addNode({
       evt: 'end_recording',
       time: 0
-    }), 775, y);
+    })
+    var command = new draw2d.command.CommandAdd(canvas, node, 775, y);
+    canvas.getCommandStack().execute(command);
+
     nodes.push(node);
     canvasResize();
     $(window).scrollTop($('body').height());
@@ -1065,3 +1075,11 @@ function cloudUploadSwal() {
     });
 }
 $('#workflowToolbarCloudUpload').click(cloudUploadSwal);
+$('#workflowToolbarUndo').click(function(){
+  canvas.getCommandStack().undo();
+});
+$('#workflowToolbarRedo').click(function(){
+  canvas.getCommandStack().redo();
+  canvas.uninstallEditPolicy( gridPolicy );
+  canvas.installEditPolicy( gridPolicy ); // sexy hack to avoid section being under grid
+});
