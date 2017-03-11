@@ -101,6 +101,11 @@ var mappingData = {
         event_type: 'Page Scroll',
         icon: 'scroll-bar.png'
     },
+    csvimport: {
+        bgColor: '#F7734F',
+        event_type: 'CSV Import',
+        icon: 'csv-file-format-extension.png'
+    },
     mousedown: {
         bgColor: '#F9E666',
         event_type: 'Mouse Down',
@@ -450,6 +455,10 @@ function readableEventDetail(event) {
             break;
         case 'customjs':
             event_type = "Ran Custom Function";
+            minorEvent = false;
+            break;
+        case 'csvimport':
+            event_type = "Imported CSV";
             minorEvent = false;
             break;
         default:

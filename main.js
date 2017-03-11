@@ -1253,6 +1253,31 @@ function execEvent(node) {
                     });
                 });
             });
+        case 'csvimport':
+            return new Promise(function(resolve, reject) {
+                try {
+                    var rows = node.userData.evt_data.csvresults.data;
+                    for (var j=1; j<rows.length; j++) {
+                        for (var k=0; k<rows[j].length; k++) {
+                            simulation_variables[rows[0][k] + "." + j] = rows[j][k];
+                        }
+                    }
+
+                    resolve({
+                        error: false,
+                        results: ["Processed " + (rows.length-1) + " lines of data"],
+                        id: node.id,
+                        time: Date.now()
+                    });
+                } catch(err) {
+                    reject({
+                        error: true,
+                        results: ["Error processing CSV file"],
+                        id: node.id,
+                        time: Date.now()
+                    });
+                }
+            });
         case 'setvar':
             return new Promise(function(resolve, reject) {
                 if (node.userData.evt_data.usage === undefined) // was never initially set

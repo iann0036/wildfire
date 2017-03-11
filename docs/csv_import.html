@@ -151,10 +151,10 @@
                 <li><a href="/docs/form_submit.html">Form Submit</a></li>
                 <li><a href="/docs/text_select.html">Text Select</a></li>
                 <li><a href="/docs/page_scroll.html">Page Scroll</a></li>
-                <li><a href="/docs/csv_import.html">CSV Import</a></li>
+                <li><a class="active" href="/docs/csv_import.html">CSV Import</a></li>
                 <li><a href="/docs/mouse_down.html">Mouse Down</a></li>
                 <li><a href="/docs/mouse_up.html">Mouse Up</a></li>
-                <li><a class="active" href="/docs/mouse_over.html">Mouse Over</a></li>
+                <li><a href="/docs/mouse_over.html">Mouse Over</a></li>
                 <li><a href="/docs/mouse_out.html">Mouse Out</a></li>
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
@@ -184,43 +184,51 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Mouse Over</h2>
+                <h2>CSV Import</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: December 20, 2016
+                    Last Updated: March 11, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
                 <p style="margin-bottom: 2rem;">
-                    This event simulates the cursor moving over of the CSS selector at the position specified.
+                    This event imports a predefined CSV file so that the values may be used in other actions. When the CSV Import event is processed, the values within the CSV file become available as <a href="/docs/set_variable.html">variables</a> that can be used in most fields or in <a href="/docs/expressions.html">expressions</a>.
                 </p>
+                <p>
+                    The values are mapped in the form <code>&lt;column name&gt;.&lt;row number&gt;</code>. For example, the following CSV:
+                </p>
+                <pre>name,age,city
+Josh,24,Sydney
+Lauren,41,New York
+Sam,36,London</pre>
+                <p>will produce these variables:</p>
+                <p><b>name.1</b>: "Josh"<br />
+                <b>name.2</b>: "Lauren"<br />
+                <b>name.3</b>: "Sam"<br />
+                <b>age.1</b>: "24"<br />
+                <b>age.2</b>: "41"<br />
+                <b>age.3</b>: "36"<br />
+                <b>city.1</b>: "Sydney"<br />
+                <b>city.2</b>: "New York"<br />
+                <b>city.3</b>: "London"
+                </p>
+                <p>Remember, if you're using the variables as a value and not within an expression, you'll need to <a href="/docs/expressions.html">prepend it</a> with a '$' symbol when using the value.</p>
+                <br />
                 <h4>Options</h4>
                 <div class="row" style="padding-top: 10px;">
                     <div class="col-md-4">
                         <p style="text-align: right;">
-                            <strong>Position</strong><br />
+                            <strong>CSV File</strong><br />
                             <span class="color-blue-grey-lighter">&nbsp;</span>
                         </p>
                     </div>
                     <div class="col-md-8">
-                        <p>The X and Y coordinate values relative to the element. They should be any non-negative whole number. If you're unsure, setting both to <code>0</code> is a safe option.</p>
-                    </div>
-                </div>
-                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
-                <div class="row" style="padding-top: 10px;">
-                    <div class="col-md-4">
-                        <p style="text-align: right;">
-                            <strong>CSS Selector</strong><br />
-                            <span class="color-blue-grey-lighter">&nbsp;</span>
-                        </p>
-                    </div>
-                    <div class="col-md-8">
-                        <p>The CSS Selector for the element.</p>
+                        <p>The CSV-compatible file to use for your variables. This file <b>must</b> use a header row. Delimiter recognition is automatic.</p>
                     </div>
                 </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/mouse_up.html">&#8656; Mouse Up</a></p>
-                <p style="float: right;"><a href="/docs/mouse_out.html">Mouse Out &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/page_scroll.html">&#8656; Page Scroll</a></p>
+                <p style="float: right;"><a href="/docs/mouse_down.html">Mouse Down &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

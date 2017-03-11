@@ -233,6 +233,17 @@ function getEventOptionsHtml(userdata) {
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"index\" id=\"index\" value=\"" + escapeOrDefault(userdata.evt_data.index,"") + "\">" +
     "    <br />" +
     "    </div>";
+  } else if (userdata.evt == "csvimport") {
+    if (userdata.evt_data.csvfile) {
+      return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"csv\">CSV File</label>" +
+      "    <div id=\"csv-files\"><i class=\"fa fa-file-o\"></i> " + userdata.evt_data.csvfile.name + " <small><a id=\"clearCsv\">Clear</a></small><br /></div><div style=\"display: none;\" id=\"csv-drop-zone\" class=\"drop-zone\"><i class=\"font-icon font-icon-cloud-upload-2\"></i><div class=\"drop-zone-caption\">Drag file to upload</div>" +
+      "     <span class=\"btn btn-rounded btn-file\"><span>Choose file</span><input id=\"event_csvfile\" type=\"file\" name=\"event_csvfile[]\"></span></div>" +
+      "</div>";
+    }
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"csv\">CSV File</label>" +
+    "    <div id=\"csv-files\"></div><div id=\"csv-drop-zone\">" +
+	  "     <span class=\"btn btn-file\"><span><i class=\"fa fa-upload\"></i> Choose CSV File</span><input id=\"event_csvfile\" type=\"file\" name=\"event_csvfile[]\"></span></div>" +
+    "</div><br />";
   } else if (userdata.evt == "tabchange") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"url\">URL</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"url\" id=\"url\" value=\"" + escapeOrDefault(userdata.evt_data.url,"about:blank") + "\">" +
@@ -508,6 +519,50 @@ function setDetailListeners() {
     var userData = figure.userData;
     userData.evt_data.scrollTime = ($(this).val() * 1000);
     figure.setUserData(userData);
+  });
+
+  $('#event_csvfile').on('change', function(change_detail) {
+    if ($('#event_csvfile').val() == "") return; // cleared file
+
+    $("#event_csvfile").parse({
+      config: {
+        complete: function(results, file) {
+          if (results.errors.length < 1) {
+            var userData = figure.userData;
+            userData.evt_data.csvresults = results;
+            userData.evt_data.csvfile = {
+              name: file.name,
+              size: file.size,
+              lastModified: file.lastModified
+            };
+            figure.setUserData(userData);
+
+            $('#csv-drop-zone').attr('style','display: none;');
+            $('#csv-files').html("<i class=\"fa fa-file-o\"></i> " + file.name + " <small><a id=\"clearCsv\">Clear</a></small><br />");
+            $('#clearCsv').click(function(){
+              $('#csv-drop-zone').attr('style','display: block;');
+              var userData = figure.userData;
+              userData.evt_data.csvresults = false;
+              userData.evt_data.csvfile = false;
+              figure.setUserData(userData);
+              $('#csv-files').html("");
+              $('#event_csvfile').val("");
+            });
+          } else {
+            console.log(results.errors); // TODO - Make this user visible
+          }
+        }
+      }
+    });
+  });
+  $('#clearCsv').click(function(){
+    $('#csv-drop-zone').attr('style','display: block;');
+    var userData = figure.userData;
+    userData.evt_data.csvresults = false;
+    userData.evt_data.csvfile = false;
+    figure.setUserData(userData);
+    $('#csv-files').html("");
+    $('#event_csvfile').val("");
   });
   
   $('#event_usage').on('change', function() {
