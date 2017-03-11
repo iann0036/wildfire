@@ -481,7 +481,7 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 		var windowWidth = 1280;
 		var windowHeight = 800;
 		chrome.windows.create({
-			url: chrome.extension.getURL("dashboard.html"),
+			url: chrome.extension.getURL(request.url),
 			type: "popup",
 			width: windowWidth,
 			height: windowHeight,
@@ -919,17 +919,17 @@ function execEvent(node) {
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mousedown', { clientX: " +
-                    resolveVariable(node.userData.evt_data.clientX) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientX)) +
                     ", clientY: " +
-                    resolveVariable(node.userData.evt_data.clientY) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientY)) +
                     " });";
             }
             break;
         case 'scroll':
             if (bgSettings.simulatescroll) {
                 code = "$('html, body').animate({" +
-                    "scrollTop: " + resolveVariable(node.userData.evt_data.scrollTopEnd) + "," +
-                    "scrollLeft: " + resolveVariable(node.userData.evt_data.scrollLeftEnd) +
+                    "scrollTop: " + parseInt(resolveVariable(node.userData.evt_data.scrollTopEnd)) + "," +
+                    "scrollLeft: " + parseInt(resolveVariable(node.userData.evt_data.scrollLeftEnd)) +
                     "}, " + (resolveVariable(node.userData.evt_data.scrollTime) || 0.1) + ");";
             }
             break;
@@ -938,9 +938,9 @@ function execEvent(node) {
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseup', { clientX: " +
-                    resolveVariable(node.userData.evt_data.clientX) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientX)) +
                     ", clientY: " +
-                    resolveVariable(node.userData.evt_data.clientY) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientY)) +
                     " });";
             }
             break;
@@ -949,9 +949,9 @@ function execEvent(node) {
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseover', { clientX: " +
-                    resolveVariable(node.userData.evt_data.clientX) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientX)) +
                     ", clientY: " +
-                    resolveVariable(node.userData.evt_data.clientY) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientY)) +
                     " }); simulateHoverElement('" + resolveVariable(node.userData.evt_data.csspath) + "');";
             }
             break;
@@ -960,9 +960,9 @@ function execEvent(node) {
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseout', { clientX: " +
-                    resolveVariable(node.userData.evt_data.clientX) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientX)) +
                     ", clientY: " +
-                    resolveVariable(node.userData.evt_data.clientY) +
+                    parseInt(resolveVariable(node.userData.evt_data.clientY)) +
                     " }); stopSimulateHover();";
             }
             break;
@@ -1482,6 +1482,7 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                     chrome.tabs.executeScript(tabs[activeTab].id,{
                         code: code,
                         frameId: frameId,
+                        //allFrames: true,
                         matchAboutBlank: true
                     }, function(results){
                         if (results && results.length==1 && ((results[0]!==null && !results[0].error) || results[0]===null)) {
@@ -1492,6 +1493,13 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                                 time: Date.now()
                             });
                         } else {
+                            if (Array.isArray(results)) {
+                                if (results.length > 0) {
+                                    if (results[0] == "$ is not defined")
+                                        results[0] = "Page was not yet loaded";
+                                }
+                            }
+
                             reject({
                                 error: true,
                                 results: results,
@@ -1603,6 +1611,7 @@ function waitForElement(resolve, csspath, returnvar) {
 					chrome.tabs.executeScript(tabs[activeTab].id,{
 						code: "$('" + csspath + "').length",
 						frameId: 0, // TODO - frame support
+                        //allFrames: true,
 						matchAboutBlank: true
 					}, function(results){
 						if (results && results[0])
@@ -1707,7 +1716,7 @@ function terminateSimulation(finished, reason) {
                 });
                 chrome.storage.local.set({simulations: simulations});
                 if (navigator.userAgent.includes("Wildfire")) {
-                    chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs){
+                    chrome.tabs.query({windowId: new_window.id}, function(tabs){
                         chrome.tabs.update(tabs[0].id,{
                             url: chrome.extension.getURL("blank.html")
                         });

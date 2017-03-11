@@ -754,7 +754,7 @@ $(document).ready(function(){
 		if (!("ontouchstart" in document.documentElement)) {
 			$('.side-menu-addl').jScrollPane(jScrollOptions);
 		}
-	},1000);
+	},1500);
 
 /* ==========================================================================
 	Widget chart combo
