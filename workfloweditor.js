@@ -808,16 +808,34 @@ function exportJSON() {
         events: events
       });
       var text = encrypt(jsonTxt);
-      var filename = "WildfireSimulationExport_" + Math.floor(Date.now() / 1000) + ".wfsim";
+      swal({
+          title: "Export Workflow",
+          text: "Enter your filename:",
+          type: "input",
+          showCancelButton: true,
+          closeOnConfirm: false,
+          inputValue: "WildfireSimulationExport_" + Math.floor(Date.now() / 1000) + ".wfsim"
+      }, function (filename) {
+          if (filename === false) return false;
+          if (filename === "") {
+              swal("Error", "You need to specify a filename.", "error");
+              return false;
+          }
+          if (!filename.endsWith(".wfsim") && !filename.endsWith(".WFSIM")) {
+              swal("Error", "The extension must be .wfsim", "error");
+              return false;
+          }
 
-      var element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-      element.setAttribute('download', filename);
+          var element = document.createElement('a');
+          element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+          element.setAttribute('download', filename);
 
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+          element.style.display = 'none';
+          document.body.appendChild(element);
+          element.click();
+          document.body.removeChild(element);
+          return true;
+      });
   });
 }
 
@@ -852,7 +870,7 @@ function connCreate(sourcePort, targetPort, userData) {
       userData = {
         evt: 'timer',
         condition_type: 'timer',
-        wait_time: 0
+        wait_time: 1000
       };
 
     var router = new draw2d.layout.connection.ManhattanBridgedConnectionRouter();

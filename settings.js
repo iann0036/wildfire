@@ -551,6 +551,26 @@ function populateScheduledTable() {
                 var schDate = new Date(scheduled[i].date);
                 schDate = monthNames[schDate.getMonth()] + " " + schDate.getDate() + ", " + schDate.getFullYear() + " @ " + ((schDate.getHours() + 11) % 12 + 1) + ":" + (schDate.getMinutes() > 9 ? schDate.getMinutes() : "0" + schDate.getMinutes()) + " " + (schDate.getHours() >= 12 ? "PM" : "AM");
 
+                if (scheduled[i].sunday === false || scheduled[i].monday === false || scheduled[i].tuesday === false || scheduled[i].wednesday === false || scheduled[i].thursday === false || scheduled[i].friday === false || scheduled[i].saturday === false) {
+                    var runOnDays = [];
+                    if (scheduled[i].sunday)
+                        runOnDays.push("Sunday");
+                    if (scheduled[i].monday)
+                        runOnDays.push("Monday");
+                    if (scheduled[i].tuesday)
+                        runOnDays.push("Tuesday");
+                    if (scheduled[i].wednesday)
+                        runOnDays.push("Wednesday");
+                    if (scheduled[i].thursday)
+                        runOnDays.push("Thursday");
+                    if (scheduled[i].friday)
+                        runOnDays.push("Friday");
+                    if (scheduled[i].saturday)
+                        runOnDays.push("Saturday");
+                    
+                    schDate += ' <span class="hint-circle grey" data-toggle="tooltip" data-placement="top" title="" data-original-title="Only run on ' + runOnDays.join(", ") + '">?</span>';
+                }
+
                 var innerHTML = "<tr id=\"scheduledRow" + (i+1) + "\">" +
                 "    <td>" + workflowname + "</td>" +
                 "    <td>" + schDate + "</td>" +
@@ -605,6 +625,23 @@ $('.datetimepicker-1').datetimepicker({
     debug: false
 });
 
+$('#addScheduledSim').click(function(){
+    $('#sundaySchedule').attr("checked","");
+    $('#sundaySchedule').parent().addClass("active");
+    $('#mondaySchedule').attr("checked","");
+    $('#mondaySchedule').parent().addClass("active");
+    $('#tuesdaySchedule').attr("checked","");
+    $('#tuesdaySchedule').parent().addClass("active");
+    $('#wednesdaySchedule').attr("checked","");
+    $('#wednesdaySchedule').parent().addClass("active");
+    $('#thursdaySchedule').attr("checked","");
+    $('#thursdaySchedule').parent().addClass("active");
+    $('#fridaySchedule').attr("checked","");
+    $('#fridaySchedule').parent().addClass("active");
+    $('#saturdaySchedule').attr("checked","");
+    $('#saturdaySchedule').parent().addClass("active");
+});
+
 $('#addScheduleSubmitButton').click(function(){
     if ($('#scheduleDateTime').val()=="") {
         swal("Error", "You must set the Date / Time of Simulation field", "error");
@@ -630,7 +667,14 @@ $('#addScheduleSubmitButton').click(function(){
             workflow: $('#scheduleWorkflow').val(),
             date: date.getTime(),
             repeat: $('#scheduleRepeat').val(),
-            created: Date.now()
+            created: Date.now(),
+            sunday: $('#sundaySchedule').prop("checked"),
+            monday: $('#mondaySchedule').prop("checked"),
+            tuesday: $('#tuesdaySchedule').prop("checked"),
+            wednesday: $('#wednesdaySchedule').prop("checked"),
+            thursday: $('#thursdaySchedule').prop("checked"),
+            friday: $('#fridaySchedule').prop("checked"),
+            saturday: $('#saturdaySchedule').prop("checked")
         });
         chrome.storage.local.set({scheduled: scheduled},function(){
             $('#scheduleWorkflow').val("-1");

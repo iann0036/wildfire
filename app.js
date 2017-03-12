@@ -73,18 +73,36 @@ updateEvents();
 
 function downloadEventLog() {
     var text = encrypt(JSON.stringify(events));
-    var filename = "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire";
+    swal({
+        title: "Export Event Log",
+        text: "Enter your filename:",
+        type: "input",
+        showCancelButton: true,
+        closeOnConfirm: false,
+        inputValue: "WildfireExport_" + Math.floor(Date.now() / 1000) + ".wfire"
+    }, function (filename) {
+        if (filename === false) return false;
+        if (filename === "") {
+            swal("Error", "You need to specify a filename.", "error");
+            return false;
+        }
+        if (!filename.endsWith(".wfire") && !filename.endsWith(".WFIRE")) {
+            swal("Error", "The extension must be .wfire", "error");
+            return false;
+        }
 
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
 
-    element.style.display = 'none';
-    document.body.appendChild(element);
+        element.style.display = 'none';
+        document.body.appendChild(element);
 
-    element.click();
+        element.click();
 
-    document.body.removeChild(element);
+        document.body.removeChild(element);
+        return true;
+    });
 }
 
 function addListener(element, eventName, handler) {

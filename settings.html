@@ -34,6 +34,16 @@
     <link rel="stylesheet" href="/theme/css/lib/bootstrap-sweetalert/sweetalert.css"/>
     <link rel="stylesheet" href="/theme/css/main.css">
     <link rel="stylesheet" href="/theme/css/custom.css">
+    <style>
+        label.btn.daybtn {
+            border:1px solid #e9e9e9;
+            background:#e9e9e9;
+        }
+        label.btn.daybtn.active {
+            border:1px solid #16b4fc;
+            background:#16b4fc;
+        }
+    </style>
 </head>
 
 <body class="horizontal-navigation">
@@ -613,6 +623,33 @@
                                                     <option value="1440">Every 24 Hours</option>
                                                 </select>
                                                 <small class="text-muted">&nbsp;</small>
+                                            </fieldset>
+                                            <fieldset class="form-group">
+                                                <label class="form-label semibold" for="scheduleDays">Days</label>
+                                                <div class="btn-group" data-toggle="buttons">
+                                                    <label class="btn daybtn">
+                                                        <input id="sundaySchedule" type="checkbox" autocomplete="off"> Sun
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="mondaySchedule" type="checkbox" autocomplete="off"> Mon
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="tuesdaySchedule" type="checkbox" autocomplete="off"> Tue
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="wednesdaySchedule" type="checkbox" autocomplete="off"> Wed
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="thursdaySchedule" type="checkbox" autocomplete="off"> Thu
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="fridaySchedule" type="checkbox" autocomplete="off"> Fri
+                                                    </label>
+                                                    <label class="btn daybtn">
+                                                        <input id="saturdaySchedule" type="checkbox" autocomplete="off"> Sat
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">Simulations will run only on the days highlighted.</small>
                                             </fieldset>
                                         </div>
                                         <div class="modal-footer">

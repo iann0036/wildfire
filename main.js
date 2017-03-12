@@ -26,8 +26,8 @@ if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.inde
 
 chrome.alarms.onAlarm.addListener(function(alarm){
     var name = alarm.name;
-    if (name.startsWith("scheduled_")) {
-        var name_parts = name.split("_");
+    var name_parts = name.split("_");
+    if (name.startsWith("scheduled_") && (name_parts.length == 2 || name_parts[2].includes(String(new Date().getDay())))) {
         chrome.notifications.create("beginning_scheduled_sim",{
             type: "basic",
             title: "Wildfire",
@@ -79,7 +79,22 @@ function configureAlarms() {
                     };
                     if (scheduled[i].repeat!=0)
                         options['periodInMinutes'] = parseInt(scheduled[i].repeat);
-                    chrome.alarms.create("scheduled_" + scheduled[i].workflow, options);
+                    var days = "";
+                    if (scheduled[i].sunday!==false)
+                        days += "0";
+                    if (scheduled[i].monday!==false)
+                        days += "1";
+                    if (scheduled[i].tuesday!==false)
+                        days += "2";
+                    if (scheduled[i].wednesday!==false)
+                        days += "3";
+                    if (scheduled[i].thursday!==false)
+                        days += "4";
+                    if (scheduled[i].friday!==false)
+                        days += "5";
+                    if (scheduled[i].saturday!==false)
+                        days += "6";
+                    chrome.alarms.create("scheduled_" + scheduled[i].workflow + "_" + days, options);
                 }
             }
         });
@@ -1493,13 +1508,7 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                                 time: Date.now()
                             });
                         } else {
-                            if (Array.isArray(results)) {
-                                if (results.length > 0) {
-                                    if (results[0] == "$ is not defined")
-                                        results[0] = "Page was not yet loaded";
-                                }
-                            }
-
+                            // Check for and handle special errors here
                             reject({
                                 error: true,
                                 results: results,
