@@ -31,13 +31,15 @@ function populateSimulation() {
                 simulations[i].finished = true;
             }
         }
+
+        $('#noScreenshotText').remove();
         
         if (simulations[i].image !== undefined)
             $('#screenshot').attr('src',simulations[i].image);
         else {
             $('#screenshot').attr('style','margin-top: 50px; margin-bottom: 20px; width: 125px; height: 125px;');
             $('#screenshot').attr('src','/unavailable.png');
-            $('#screenshot').parent().append("<h5 style='margin-bottom: 80px;'>No Screenshot Available</h5>");
+            $('#screenshot').parent().append("<h5 id='noScreenshotText' style='margin-bottom: 80px;'>No Screenshot Available</h5>");
         }
         $('#progressBar').val(Math.min(percentile, 100));
         $('#progressBar').html(percentile + "%");

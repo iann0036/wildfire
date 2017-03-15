@@ -13,6 +13,9 @@
 //  Modified by Wildfire Team
 
 //  re-define Array.indexOf, because IE doesn't know it ...
+
+var expressionVariables = [];
+
 function indexOf(array, obj, start) {
   for (var i = (start || 0); i < array.length; i++) {
     if (array[i] === obj) {
@@ -177,6 +180,8 @@ Expression.prototype.substitute = function (variable, expr) {
 };
 
 function evaluate(tokens, expr, values) {
+  expressionVariables = values;
+
   var nstack = [];
   var n1, n2, n3;
   var f;
@@ -465,6 +470,14 @@ function contains(a,b) {
 }
 function startswith(a,b) {
   return String(a).startsWith(String(b));
+}
+function lookup(a) {
+  console.log("Looking up " + String(a));
+  console.log(expressionVariables);
+  if (expressionVariables[String(a)] === undefined)
+    return "";
+  else
+    return expressionVariables[String(a)];
 }
 
 function hypot() {
@@ -1306,7 +1319,8 @@ function Parser() {
     'if': condition,
     gamma: gamma,
     contains: contains,
-    startswith: startswith
+    startswith: startswith,
+    lookup: lookup
   };
 
   this.consts = {

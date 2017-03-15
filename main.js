@@ -47,17 +47,42 @@ function updateTrackedTabs() {
 }
 
 function resolveVariable(str) {
-    var newstr = String(str).replace("'", "\\'");
+    try {
+        String.prototype.isAlNum = function() {
+            var regExp = /^[A-Za-z0-9]+$/;
+            return (this.match(regExp));
+        };
 
-    if (newstr.length < 2)
-        return str;
-    if (newstr[0] != '$')
-        return str;
-    if (newstr[1] == '$')
-        return str.substring(1);
-    if (simulation_variables[str.substring(1)] === undefined)
+        str = String(str);
+
+        if (str.length < 2)
+            return String(str).replace("'", "\\'");
+
+        if (str[0] != '$')
+            return String(str[0]).replace("'", "\\'") + resolveVariable(str.substring(1));
+        if (str[1] == '$')
+            return "$" + resolveVariable(str.substring(2));
+        
+        var i = 2;
+        var varname = false;
+        while (!varname) {
+            if (i > str.length)
+                varname = str.substring(1,i-1);
+            else if (str.substring(1,i).isAlNum())
+                i+=1;
+            else
+                varname = str.substring(1,i-1)
+        }
+
+        if (simulation_variables[varname] === undefined) {
+            return "" + resolveVariable(str.substring(i-1));
+        }
+
+        return String(simulation_variables[varname]).replace("'", "\\'") + resolveVariable(str.substring(i-1));
+    } catch (e) {
+        console.log(e);
         return "";
-    return simulation_variables[str.substring(1)].replace("'", "\\'");
+    }
 }
 
 function configureAlarms() {
@@ -439,6 +464,7 @@ updateProxy();
 configureAlarms();
 updateEvents();
 
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "addEvent") {
         events.push({
@@ -476,46 +502,47 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 })(window.history);
 */
 
-
-chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
-	if (request.action == "registrationStatus") {
-		if (bgSettings != null) {
-			sendResponse({
-				"success": true,
-				"account": bgSettings.account,
-				"cloudapikey": bgSettings.cloudapikey,
-                "version": chrome.runtime.getManifest().version
-			});
-		} else {
-			sendResponse({
-				"success": false,
-                "version": chrome.runtime.getManifest().version
-			});
-		}
-	} else if (request.action == "openExtension") {
-		var windowWidth = 1280;
-		var windowHeight = 800;
-		chrome.windows.create({
-			url: chrome.extension.getURL(request.url),
-			type: "popup",
-			width: windowWidth,
-			height: windowHeight,
-			left: screen.width/2-(windowWidth/2),
-			top: screen.height/2-(windowHeight/2)
-		});
-	} else if (request.action == "registerExtension") {
-		chrome.storage.local.get('settings', function (settings) {
-			bgSettings = settings.settings;
-			bgSettings.account = request.account;
-			bgSettings.cloudapikey = request.cloudapikey;
-			chrome.storage.local.set({settings: bgSettings});
-		});
-		sendResponse({
-			"success": true,
-                "version": chrome.runtime.getManifest().version
-		});
-	}
-});
+if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+    chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
+        if (request.action == "registrationStatus") {
+            if (bgSettings != null) {
+                sendResponse({
+                    "success": true,
+                    "account": bgSettings.account,
+                    "cloudapikey": bgSettings.cloudapikey,
+                    "version": chrome.runtime.getManifest().version
+                });
+            } else {
+                sendResponse({
+                    "success": false,
+                    "version": chrome.runtime.getManifest().version
+                });
+            }
+        } else if (request.action == "openExtension") {
+            var windowWidth = 1280;
+            var windowHeight = 800;
+            chrome.windows.create({
+                url: chrome.extension.getURL(request.url),
+                type: "popup",
+                width: windowWidth,
+                height: windowHeight,
+                left: screen.width/2-(windowWidth/2),
+                top: screen.height/2-(windowHeight/2)
+            });
+        } else if (request.action == "registerExtension") {
+            chrome.storage.local.get('settings', function (settings) {
+                bgSettings = settings.settings;
+                bgSettings.account = request.account;
+                bgSettings.cloudapikey = request.cloudapikey;
+                chrome.storage.local.set({settings: bgSettings});
+            });
+            sendResponse({
+                "success": true,
+                    "version": chrome.runtime.getManifest().version
+            });
+        }
+    });
+}
 
 chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListener(function(details){ // special handling - not present in FF
     chrome.storage.local.set({simulating: false});    
@@ -616,23 +643,43 @@ function getNodeById(nodeid) {
 	return node;
 }
 
-chrome.runtime.onConnect.addListener(function(new_port) {
-	port = new_port;
-	if (port.name == "sim") {
-		port.onMessage.addListener(function(msg) {
-			if (msg.action == "getstate") {
-				send_message({
-					type: "state",
-					state: "running"
-				});
-			} else if (msg.action == "begin_sim") {
-				begin_sim();
-			} else if (msg.action == "stop_sim") {
-				terminateSimulation(false, "User terminated");
-			}
-		});
-	}
-});
+if (typeof InstallTrigger !== 'undefined') { // Firefox
+    browser.runtime.onConnect.addListener(function(new_port) {
+        port = new_port;
+        if (port.name == "sim") {
+            port.onMessage.addListener(function(msg) {
+                if (msg.action == "getstate") {
+                    send_message({
+                        type: "state",
+                        state: "running"
+                    });
+                } else if (msg.action == "begin_sim") {
+                    begin_sim();
+                } else if (msg.action == "stop_sim") {
+                    terminateSimulation(false, "User terminated");
+                }
+            });
+        }
+    });
+} else {
+    chrome.runtime.onConnect.addListener(function(new_port) {
+        port = new_port;
+        if (port.name == "sim") {
+            port.onMessage.addListener(function(msg) {
+                if (msg.action == "getstate") {
+                    send_message({
+                        type: "state",
+                        state: "running"
+                    });
+                } else if (msg.action == "begin_sim") {
+                    begin_sim();
+                } else if (msg.action == "stop_sim") {
+                    terminateSimulation(false, "User terminated");
+                }
+            });
+        }
+    });
+}
 
 function generatePassphrase() {
   var ret = "3ur9";
