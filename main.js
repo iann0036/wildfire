@@ -189,9 +189,14 @@ function openUI(url) {
             });
         });
     } else {
-        window.open(chrome.extension.getURL(url), "wildfire", "left=" + Math.round(screen.width/2-(windowWidth/2)) +
-            "top=" + Math.round(screen.height/2-(windowHeight/2)) + ",width=" + windowWidth + ",height=" + windowHeight +
-            ",resizable=no,scrollbars=yes,status=no,menubar=no,toolbar=no,personalbar=no");
+        chrome.windows.create({
+            url: chrome.extension.getURL(url),
+            type: "popup",
+            width: windowWidth,
+            height: windowHeight,
+            left: Math.round(screen.width/2-(windowWidth/2)),
+            top: Math.round(screen.height/2-(windowHeight/2))
+        });
     }
 }
 
