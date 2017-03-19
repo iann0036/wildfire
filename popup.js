@@ -33,6 +33,7 @@ function toggleRecording() {
                                 left: Math.round(screen.width/2-(windowWidth/2)),
                                 top: Math.round(screen.height/2-(windowHeight/2))
                             });
+                            window.close();
                         });
                     } else {
                         chrome.windows.create({
@@ -43,8 +44,8 @@ function toggleRecording() {
                             left: Math.round(screen.width/2-(windowWidth/2)),
                             top: Math.round(screen.height/2-(windowHeight/2))
                         });
+                        window.close();
                     }
-                    window.close();
                 });
             });
         } else {

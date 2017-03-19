@@ -53,7 +53,7 @@ $('#deleteButtonSidepanel').click(function(){deleteSelection();});
 function escapeOrDefault(value, defaultval) {
   if (value || value === "") {
     if (isNaN(value))
-      return value.replace(/\"/g,'&quot;');
+      return value.replace(/\"/g,'&quot;').replace(/\\/g,'\\\\');
     return value;
   }
   return defaultval;
@@ -756,8 +756,7 @@ function importJSON(json) {
     }
 
     setTimeout(function(){ // TODO: This is a dirty hack to avoid grid overlay on long loads
-      canvas.uninstallEditPolicy( gridPolicy );
-      canvas.installEditPolicy( gridPolicy );
+      resetGridZ();
     },1000);
 }
 
@@ -968,6 +967,21 @@ function initCanvas() {
             result.events = [];
         loadFromLocalStorageOrCreateNew(result);
     });
+
+    canvas.getCommandStack().addEventListener(function(){
+        if (canvas.getCommandStack().canUndo()) {
+            $('#workflowToolbarUndo').removeAttr('disabled');
+        } else {
+            $('#workflowToolbarUndo').attr('disabled','');
+        }
+        if (canvas.getCommandStack().canRedo()) {
+            $('#workflowToolbarRedo').removeAttr('disabled');
+        } else {
+            $('#workflowToolbarRedo').attr('disabled','');
+        }
+        $('.tooltip').remove();
+    });
+    canvas.getCommandStack().markSaveLocation();
 }
 
 function createNewWorkflowFromEvents(result) {
@@ -1147,12 +1161,85 @@ function cloudUploadSwal() {
         });
     });
 }
+
+function cloneSelection() {
+    var cloneNodes = [];
+    var retry = true;
+    var offset = 0;
+    var selection = new draw2d.util.ArrayList();
+
+    while (retry && offset < 8000) {
+        retry = false;
+        offset += 80;
+        canvas.getSelection().each(function(i,fig){
+            if (canvas.getBestFigure(fig.x, fig.y+offset) !== null)
+                retry = true;
+        });
+    }
+
+    canvas.getSelection().each(function(i,fig){
+        if (fig.cssClass == "CustomNode") {
+            if (fig.userData.evt == "begin_recording")
+                return;
+            var node = fig.clone();
+            node.setResizeable(false);
+            for (var i=0; i<node.hybridPorts.data.length; i++) {
+                node.hybridPorts.data[i].userData.clonedFrom = fig.hybridPorts.data[i].id;
+            }
+            node.userData.clonedFrom = fig.id;
+            cloneNodes.push(node);
+            canvas.add(node, fig.x, fig.y+offset);
+            nodes.push(node);
+            selection.add(node);
+        } else if (fig.cssClass == "CustomSection") {
+            var section = fig.clone();
+            canvas.add(section, fig.x, fig.y+offset);
+            selection.add(section);
+        }
+    });
+    canvas.getSelection().each(function(i,fig){
+        if (fig.cssClass == "draw2d_Connection") {
+            var source = false;
+            var dest = false;
+
+            for (var i=0; i<cloneNodes.length; i++) {
+                if (cloneNodes[i].hybridPorts) {
+                    for (var j=0; j<cloneNodes[i].hybridPorts.data.length; j++) {
+                        if (fig.sourcePort.id == cloneNodes[i].hybridPorts.data[j].userData.clonedFrom)
+                            source = cloneNodes[i].hybridPorts.data[j];
+                        if (fig.targetPort.id == cloneNodes[i].hybridPorts.data[j].userData.clonedFrom)
+                            dest = cloneNodes[i].hybridPorts.data[j];
+                    }
+                }
+            }
+
+            var newLink = connCreate(source,dest,fig.userData);
+            links.push(newLink);
+            canvas.add(newLink);
+            selection.add(newLink);
+        }
+    });
+
+    $('#workflowsidepanel').attr('style','display: none;');
+    canvas.setCurrentSelection([]);
+    resetGridZ();
+    saveToLocalStorage();
+    canvas.getCommandStack().markSaveLocation();
+}
+
+function resetGridZ() {
+    setTimeout(function(){
+        canvas.uninstallEditPolicy( gridPolicy );
+        canvas.installEditPolicy( gridPolicy ); // sexy hack to avoid section being under grid
+    },1);
+}
+
 $('#workflowToolbarCloudUpload').click(cloudUploadSwal);
+$('#workflowToolbarClone').click(cloneSelection);
 $('#workflowToolbarUndo').click(function(){
   canvas.getCommandStack().undo();
 });
 $('#workflowToolbarRedo').click(function(){
   canvas.getCommandStack().redo();
-  canvas.uninstallEditPolicy( gridPolicy );
-  canvas.installEditPolicy( gridPolicy ); // sexy hack to avoid section being under grid
+  resetGridZ();
 });

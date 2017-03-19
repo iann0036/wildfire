@@ -17,3 +17,15 @@ if (document.getElementsByTagName('head')[0].hasAttribute('wf_suppressalerts')) 
     window.confirm = function(){console.warn('Window confirm dialog suppressed by Wildfire'); return true;};
     window.alert = function(){console.warn('Window alert dialog suppressed by Wildfire');};
 }
+
+/*
+var wildfire_f = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function(type, fn, capture) {
+    this.wildfire_f = wildfire_f;
+    this.wildfire_f(type, function(e){
+        if (e.type != "mouseover" && e.type != "mouseout" && e.type != "mousemove" && e.type != "message")
+            console.log(e);
+        fn.apply(this, arguments);
+    }, capture);
+}
+*/

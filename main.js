@@ -47,6 +47,10 @@ function updateTrackedTabs() {
 }
 
 function resolveVariable(str) {
+    return eresolveVariable(String(str).replace("\\","\\\\"));
+}
+
+function eresolveVariable(str) {
     try {
         String.prototype.isAlNum = function() {
             var regExp = /^[A-Za-z0-9]+$/;

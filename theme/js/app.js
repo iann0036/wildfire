@@ -330,7 +330,7 @@ $(document).ready(function(){
 				html: true,
 				trigger: "hover"
 			});
-		},100);
+		},500);
 	});
 
 	// Popovers
