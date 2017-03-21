@@ -166,6 +166,17 @@ chrome.storage.local.get('settings', function (settings) {
         }
     }
     /****/
+
+    /* Guide */
+    setTimeout(function(){
+        chrome.storage.local.get('simulating', function (simulating) {
+            if (window.location.href.startsWith("https://wildfire.ai/tour1_1") && !simulating.simulating) {
+                var s = document.createElement('script');
+                s.textContent = 'initTour();';
+                document.head.appendChild(s);
+            }
+        });
+    },500);
 });
 
 function getFrameIndex() {

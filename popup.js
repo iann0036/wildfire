@@ -25,15 +25,37 @@ function toggleRecording() {
                         chrome.tabs.query({
                             windowType: "popup"
                         },function(tabs){
-                            chrome.windows.create({
-                                url: chrome.extension.getURL("workfloweditor.html"),
-                                type: "popup",
-                                width: windowWidth,
-                                height: windowHeight,
-                                left: Math.round(screen.width/2-(windowWidth/2)),
-                                top: Math.round(screen.height/2-(windowHeight/2))
+                            /* Guide */
+                            chrome.tabs.query({
+                                active: true,
+                                currentWindow: true
+                            }, function(tabs) {
+                                if (tabs[0].url.startsWith("https://wildfire.ai/tour1_1")) {
+                                    chrome.tabs.executeScript(tabs[0].id,{
+                                        code: "var s = document.createElement('script');s.textContent = 'stoppedRecording();';document.head.appendChild(s);"
+                                    },function(){
+                                        chrome.windows.create({
+                                            url: chrome.extension.getURL("workfloweditor.html#tour1_1"),
+                                            type: "popup",
+                                            width: windowWidth,
+                                            height: windowHeight,
+                                            left: Math.round(screen.width/2-(windowWidth/2)),
+                                            top: Math.round(screen.height/2-(windowHeight/2))
+                                        });
+                                        window.close();
+                                    });
+                                } else {
+                                    chrome.windows.create({
+                                        url: chrome.extension.getURL("workfloweditor.html"),
+                                        type: "popup",
+                                        width: windowWidth,
+                                        height: windowHeight,
+                                        left: Math.round(screen.width/2-(windowWidth/2)),
+                                        top: Math.round(screen.height/2-(windowHeight/2))
+                                    });
+                                    window.close();
+                                }
                             });
-                            window.close();
                         });
                     } else {
                         chrome.windows.create({
@@ -56,8 +78,22 @@ function toggleRecording() {
                     time: Date.now(),
                     evt_data: {}
                 });
-                chrome.storage.local.set({events: events});
-                window.close();
+                chrome.storage.local.set({events: events},function(){
+                    /* Guide */
+                    chrome.tabs.query({
+                        active: true,
+                        currentWindow: true
+                    }, function(tabs) {
+                        if (tabs[0].url.startsWith("https://wildfire.ai/tour1_1")) {
+                            chrome.tabs.executeScript(tabs[0].id,{
+                                code: "var s = document.createElement('script');s.textContent = 'startedRecording();';document.head.appendChild(s);"
+                            },function(){
+                                window.close();
+                            });
+                        } else
+                            window.close();
+                    });
+                });
             });
         }
     });

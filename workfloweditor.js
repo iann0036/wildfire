@@ -918,6 +918,10 @@ $(window).load(function () {
       setTimeout(function(){
         exportJSON();
       },800);
+    } else if (window.location.hash == "#tour1_1") {
+      setTimeout(function(){
+        openTour1_1();
+      },50);
     }
 
     $('#simulateButton2').click(function(){
@@ -1205,6 +1209,10 @@ function cloneSelection() {
             for (var i=0; i<cloneNodes.length; i++) {
                 if (cloneNodes[i].hybridPorts) {
                     for (var j=0; j<cloneNodes[i].hybridPorts.data.length; j++) {
+                        if (fig.sourcePort.parent.userData.evt == "begin_recording")
+                            return;
+                        if (fig.targetPort.parent.userData.evt == "begin_recording")
+                            return;
                         if (fig.sourcePort.id == cloneNodes[i].hybridPorts.data[j].userData.clonedFrom)
                             source = cloneNodes[i].hybridPorts.data[j];
                         if (fig.targetPort.id == cloneNodes[i].hybridPorts.data[j].userData.clonedFrom)
@@ -1243,3 +1251,15 @@ $('#workflowToolbarRedo').click(function(){
   canvas.getCommandStack().redo();
   resetGridZ();
 });
+
+function openTour1_1() {
+    var enjoyhint_instance = new EnjoyHint({});
+    var enjoyhint_script_steps = [
+      {
+        'click #workflowToolbarInitSimulation': 'This is the workflow we just created.<br />It has many events (circles) and links (arrows).<br /><br />The final step is to click the play button to start a simulation.<br />Once it\'s running, simply watch and relax.',
+        showSkip: false
+      }
+    ];
+    enjoyhint_instance.set(enjoyhint_script_steps);
+    enjoyhint_instance.run();
+}

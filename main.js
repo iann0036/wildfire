@@ -703,7 +703,7 @@ function decrypt(str) {
   return CryptoJS.AES.decrypt(str, generatePassphrase()).toString(CryptoJS.enc.Utf8);
 }
 
-function begin_fav_sim(fav_index, curr_window) { ////////////////////
+function begin_fav_sim(fav_index, curr_window) {
     sim_start_time = Date.now();
     terminated = false;
     new_window = curr_window;
@@ -756,9 +756,6 @@ function begin_sim_with_option(fav_index) {
 			incognito = true;
 
 		var url = chrome.extension.getURL("new.html");
-		/*if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
-			url = events[1].evt_data.url;
-		}*/
 		
         var window_options = {
 			"url":url,
@@ -817,7 +814,22 @@ function begin_sim_with_option(fav_index) {
                     }
 
                     setTimeout(function(node){ // allow time for simulation window to open
-                        processEvent(node);
+                        if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
+                            var initurl = events[1].evt_data.url;
+                            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                                chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                                    chrome.tabs.update(tabs[0].id,{url: initurl});
+                                });
+                            } else {
+                                browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                                    chrome.tabs.update(tabs[0].id,{url: initurl});
+                                });
+                            }
+                            setTimeout(function(node){
+                                processEvent(node);
+                            }, 2000, node);
+                        } else                    
+                            processEvent(node);
                     }, 1000, node);
                 }).catch(function(){
                     chrome.windows.remove(new_window.id,function(){});
@@ -841,7 +853,22 @@ function begin_sim_with_option(fav_index) {
                     }
 
                     setTimeout(function(node){ // allow time for simulation window to open
-                        processEvent(node);
+                        if (events[1].evt != "tabchange" && events[1].evt_data.url && events[1].evt_data.url.length > 8) {
+                            var initurl = events[1].evt_data.url;
+                            if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                                chrome.tabs.query({windowId: new_window.id}, function(tabs){
+                                    chrome.tabs.update(tabs[0].id,{url: initurl});
+                                });
+                            } else {
+                                browser.tabs.query({windowId: new_window.id}).then(function(tabs){
+                                    chrome.tabs.update(tabs[0].id,{url: initurl});
+                                });
+                            }
+                            setTimeout(function(node){
+                                processEvent(node);
+                            }, 2000, node);
+                        } else                    
+                            processEvent(node);
                     }, 1000, node);
                 }).catch(function(){
                     chrome.windows.remove(new_window.id,function(){});

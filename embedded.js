@@ -19,13 +19,16 @@ if (document.getElementsByTagName('head')[0].hasAttribute('wf_suppressalerts')) 
 }
 
 /*
-var wildfire_f = EventTarget.prototype.addEventListener;
-EventTarget.prototype.addEventListener = function(type, fn, capture) {
-    this.wildfire_f = wildfire_f;
-    this.wildfire_f(type, function(e){
-        if (e.type != "mouseover" && e.type != "mouseout" && e.type != "mousemove" && e.type != "message")
-            console.log(e);
-        fn.apply(this, arguments);
-    }, capture);
+var wildfire_EventTarget_prototype_addEventListener = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function(type, fn) {
+    var args = arguments;
+    var origListener = args[1];
+
+    args[1] = function(){
+        //console.log("atest");
+        return origListener.apply(this, arguments);
+    };
+
+    return wildfire_EventTarget_prototype_addEventListener.apply(this, args);
 }
 */
