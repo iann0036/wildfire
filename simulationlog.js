@@ -2,13 +2,28 @@
  * Created by ian on 31/05/2016.
  */
 
+function formatDateLong(date) {
+  var monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ];
+
+  var day = date.getDate();
+  var monthIndex = date.getMonth();
+  var year = date.getFullYear();
+
+  return day + ' ' + monthNames[monthIndex] + ', ' + year;
+}
+
 function formatDate(date) {
 	var seconds = Math.floor((new Date() - date) / 1000);
     var interval = Math.floor(seconds / 31536000);
 
     interval = Math.floor(seconds / 2592000);
     if (interval > 1) {
-        return date.toString();
+        return formatDateLong(date);
     }
     interval = Math.floor(seconds / 86400);
     if (interval > 1) {
