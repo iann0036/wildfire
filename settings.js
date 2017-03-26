@@ -78,6 +78,8 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-rightclick').click();
     if (all_settings.suppressalerts)
         $('#setting-suppressalerts').click();
+    if (all_settings.directinputdefault)
+        $('#setting-directinputdefault').click();
     if (all_settings.account != "" && all_settings.account !== undefined) {
         $('#setting-account').html(all_settings.account);
         $('#setting-account').parent().append("&nbsp;&nbsp;<a id='unlinkButton' href='#'>Unlink</a>");
@@ -240,6 +242,10 @@ $('#setting-rightclick').change(function() {
 });
 $('#setting-suppressalerts').change(function() {
     all_settings.suppressalerts = $(this).is(":checked");
+    updateSettings();
+});
+$('#setting-directinputdefault').change(function() {
+    all_settings.directinputdefault = $(this).is(":checked");
     updateSettings();
 });
 $('#setting-flush-simulation-log').click(function(e) {

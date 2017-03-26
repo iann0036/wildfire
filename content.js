@@ -285,9 +285,7 @@ function simulate(element, eventName) {
         }
     }
 
-    element.dispatchEvent(oEvent);
-
-    return element;
+    return [element.dispatchEvent(oEvent)];
 }
 
 function extend(destination, source) {
@@ -354,11 +352,11 @@ function updateScrollEvent(e) {
 
     if (scrollObject == null) {
         scrollStartTime = Date.now();
-        scrollObject = document.body; // e.srcElement; temp removed
+        scrollObject = document.body; // e.target; temp removed
         scrollStartTop = scrollObject.scrollTop;
         scrollStartLeft = scrollObject.scrollLeft;
         scrollTimer = setTimeout(finishScrollEvent, scrollTimeMillis);
-    } else {//} if (scrollObject == e.srcElement) {
+    } else {//} if (scrollObject == e.target) {
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(finishScrollEvent, scrollTimeMillis);
     } // in theory, 2x concurrent scrolling, should be impossible but isn't
@@ -368,8 +366,8 @@ function addDocumentEventListener(eventName) {
 	document.body.addEventListener(eventName, function (e) {
 		var evt_data = {
 			path: processPath(e.path),
-			csspath: getCSSPath(e.srcElement, false),
-			csspathfull: getCSSPath(e.srcElement, true),
+			csspath: getCSSPath(e.target, false),
+			csspathfull: getCSSPath(e.target, true),
 			clientX: e.clientX,
 			clientY: e.clientY,
 			altKey: e.altKey,
@@ -379,20 +377,20 @@ function addDocumentEventListener(eventName) {
 			button: e.button,
 			bubbles: e.bubbles,
 			cancelable: e.cancelable,
-			innerText: e.srcElement.innerText || "",
+			innerText: e.target.innerText || "",
 			inFrame: getFrameIndex(),
 			url: window.location.href
 		};
 		if (eventName == "select")
-			evt_data['selectValue'] = e.srcElement.value;
+			evt_data['selectValue'] = e.target.value;
 		if (eventName == "keyup" || eventName == "keydown" || eventName == "keypress")
 			evt_data['keyCode'] = e.keyCode;
-		if (eventName == "input" || eventName == "propertychange" || eventName == "change") {
-            evt_data['type'] = e.srcElement.tagName.toLowerCase();
+        if (eventName == "input" || eventName == "propertychange" || eventName == "change") {
+            evt_data['type'] = e.target.tagName.toLowerCase();
             if (evt_data['type']=="input" || evt_data['type']=="textarea")
-                evt_data['value'] = e.srcElement.value;
+                evt_data['value'] = e.target.value;
             else
-    			evt_data['value'] = e.srcElement.innerText;
+    			evt_data['value'] = e.target.innerText;
 		}
 
         if (eventName == "cut")

@@ -46,6 +46,15 @@ function updateTrackedTabs() {
     });
 }
 
+function resolveChar(str) {
+    var charInt = parseInt(resolveVariable(str));
+
+    if (charInt == 190)
+        return ".";
+    
+    return String.fromCharCode(charInt);
+}
+
 function resolveVariable(str) {
     return eresolveVariable(String(str).replace("\\","\\\\"));
 }
@@ -84,7 +93,6 @@ function eresolveVariable(str) {
 
         return String(simulation_variables[varname]).replace("'", "\\'") + resolveVariable(str.substring(i-1));
     } catch (e) {
-        console.log(e);
         return "";
     }
 }
@@ -1014,6 +1022,33 @@ function execEvent(node) {
             });
         case 'mousedown':
             if (bgSettings.simulatemousedown) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
+
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mousedown', { clientX: " +
@@ -1028,11 +1063,37 @@ function execEvent(node) {
                 code = "$('html, body').animate({" +
                     "scrollTop: " + parseInt(resolveVariable(node.userData.evt_data.scrollTopEnd)) + "," +
                     "scrollLeft: " + parseInt(resolveVariable(node.userData.evt_data.scrollLeftEnd)) +
-                    "}, " + (resolveVariable(node.userData.evt_data.scrollTime) || 0.1) + ");";
+                    "}, " + (resolveVariable(node.userData.evt_data.scrollTime) || 0.1) + ");true;";
             }
             break;
         case 'mouseup':
             if (bgSettings.simulatemouseup) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'mouseup', { clientX: " +
@@ -1066,6 +1127,34 @@ function execEvent(node) {
             break;
         case 'click':
             if (bgSettings.simulateclick) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left", clickCount: 1  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
+
                 code = "";
 
                 if (node.userData.evt_data.downloadlinks)
@@ -1079,20 +1168,47 @@ function execEvent(node) {
 
                 if (node.userData.evt_data.downloadlinks)
                     code += "if ($('" + resolveVariable(node.userData.evt_data.csspath) + "').prop('tagName') == 'A'){ if (downloadattrstatus===undefined) { $('" + resolveVariable(node.userData.evt_data.csspath) + "').removeAttr('download'); }; };";
+                code += "true;";
             }
             break;
         case 'focusin':
             if (bgSettings.simulatefocusin) {
-                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();true;";
             }
             break;
         case 'focusout':
             if (bgSettings.simulatefocusout) {
-                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').blur();";
+                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').blur();true;";
             }
             break;
         case 'keydown':
             if (bgSettings.simulatekeydown) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode))), text: String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode))), type: 'rawKeyDown', windowsVirtualKeyCode: parseInt(resolveVariable(node.userData.evt_data.keyCode)), nativeVirtualKeyCode : parseInt(resolveVariable(node.userData.evt_data.keyCode)), macCharCode: parseInt(resolveVariable(node.userData.evt_data.keyCode))  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
+
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'keydown', { keyCode: " +
@@ -1102,6 +1218,32 @@ function execEvent(node) {
             break;
         case 'keyup':
             if (bgSettings.simulatekeyup) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode))), text: String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode))), type: 'keyUp', windowsVirtualKeyCode: parseInt(resolveVariable(node.userData.evt_data.keyCode)), nativeVirtualKeyCode : parseInt(resolveVariable(node.userData.evt_data.keyCode)), macCharCode: parseInt(resolveVariable(node.userData.evt_data.keyCode))  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
+
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'keyup', { keyCode: " +
@@ -1111,6 +1253,34 @@ function execEvent(node) {
             break;
         case 'keypress':
             if (bgSettings.simulatekeypress) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        runCode(code, node).then(function(result){
+                            chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveChar(node.userData.evt_data.keyCode), text: resolveChar(node.userData.evt_data.keyCode), type: 'rawKeyDown', windowsVirtualKeyCode: parseInt(resolveVariable(node.userData.evt_data.keyCode)), nativeVirtualKeyCode : parseInt(resolveVariable(node.userData.evt_data.keyCode)), macCharCode: parseInt(resolveVariable(node.userData.evt_data.keyCode))  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveChar(node.userData.evt_data.keyCode), text: resolveChar(node.userData.evt_data.keyCode), type: 'char', windowsVirtualKeyCode: parseInt(resolveVariable(node.userData.evt_data.keyCode)), nativeVirtualKeyCode : parseInt(resolveVariable(node.userData.evt_data.keyCode)), macCharCode: parseInt(resolveVariable(node.userData.evt_data.keyCode))  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveChar(node.userData.evt_data.keyCode), text: resolveChar(node.userData.evt_data.keyCode), type: 'keyUp', windowsVirtualKeyCode: parseInt(resolveVariable(node.userData.evt_data.keyCode)), nativeVirtualKeyCode : parseInt(resolveVariable(node.userData.evt_data.keyCode)), macCharCode: parseInt(resolveVariable(node.userData.evt_data.keyCode))  });
+                                chrome.debugger.detach({ tabId: tabs[0].id });
+                                resolve({
+                                    error: false,
+                                    results: null,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        }).catch(function(result){
+                            resolve({
+                                error: true,
+                                results: [JSON.stringify(result)],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        });
+                    });
+                }
+
                 code = "simulate(" +
                     "$('" + resolveVariable(node.userData.evt_data.csspath) + "')[0]" +
                     ",'keypress', { keyCode: " +
@@ -1126,13 +1296,79 @@ function execEvent(node) {
         case 'change':
             if (bgSettings.simulatechange) {
                 code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('" +
-                    resolveVariable(node.userData.evt_data.value) + "');";
+                    resolveVariable(node.userData.evt_data.value) + "');true;";
             }
             break;
         case 'input':
             if (bgSettings.simulateinput) {
+                if (node.userData.useDirectInput) {
+                    return new Promise(function(resolve, reject) {
+                        try {
+                            code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();$('" + resolveVariable(node.userData.evt_data.csspath) + "').val();";
+                            
+                            runCode(code, node).then(function(result){
+                                chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                    // TODO - deal with period char
+                                    if (result.results[0] == node.userData.evt_data.value.slice(0, -1)) {
+                                        chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
+                                        chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[node.userData.evt_data.value.length-1], text: node.userData.evt_data.value[node.userData.evt_data.value.length-1], type: 'rawKeyDown', windowsVirtualKeyCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0))  });
+                                        chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[node.userData.evt_data.value.length-1], text: node.userData.evt_data.value[node.userData.evt_data.value.length-1], type: 'char', windowsVirtualKeyCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0))  });
+                                        chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[node.userData.evt_data.value.length-1], text: node.userData.evt_data.value[node.userData.evt_data.value.length-1], type: 'keyUp', windowsVirtualKeyCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0))  });
+                                        chrome.debugger.detach({ tabId: tabs[0].id });     
+                                        resolve({
+                                            error: false,
+                                            results: null,
+                                            id: node.id,
+                                            time: Date.now()
+                                        });
+                                    } else if (result.results[0] == node.userData.evt_data.value) {
+                                        resolve({
+                                            error: false,
+                                            results: null,
+                                            id: node.id,
+                                            time: Date.now()
+                                        });
+                                    } else {
+                                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('');";
+                                        
+                                        runCode(code, node).then(function(result){
+                                            for (var j=0; j<node.userData.evt_data.value.length; j++) {
+                                                chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'rawKeyDown', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'char', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'keyUp', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
+                                                chrome.debugger.detach({ tabId: tabs[0].id });
+                                            }
+                                            resolve({
+                                                error: false,
+                                                results: null,
+                                                id: node.id,
+                                                time: Date.now()
+                                            });
+                                        });
+                                    } 
+                                });
+                            }).catch(function(result){
+                                resolve({
+                                    error: true,
+                                    results: [JSON.stringify(result)],
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            });
+                        } catch(e) {
+                            resolve({
+                                error: true,
+                                results: [e.message],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        }
+                    });
+                }
+
                 code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('"
-                    + resolveVariable(node.userData.evt_data.value) + "');";
+                    + resolveVariable(node.userData.evt_data.value) + "');true;";
             }
             break;
         case 'clipboard_cut':
@@ -1495,7 +1731,7 @@ function execEvent(node) {
             });
         case 'recaptcha':
             return new Promise(function(resolve, reject) {
-                code = 'if ($(".g-recaptcha").length > 0) { var sitekey = $(".g-recaptcha").attr("data-sitekey"); var url = location.host; sitekey; } else { throw "NOCAPTCHAFOUND"; }';
+                code = 'if ($(".g-recaptcha").length > 0 || document.location.href.includes("k=")) { var end = document.location.href.indexOf("&",document.location.href.indexOf("k=")); if(end==-1) end = document.location.href.indexOf("#",document.location.href.indexOf("k=")); if(end==-1) end = 9999; var sitekey = $(".g-recaptcha").attr("data-sitekey") || document.location.href.substring(document.location.href.indexOf("k=")+2,end);sitekey; } else { throw "NOCAPTCHAFOUND"; }';
                 runCode(code, node).then(function(result){
                     var sitekey = result.results[0];
                     runCode("location.host", node).then(function(result) {
@@ -1505,19 +1741,30 @@ function execEvent(node) {
                             data: sitekey + "," + result.results[0] + "," + bgSettings.cloudapikey || ""
                         }).always(function(resp) {
                             runCode("$('#g-recaptcha-response').html('" + resp.responseText + "');", node).then(function(result){
-                            var runcode = "var script = document.createElement('script');\
-                                script.setAttribute(\"type\", \"application/javascript\");\
-                                script.textContent = \"eval($('.g-recaptcha').attr('data-callback') + '(\\\"" + resp.responseText + "\\\")');\";\
-                                document.documentElement.appendChild(script);\
-                                document.documentElement.removeChild(script);";
-                            runCode(runcode, node).then(function(result){
-                                resolve({
-                                    error: false,
-                                    results: [resp.responseText],
-                                    id: node.id,
-                                    time: Date.now()
+                                var runcode = "var script = document.createElement('script');\
+                                    script.setAttribute(\"type\", \"application/javascript\");\
+                                    script.textContent = \"window['___grecaptcha_cfg']['clients'][0]['T']['Rk']['callback']('" + resp.responseText + "');\";\
+                                    document.documentElement.appendChild(script);\
+                                    document.documentElement.removeChild(script);";
+                                runCode(runcode, node).then(function(result){
+                                    setTimeout(function(){
+                                        resolve({
+                                            error: false,
+                                            results: [resp.responseText],
+                                            id: node.id,
+                                            time: Date.now()
+                                        });
+                                    },3000);
+                                }).catch(function(result){
+                                    setTimeout(function(){
+                                        resolve({
+                                            error: false,
+                                            results: [resp.responseText],
+                                            id: node.id,
+                                            time: Date.now()
+                                        });
+                                    },3000);
                                 });
-                            });
                             });
                         });
                     });
@@ -1555,7 +1802,6 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
 
         try {
             var frameId = 0;
-
             var activeTab = 0;
 
             function runCodeInActiveTab(tabs) {
@@ -1566,6 +1812,10 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
 
                 chrome.webNavigation.getAllFrames({tabId: tabs[activeTab].id}, function (frames) {
                     for (var j=0; j<frames.length; j++) {
+                        if (code.includes("NOCAPTCHAFOUND") && frames[j].url.includes("www.google.com/recaptcha/api2")) {
+                            frameId = frames[j].frameId;
+                            break;
+                        }
                         if (urlprefix != null && frames[j].frameId!=0 && frames[j].url.startsWith(urlprefix)) {
                             frameId = frames[j].frameId;
                             break;
@@ -1577,20 +1827,52 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
 
                     code = "try { " + code + "; } catch(err) { new Object({error: err.message, errorstack: err.stack}); }";
 
-                    chrome.tabs.executeScript(tabs[activeTab].id,{
-                        code: code,
-                        frameId: frameId,
-                        //allFrames: true,
-                        matchAboutBlank: true
-                    }, function(results){
-                        if (results && results.length==1 && ((results[0]!==null && !results[0].error) || results[0]===null)) {
-                            resolve({
-                                error: false,
-                                results: results,
-                                id: node.id,
-                                time: Date.now()
-                            });
-                        } else {
+                    if (typeof InstallTrigger === 'undefined') { // NOT Firefox
+                        chrome.tabs.executeScript(tabs[activeTab].id,{
+                            code: code,
+                            frameId: frameId,
+                            //allFrames: true,
+                            matchAboutBlank: true
+                        }, function(results){
+                            if (results && results.length==1 && ((results[0]!==null && !results[0].error) || results[0]===null)) {
+                                resolve({
+                                    error: false,
+                                    results: results,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            } else {
+                                // Check for and handle special errors here
+                                reject({
+                                    error: true,
+                                    results: results,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            }
+                        });
+                    } else {
+                        browser.tabs.executeScript(tabs[activeTab].id,{
+                            code: code,
+                            frameId: frameId,
+                            //allFrames: true,
+                            matchAboutBlank: true
+                        }).then(function(results){
+                            if (results && results.length==1 && ((results[0]!==null && !results[0].error) || results[0]===null))
+                                resolve({
+                                    error: false,
+                                    results: results,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                            else
+                                reject({
+                                    error: true,
+                                    results: results,
+                                    id: node.id,
+                                    time: Date.now()
+                                });
+                        },function(results){
                             // Check for and handle special errors here
                             reject({
                                 error: true,
@@ -1598,8 +1880,8 @@ function runCodeFrameURLPrefix(code, node, urlprefix) {
                                 id: node.id,
                                 time: Date.now()
                             });
-                        }
-                    });
+                        });
+                    }
                 });
             }
 

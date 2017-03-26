@@ -100,6 +100,10 @@ function getEventOptionsHtml(userdata) {
 		"      <input type=\"checkbox\" id=\"event_middlebutton\">" +
 		"      <label for=\"event_middlebutton\">Use Middle Mouse Button</label>" +
 	  "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
+		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+    "    </div>";
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
@@ -118,6 +122,10 @@ function getEventOptionsHtml(userdata) {
 		"      <input type=\"checkbox\" id=\"event_middlebutton\">" +
 		"      <label for=\"event_middlebutton\">Use Middle Mouse Button</label>" +
 	  "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
+		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+    "   </div>";
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
@@ -125,21 +133,31 @@ function getEventOptionsHtml(userdata) {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
     "    <div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX,"0") + "\">" +
     "    </div>" +
     "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY,"0") + "\">" +
     "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "focusin" || userdata.evt == "focusout" || userdata.evt == "submit" || userdata.evt == "select") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath.replace(/\"/g,'&quot;')|| "") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "    <br />" +
     "</div>";
-  } else if (userdata.evt == "input" || userdata.evt == "change") {
+  } else if (userdata.evt == "input") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + escapeOrDefault(userdata.evt_data.value,"") + "\">" +
+    "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\"><br />" +
+    "    <label class=\"form-label semibold\" for=\"event_useDirectInput\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
+		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+    "</div>";
+  } else if (userdata.evt == "change") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"value\" id=\"event_value\" value=\"" + escapeOrDefault(userdata.evt_data.value,"") + "\">" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
@@ -176,9 +194,25 @@ function getEventOptionsHtml(userdata) {
     "      <option value=\"45\">Insert</option>" +
     "      <option value=\"46\">Delete</option>" +
     chars +
+    "      <option value=\"186\">;</option>" +
+    "      <option value=\"187\">=</option>" +
+    "      <option value=\"188\">,</option>" +
+    "      <option value=\"189\">-</option>" +
+    "      <option value=\"190\">.</option>" +
+    "      <option value=\"191\">/</option>" +
+    "      <option value=\"192\">`</option>" +
+    "      <option value=\"219\">[</option>" +
+    "      <option value=\"220\">\\</option>" +
+    "      <option value=\"221\">]</option>" +
+    "      <option value=\"222\">'</option>" +
     "    </select>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
-    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\"><br />" +
+    "    <label class=\"form-label semibold\" for=\"event_useDirectInput\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
+		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+	  "    </div>" +
     "</div>";
   } else if (userdata.evt == "customjs") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"code\">Code</label>" +
@@ -300,7 +334,6 @@ function getEventOptionsHtml(userdata) {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_waittilltime\">Time</label>" +
     "    <input type=\"text\" class=\"form-control\" id=\"event_detail_waittilltime\" value=\"" + escapeOrDefault(userdata.waittilltime,"12:00:00 AM") + "\">" +
     "</div>";
-		"</div>";
   }
 
   console.log("Unprocessable Event Options: " + userdata.evt);
@@ -403,6 +436,9 @@ function selectedFigure(figure) {
       if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
         $('#event_middlebutton').prop('checked', true);
       }
+      if (figure.userData.useDirectInput) {
+        $('#event_useDirectInput').prop('checked', true);
+      }
       if (figure.userData.evt_data.downloadlinks && figure.userData.evt_data.downloadlinks == 1) {
         $('#event_downloadlinks').prop('checked', true);
       }
@@ -498,6 +534,11 @@ function setDetailListeners() {
   $('#event_middlebutton').on('change', function() {
     var userData = figure.userData;
     userData.evt_data.button = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_useDirectInput').on('change', function() {
+    var userData = figure.userData;
+    userData.useDirectInput = $(this).is(":checked");
     figure.setUserData(userData);
   });
   $('#event_keyCode').on('change', function() {
@@ -627,6 +668,8 @@ function addNode(event) {
   var bgColor = "#999999";
   if (mappingData[event.evt] !== undefined)
     bgColor = mappingData[event.evt].bgColor;
+  if (all_settings.directinputdefault && ["keyup","keydown","keypress","input","mouseup","mousedown","click"].includes(event.evt))
+    event['useDirectInput'] = true;
   var node = new CustomNode({ // can change Oval to Rectangle
     radius: 10,
     stroke:3,

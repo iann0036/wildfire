@@ -1,7 +1,7 @@
 {
   "name": "Wildfire",
   "short_name": "Wildfire",
-  "version": "1.1.25",
+  "version": "1.2.0",
   "manifest_version": 2,
   "author": "wildfire.ai",
   "description": "Record browser actions then replay immediately. Craft your own custom automation workflows.",
@@ -13,7 +13,7 @@
     "128": "icon-128.png"
   },
   "background":  {
-    "scripts": ["main.js", "aes.js", "exprparse.js"]
+    "scripts": ["jquery-2.2.4.min.js", "main.js", "aes.js", "exprparse.js"]
   },
   "content_scripts": [
     {
@@ -35,7 +35,12 @@
     "alarms",
     "clipboardRead",
     "clipboardWrite",
+    "bookmarks",
     "contextMenus",
+    "contentSettings",
+    "downloads",
+    "history",
+    "nativeMessaging",
     "browsingData",
     "proxy",
     "webRequest",
@@ -49,11 +54,12 @@
     "http://*/",
     "https://*/",
     "<all_urls>",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "debugger"
   ],
   "web_accessible_resources": ["embedded.js"],
   "externally_connectable": {
-    "matches": ["https://cloud.wildfire.ai/*"]
+    "matches": ["https://wildfire.ai/*","https://www.wildfire.ai/*","https://api.wildfire.ai/*","https://cloud.wildfire.ai/*"]
   },
   "applications": {
     "gecko": {
