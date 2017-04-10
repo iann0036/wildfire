@@ -103,7 +103,7 @@ function getEventOptionsHtml(userdata) {
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
 		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
-    "    </div>";
+    "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
@@ -125,7 +125,7 @@ function getEventOptionsHtml(userdata) {
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
 		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
-    "   </div>";
+    "   </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
@@ -270,8 +270,7 @@ function getEventOptionsHtml(userdata) {
   } else if (userdata.evt == "csvimport") {
     if (userdata.evt_data.csvfile) {
       return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"csv\">CSV File</label>" +
-      "    <div id=\"csv-files\"><i class=\"fa fa-file-o\"></i> " + userdata.evt_data.csvfile.name + " <small><a id=\"clearCsv\">Clear</a></small><br /></div><div style=\"display: none;\" id=\"csv-drop-zone\" class=\"drop-zone\"><i class=\"font-icon font-icon-cloud-upload-2\"></i><div class=\"drop-zone-caption\">Drag file to upload</div>" +
-      "     <span class=\"btn btn-rounded btn-file\"><span>Choose file</span><input id=\"event_csvfile\" type=\"file\" name=\"event_csvfile[]\"></span></div>" +
+      "    <div id=\"csv-files\"><i class=\"fa fa-file-o\"></i> " + userdata.evt_data.csvfile.name + " <small><a id=\"clearCsv\">Clear</a></small><br /></div><div style=\"display: none;\" id=\"csv-drop-zone\"><span class=\"btn btn-file\"><span><i class=\"fa fa-upload\"></i> Choose CSV File</span><input id=\"event_csvfile\" type=\"file\" name=\"event_csvfile[]\"></span></div>" +
       "</div>";
     }
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"csv\">CSV File</label>" +
@@ -728,6 +727,7 @@ function canvasResize() {
 }
 
 function getCanvasImage() {
+    clearProcessIcons();
     return new Promise(function(resolve, reject) {
         canvas.setCurrentSelection(null);
         var xCoords = [];
@@ -1029,6 +1029,8 @@ function initCanvas() {
         $('.tooltip').remove();
     });
     canvas.getCommandStack().markSaveLocation();
+
+    $('svg').css({position: 'static'});
 }
 
 function createNewWorkflowFromEvents(result) {

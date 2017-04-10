@@ -125,7 +125,7 @@
                 <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
                 <li><a href="/docs/settings.html">Settings</a></li>
                 <li><a href="/docs/expressions.html">Expressions</a></li>
-                <li><a href="/docs/direct_input.html">Direct Input</a></li>
+                <li><a class="active" href="/docs/direct_input.html">Direct Input</a></li>
             </ul>
         </li>
         <li>Events Reference
@@ -170,7 +170,7 @@
                 <li><a href="/docs/wait_for_element.html">Wait For Element</a></li>
                 <li><a href="/docs/wait_for_title.html">Wait For Title</a></li>
                 <li><a href="/docs/test_expression.html">Test Expression</a></li>
-                <li><a class="active" href="/docs/wait_for_time.html">Wait For Time</a></li>
+                <li><a href="/docs/wait_for_time.html">Wait For Time</a></li>
             </ul>
         </li>
         <li>Wildfire Cloud
@@ -186,31 +186,32 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Wait For Time</h2>
+                <h2>Direct Input</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: March 9, 2017
+                    Last Updated: April 2, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p style="margin-bottom: 2rem;">
-                    This link waits for the time to match the predefined value. Time is matched down to the second and uses the system time.
+                <p>
+                    Direct Input is a feature for keyboard, mouse and data input events which allow you to simulate actual user actions rather than relying on the DOM event model. This can be particularly useful with web pages that utilize Javascript frameworks which don't respect the DOM event model, such as Angular or React.
                 </p>
-                <h4>Options</h4>
-                <div class="row" style="padding-top: 10px;">
-                    <div class="col-md-4">
-                        <p style="text-align: right;">
-                            <strong>Time</strong><br />
-                            <span class="color-blue-grey-lighter">&nbsp;</span>
-                        </p>
-                    </div>
-                    <div class="col-md-8">
-                        <p>The time to wait to match. This value should use the format <code>12:34:56 PM</code>.</p>
-                    </div>
-                </div>
+                <p>
+                    The feature may be used where there is an option for it in the Workflow Editor event properties. You can also enable this option by default when you use the "Use Direct Input By Default" <a href="/docs/settings.html">setting</a>.
+                </p>
+                <br /><h4>Behaviours</h4>
+                <p>
+                    When used in a <a href="/docs/mouse_click.html">Mouse Click</a>, <a href="/docs/mouse_down.html">Mouse Down</a> or <a href="/docs/mouse_up.html">Mouse Up</a> event, there are two different behaviours. If the position is (0,0) and the CSS Selector field is set, it will determine the center position of the element and click there. If the position is not (0,0) or the CSS Selector field is empty, it will click at the position provided <b>relative to the page frame</b>.
+                </p>
+                <p>
+                    When used in a <a href="/docs/key_press.html">Key Press</a>, <a href="/docs/key_down.html">Key Down</a> or <a href="/docs/key_up.html">Key Up</a> event, the element with the CSS Selector field will be focused then the key event will be executed.
+                </p>
+                <p>
+                    When used in a <a href="/docs/data_input.html">Data Input</a> event, the element with the CSS Selector field will be focused and key press actions will be executed to match the value provided.
+                </p>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/test_expression.html">&#8656; Test Expression</a></p>
-                <p style="float: right;"><a href="/docs/cloud_overview.html">Cloud Overview &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/expressions.html">&#8656; Expressions</a></p>
+                <p style="float: right;"><a href="/docs/begin_recording.html">Begin Recording &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->

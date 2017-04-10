@@ -104,7 +104,7 @@ function defineCustoms() {
     });
 
     CustomTick = draw2d.SetFigure.extend({
-        init : function(){ this._super(); },
+        init : function(){ this._super(); this.setUserData({isProgressFigure: true}); },
         createSet: function(){
             this.canvas.paper.setStart();
             this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
@@ -115,7 +115,7 @@ function defineCustoms() {
         }
     });
     CustomCross = draw2d.SetFigure.extend({
-        init : function(){ this._super(); },
+        init : function(){ this._super(); this.setUserData({isProgressFigure: true}); },
         createSet: function(){
             this.canvas.paper.setStart();
             this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
@@ -126,7 +126,7 @@ function defineCustoms() {
         }
     });
     CustomPending = draw2d.SetFigure.extend({
-        init : function(){ this._super(); },
+        init : function(){ this._super(); this.setUserData({isProgressFigure: true}); },
         createSet: function(){
             this.canvas.paper.setStart();
             this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
@@ -137,7 +137,7 @@ function defineCustoms() {
         }
     });
     CustomStop = draw2d.SetFigure.extend({
-        init : function(){ this._super(); },
+        init : function(){ this._super(); this.setUserData({isProgressFigure: true}); },
         createSet: function(){
             this.canvas.paper.setStart();
             this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
@@ -147,6 +147,23 @@ function defineCustoms() {
             return this.canvas.paper.setFinish();
         }
     });
+}
+
+function clearProcessIcons() {
+    canvas.getFigures().each(function(i, o) {
+        var children = o.getChildren();
+        if (children.data) {
+            for (var j=0; j<children.data.length; j++) {
+                if (children.data[j].userData) {
+                    if (children.data[j].userData.isProgressFigure) {
+                        canvas.remove(children.data[j]);
+                    }
+                }
+            }
+        }
+    });
+
+    canvas.getCommandStack().markSaveLocation();
 }
 
 function updateNodeProcessIcon(nodeid, status) {
@@ -187,6 +204,7 @@ function initWorkflowSimulation() {
     }
 
     defineCustoms();
+    clearProcessIcons();
 
     send_message({
         action: "begin_sim"

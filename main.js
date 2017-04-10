@@ -1024,11 +1024,24 @@ function execEvent(node) {
             if (bgSettings.simulatemousedown) {
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
-                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        if (node.userData.evt_data.clientX==0 && node.userData.evt_data.clientY==0 && node.userData.evt_data.csspath!="") {
+                            code = "$.extend($('" + resolveVariable(node.userData.evt_data.csspath) + "').offset(),{width: $('" + resolveVariable(node.userData.evt_data.csspath) + "').width(), height: $('" + resolveVariable(node.userData.evt_data.csspath) + "').height()});";
+                        } else {
+                            code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        }
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
+                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
+                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
+                                    clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
+                                    clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
+                                }
+                                console.log("Mouse down at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
-                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: clickx, y: clicky, button: "left"  });
                                 chrome.debugger.detach({ tabId: tabs[0].id });
 
                                 resolve({
@@ -1037,13 +1050,6 @@ function execEvent(node) {
                                     id: node.id,
                                     time: Date.now()
                                 });
-                            });
-                        }).catch(function(result){
-                            resolve({
-                                error: true,
-                                results: [JSON.stringify(result)],
-                                id: node.id,
-                                time: Date.now()
                             });
                         });
                     });
@@ -1070,11 +1076,24 @@ function execEvent(node) {
             if (bgSettings.simulatemouseup) {
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
-                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        if (node.userData.evt_data.clientX==0 && node.userData.evt_data.clientY==0 && node.userData.evt_data.csspath!="") {
+                            code = "$.extend($('" + resolveVariable(node.userData.evt_data.csspath) + "').offset(),{width: $('" + resolveVariable(node.userData.evt_data.csspath) + "').width(), height: $('" + resolveVariable(node.userData.evt_data.csspath) + "').height()});";
+                        } else {
+                            code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        }
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
+                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
+                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
+                                    clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
+                                    clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
+                                }
+                                console.log("Mouse up at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
-                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickx, y: clicky, button: "left"  });
                                 chrome.debugger.detach({ tabId: tabs[0].id });
 
                                 resolve({
@@ -1083,13 +1102,6 @@ function execEvent(node) {
                                     id: node.id,
                                     time: Date.now()
                                 });
-                            });
-                        }).catch(function(result){
-                            resolve({
-                                error: true,
-                                results: [JSON.stringify(result)],
-                                id: node.id,
-                                time: Date.now()
                             });
                         });
                     });
@@ -1129,12 +1141,25 @@ function execEvent(node) {
             if (bgSettings.simulateclick) {
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
-                        code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        if (node.userData.evt_data.clientX==0 && node.userData.evt_data.clientY==0 && node.userData.evt_data.csspath!="") {
+                            code = "$.extend($('" + resolveVariable(node.userData.evt_data.csspath) + "').offset(),{width: $('" + resolveVariable(node.userData.evt_data.csspath) + "').width(), height: $('" + resolveVariable(node.userData.evt_data.csspath) + "').height()});";
+                        } else {
+                            code = "{};";
+                        }
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
+                                if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
+                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
+                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
+                                    clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
+                                    clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
+                                }
+                                console.log("Clicking at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
-                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left", clickCount: 1  });
-                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: parseInt(resolveVariable(node.userData.evt_data.clientX)), y: parseInt(resolveVariable(node.userData.evt_data.clientY)), button: "left"  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: clickx, y: clicky, button: "left", clickCount: 1  });
+                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickx, y: clicky, button: "left"  });
                                 chrome.debugger.detach({ tabId: tabs[0].id });
 
                                 resolve({
@@ -1143,13 +1168,6 @@ function execEvent(node) {
                                     id: node.id,
                                     time: Date.now()
                                 });
-                            });
-                        }).catch(function(result){
-                            resolve({
-                                error: true,
-                                results: [JSON.stringify(result)],
-                                id: node.id,
-                                time: Date.now()
                             });
                         });
                     });
@@ -1309,7 +1327,7 @@ function execEvent(node) {
                             runCode(code, node).then(function(result){
                                 chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
                                     // TODO - deal with period char
-                                    if (result.results[0] == node.userData.evt_data.value.slice(0, -1)) {
+                                    if (result.results[0] == resolveVariable(node.userData.evt_data.value).slice(0, -1)) {
                                         chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
                                         chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[node.userData.evt_data.value.length-1], text: node.userData.evt_data.value[node.userData.evt_data.value.length-1], type: 'rawKeyDown', windowsVirtualKeyCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0))  });
                                         chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[node.userData.evt_data.value.length-1], text: node.userData.evt_data.value[node.userData.evt_data.value.length-1], type: 'char', windowsVirtualKeyCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0)=="." ? 190 : node.userData.evt_data.value[node.userData.evt_data.value.length-1].charCodeAt(0))  });
@@ -1332,11 +1350,11 @@ function execEvent(node) {
                                         code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('');";
                                         
                                         runCode(code, node).then(function(result){
-                                            for (var j=0; j<node.userData.evt_data.value.length; j++) {
+                                            for (var j=0; j<resolveVariable(node.userData.evt_data.value).length; j++) {
                                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.0");
-                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'rawKeyDown', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
-                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'char', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
-                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: node.userData.evt_data.value[j], text: node.userData.evt_data.value[j], type: 'keyUp', windowsVirtualKeyCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), nativeVirtualKeyCode : (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0)), macCharCode: (node.userData.evt_data.value[j]=="." ? 190 : node.userData.evt_data.value[j].charCodeAt(0))  });
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveVariable(node.userData.evt_data.value)[j], text: resolveVariable(node.userData.evt_data.value)[j], type: 'rawKeyDown', windowsVirtualKeyCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), nativeVirtualKeyCode : (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), macCharCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0))  });
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveVariable(node.userData.evt_data.value)[j], text: resolveVariable(node.userData.evt_data.value)[j], type: 'char', windowsVirtualKeyCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), nativeVirtualKeyCode : (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), macCharCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0))  });
+                                                chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchKeyEvent', { unmodifiedText: resolveVariable(node.userData.evt_data.value)[j], text: resolveVariable(node.userData.evt_data.value)[j], type: 'keyUp', windowsVirtualKeyCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), nativeVirtualKeyCode : (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0)), macCharCode: (resolveVariable(node.userData.evt_data.value)[j]=="." ? 190 : resolveVariable(node.userData.evt_data.value)[j].charCodeAt(0))  });
                                                 chrome.debugger.detach({ tabId: tabs[0].id });
                                             }
                                             resolve({
@@ -1521,10 +1539,10 @@ function execEvent(node) {
             return new Promise(function(resolve, reject) {
                 var activeTab = 0;
 
-                node.userData.evt_data.url = resolveVariable(node.userData.evt_data.url);
+                var resolvedURL = resolveVariable(node.userData.evt_data.url);
 
-                if (!node.userData.evt_data.url.startsWith("http") && !node.userData.evt_data.url.startsWith("about") && !node.userData.evt_data.url.startsWith("chrome") && !node.userData.evt_data.url.startsWith("moz"))
-                    node.userData.evt_data.url = "http://" + node.userData.evt_data.url;
+                if (!resolvedURL.startsWith("http") && !resolvedURL.startsWith("about") && !resolvedURL.startsWith("chrome") && !resolvedURL.startsWith("moz"))
+                    resolvedURL = "http://" + resolvedURL;
 
                 function changeActiveTab(tabs) {
                     for (var i=0; i<tabs.length; i++) {
@@ -1534,11 +1552,11 @@ function execEvent(node) {
                     if (node.userData.evt_data.newtab && tabs[activeTab].url != chrome.extension.getURL("new.html")) {
                         chrome.tabs.create({
                             windowId: new_window.id,
-                            url: node.userData.evt_data.url
+                            url: resolvedURL
                         });
                     } else {
                         chrome.tabs.update(tabs[activeTab].id, {
-                            url: resolveVariable(node.userData.evt_data.url)
+                            url: resolvedURL
                         });
                     }
                     

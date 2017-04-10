@@ -455,6 +455,7 @@ function populateFavoritesTable() {
             "    </td>" +
             "    <td>" + formatDate(favorites[i].time) + "</td>" +
             "    <td>" +
+            "        <a href=\"#\" id=\"renameFavorite" + (i+1) + "\">Rename</a>&nbsp;&nbsp;" +
             "        <a href=\"#\" id=\"restoreFavorite" + (i+1) + "\">Restore</a>&nbsp;&nbsp;" +
             "        <a href=\"#\" id=\"deleteFavorite" + (i+1) + "\">Delete</a>" +
             "    </td>" +
@@ -467,6 +468,37 @@ function populateFavoritesTable() {
                     var favorites = result.favorites;
                     favorites[evt.data].rightclick = checked;
                     chrome.storage.local.set({favorites: favorites});
+                });
+            });
+            $('#renameFavorite' + (i+1)).click(i, function(evt){
+                swal({
+                    title: "Rename Favorited Workflow",
+                    text: "Enter your new workflow name:",
+                    type: "input",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    inputPlaceholder: ""
+                }, function (inputValue) {
+                    if (inputValue === false || inputValue.trim() === "") {
+                        swal("Error", "You need to enter a workflow name", "error");
+                        return false;
+                    }
+                    chrome.storage.local.get('favorites', function (result) {
+                        var favorites = result.favorites;
+
+                        favorites[evt.data].name = inputValue.trim();
+
+                        chrome.storage.local.set({favorites: favorites});
+
+                        swal({
+                            title: "Done",
+                            text: "Your favorited workflow has been renamed.",
+                            type: "success",
+                            html: true
+                        }, function(){
+                            populateFavoritesTable();
+                        });
+                    });
                 });
             });
             $('#restoreFavorite' + (i+1)).click(i, function(evt){
