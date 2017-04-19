@@ -590,6 +590,12 @@ function setDetailListeners() {
             });
           } else {
             console.log(results.errors); // TODO - Make this user visible
+            swal({
+                title: "Error",
+                text: results.errors[0].message + "<small><br /><br /><b>Hint: </b>Ensure your file is a CSV and does not have a new line at the end of the file.</small>",
+                type: "error",
+                html: true
+            });
           }
         }
       }
