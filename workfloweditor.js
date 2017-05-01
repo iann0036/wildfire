@@ -232,6 +232,7 @@ function getEventOptionsHtml(userdata) {
     "        <option value=\"expression\">Expression</option>" +
     "        <option value=\"innertext\">Element Text</option>" +
     "        <option value=\"attrval\">Element Value</option>" +
+    "        <option value=\"outerhtml\">Element HTML</option>" +
     "        <option value=\"urlparam\">URL Parameter</option>" +
     "        <option value=\"title\">Document Title</option>" +
     "        <option value=\"url\">Document URL</option>" +
@@ -715,7 +716,7 @@ function deselectedFigure(figure) {
 
 function canvasResize() {
     var heights = canvas.getFigures().clone().map(function(f){ return f.getAbsoluteY()+f.getHeight();});
-    var height = Math.max(window.innerHeight-136,200 + Math.max.apply(Math,heights.asArray()));
+    var height = Math.max(window.innerHeight-142,200 + Math.max.apply(Math,heights.asArray()));
     if (canvas.getHeight() == height)
       return;
 

@@ -1585,6 +1585,7 @@ function execEvent(node) {
             break;
         case 'customjs':
             code = resolveVariable(node.userData.evt_data.code);
+            console.log(code);
             break;
         case 'setproxy':
             return new Promise(function(resolve, reject) {
@@ -1673,6 +1674,24 @@ function execEvent(node) {
                 } else if (node.userData.evt_data.usage == "attrval") {
                     runCode("$('" + node.userData.evt_data.expr + "').val()", node).then(function(result){
                         simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                } else if (node.userData.evt_data.usage == "outerhtml") {
+                    runCode("$('" + node.userData.evt_data.expr + "')[0].outerHTML", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        console.log(result.results[0]);
                         resolve({
                             error: false,
                             results: null,
