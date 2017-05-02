@@ -56,7 +56,7 @@ function resolveChar(str) {
 }
 
 function resolveVariable(str) {
-    return eresolveVariable(String(str).replace("\\","\\\\"));
+    return eresolveVariable(String(str).replace("\\","\\\\").replace("\`","\\\`"));
 }
 
 function eresolveVariable(str) {
@@ -1385,8 +1385,10 @@ function execEvent(node) {
                     });
                 }
 
-                code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').val('"
-                    + resolveVariable(node.userData.evt_data.value) + "');true;";
+                code = "var tmp_input = `" +
+                    resolveVariable(node.userData.evt_data.value) +
+                    "`;$('" + resolveVariable(node.userData.evt_data.csspath) + "').val(tmp_input);true;";
+                console.log(code);
             }
             break;
         case 'clipboard_cut':
@@ -1691,7 +1693,6 @@ function execEvent(node) {
                 } else if (node.userData.evt_data.usage == "outerhtml") {
                     runCode("$('" + node.userData.evt_data.expr + "')[0].outerHTML", node).then(function(result){
                         simulation_variables[node.userData.evt_data.var] = result.results[0];
-                        console.log(result.results[0]);
                         resolve({
                             error: false,
                             results: null,
