@@ -1150,7 +1150,7 @@ function execEvent(node) {
                         }
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
-                                if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
+                                if (result.results[0]!=null && $.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
                                     console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
                                     console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
                                     clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
@@ -1385,9 +1385,9 @@ function execEvent(node) {
                     });
                 }
 
-                code = "var tmp_input = `" +
+                code = "var tmp_input = '" +
                     resolveVariable(node.userData.evt_data.value) +
-                    "`;$('" + resolveVariable(node.userData.evt_data.csspath) + "').val(tmp_input);true;";
+                    "';$('" + resolveVariable(node.userData.evt_data.csspath) + "').val(tmp_input);true;";
                 console.log(code);
             }
             break;
