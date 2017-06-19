@@ -1,7 +1,7 @@
 {
   "name": "Wildfire",
   "short_name": "Wildfire",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "manifest_version": 2,
   "author": "wildfire.ai",
   "description": "Record browser actions then replay immediately. Craft your own custom automation workflows.",
