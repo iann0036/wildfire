@@ -389,11 +389,15 @@ function formatDateLong(date) {
     "November", "December"
   ];
 
-  var day = date.getDate();
-  var monthIndex = date.getMonth();
-  var year = date.getFullYear();
+  try {
+    var day = date.getDate();
+    var monthIndex = date.getMonth();
+    var year = date.getFullYear();
 
-  return day + ' ' + monthNames[monthIndex] + ', ' + year;
+    return day + ' ' + monthNames[monthIndex] + ', ' + year;
+  } catch(e) {
+    return 'Err';
+  }
 }
 
 function formatDate(date) {
