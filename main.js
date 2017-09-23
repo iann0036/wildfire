@@ -487,12 +487,21 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.evt_data.boundingBox) {
             chrome.tabs.captureVisibleTab(null, { 'format': 'png'}, function(screengrab){
                 var canvas = document.createElement('canvas');
-                canvas.width = request.evt_data.boundingBox.width;
-                canvas.height = request.evt_data.boundingBox.height;
+                var devicePixelRatio = window.devicePixelRatio || 1;
+                canvas.width = request.evt_data.boundingBox.width*devicePixelRatio;
+                canvas.height = request.evt_data.boundingBox.height*devicePixelRatio;
                 var ctx = canvas.getContext("2d");
                 var img = new Image();
                 img.onload = function(){
-                    ctx.drawImage(img, request.evt_data.boundingBox.left, request.evt_data.boundingBox.top, request.evt_data.boundingBox.width, request.evt_data.boundingBox.height, 0, 0, request.evt_data.boundingBox.width, request.evt_data.boundingBox.height);
+                    ctx.drawImage(img,
+                        request.evt_data.boundingBox.left*devicePixelRatio,
+                        request.evt_data.boundingBox.top*devicePixelRatio,
+                        request.evt_data.boundingBox.width*devicePixelRatio,
+                        request.evt_data.boundingBox.height*devicePixelRatio,
+                        0,
+                        0,
+                        request.evt_data.boundingBox.width*devicePixelRatio,
+                        request.evt_data.boundingBox.height*devicePixelRatio);
                     request.evt_data['elementimg'] = canvas.toDataURL("image/png");
                     events.push({
                         evt: request.evt,

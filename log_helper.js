@@ -514,7 +514,8 @@ function readableEventDetail(event) {
         'event_type': event_type,
         'event_data': event_data,
         'minorEvent': minorEvent,
-        'event_url': event_url
+        'event_url': event_url,
+        'elementimg': event.evt_data.elementimg
     };
 }
 
@@ -579,9 +580,14 @@ function populateEvents(result) {
             innerHTML += "<td>" +
             "<div class=\"font-11 color-blue-grey-lighter uppercase\">URL</div>" +
             event_details.event_url +
-            "</td><td></td>";
+            "</td>";
         else
-            innerHTML += "<td></td><td></td>";
+            innerHTML += "<td></td>";
+        if (event_details.elementimg)
+            innerHTML += "<td><div class=\"font-11 color-blue-grey-lighter uppercase\">Element Image</div><img style='max-width: 100%; max-height: auto;' src='" + event_details.elementimg + "' /></td>";
+        else
+            innerHTML += "<td></td>";
+
         if (!simulation_log) {
             innerHTML += "<td width=\"150\">";
             if (event_details.evt!="begin_recording" && event_details.evt!="end_recording")
