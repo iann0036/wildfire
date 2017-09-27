@@ -69,12 +69,12 @@ function eresolveVariable(str) {
         str = String(str);
 
         if (str.length < 2)
-            return String(str).replace("'", "\\'");
+            return String(str);
 
         if (str[0] != '$')
-            return String(str[0]).replace("'", "\\'") + resolveVariable(str.substring(1));
+            return String(str[0]) + eresolveVariable(str.substring(1));
         if (str[1] == '$')
-            return "$" + resolveVariable(str.substring(2));
+            return "$" + eresolveVariable(str.substring(2));
         
         var i = 2;
         var varname = false;
@@ -88,10 +88,10 @@ function eresolveVariable(str) {
         }
 
         if (simulation_variables[varname] === undefined) {
-            return "" + resolveVariable(str.substring(i-1));
+            return "" + eresolveVariable(str.substring(i-1));
         }
 
-        return String(simulation_variables[varname]).replace("'", "\\'") + resolveVariable(str.substring(i-1));
+        return String(simulation_variables[varname]) + eresolveVariable(str.substring(i-1));
     } catch (e) {
         return "";
     }
@@ -836,7 +836,7 @@ function begin_sim_with_option(fav_index) {
 				});
 				
 				terminateSimulation(false, "Global run timeout"); // TODO: Check
-			}, 3600000); // 1 hour
+            }, 60*60*1000*24); // 24 hours
 			
 			chrome.windows.onRemoved.addListener(closeListenerCallback); // TODO: Check
 
