@@ -69,12 +69,12 @@ function eresolveVariable(str) {
         str = String(str);
 
         if (str.length < 2)
-            return String(str).replace("'", "\\'");
+            return String(str);
 
         if (str[0] != '$')
-            return String(str[0]).replace("'", "\\'") + resolveVariable(str.substring(1));
+            return String(str[0]) + eresolveVariable(str.substring(1));
         if (str[1] == '$')
-            return "$" + resolveVariable(str.substring(2));
+            return "$" + eresolveVariable(str.substring(2));
         
         var i = 2;
         var varname = false;
@@ -88,10 +88,10 @@ function eresolveVariable(str) {
         }
 
         if (simulation_variables[varname] === undefined) {
-            return "" + resolveVariable(str.substring(i-1));
+            return "" + eresolveVariable(str.substring(i-1));
         }
 
-        return String(simulation_variables[varname]).replace("'", "\\'") + resolveVariable(str.substring(i-1));
+        return String(simulation_variables[varname]) + eresolveVariable(str.substring(i-1));
     } catch (e) {
         return "";
     }
@@ -484,42 +484,12 @@ updateEvents();
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "addEvent") {
-        if (request.evt_data.boundingBox) {
-            chrome.tabs.captureVisibleTab(null, { 'format': 'png'}, function(screengrab){
-                var canvas = document.createElement('canvas');
-                var devicePixelRatio = window.devicePixelRatio || 1;
-                canvas.width = request.evt_data.boundingBox.width*devicePixelRatio;
-                canvas.height = request.evt_data.boundingBox.height*devicePixelRatio;
-                var ctx = canvas.getContext("2d");
-                var img = new Image();
-                img.onload = function(){
-                    ctx.drawImage(img,
-                        request.evt_data.boundingBox.left*devicePixelRatio,
-                        request.evt_data.boundingBox.top*devicePixelRatio,
-                        request.evt_data.boundingBox.width*devicePixelRatio,
-                        request.evt_data.boundingBox.height*devicePixelRatio,
-                        0,
-                        0,
-                        request.evt_data.boundingBox.width*devicePixelRatio,
-                        request.evt_data.boundingBox.height*devicePixelRatio);
-                    request.evt_data['elementimg'] = canvas.toDataURL("image/png");
-                    events.push({
-                        evt: request.evt,
-                        evt_data: request.evt_data,
-                        time: request.time
-                    });
-                    chrome.storage.local.set({events: events});
-                }
-                img.src = screengrab;
-            });
-        } else {
-            events.push({
-                evt: request.evt,
-                evt_data: request.evt_data,
-                time: request.time
-            });
-            chrome.storage.local.set({events: events});
-        }
+        events.push({
+            evt: request.evt,
+            evt_data: request.evt_data,
+            time: request.time
+        });
+        chrome.storage.local.set({events: events});
     } else if (request.action == "loadCloudWorkflow") {
         chrome.storage.local.set({events: '{"events":[{"evt":"begin_recording","evt_data":{},"time":0},{"evt":"end_recording","evt_data":{},"time":1}]}'},function(){
             chrome.storage.local.set({workflow: request.workflow},function(){
@@ -836,7 +806,7 @@ function begin_sim_with_option(fav_index) {
 				});
 				
 				terminateSimulation(false, "Global run timeout"); // TODO: Check
-			}, 3600000); // 1 hour
+            }, 60*60*1000*24); // 24 hours
 			
 			chrome.windows.onRemoved.addListener(closeListenerCallback); // TODO: Check
 
