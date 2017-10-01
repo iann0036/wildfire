@@ -405,15 +405,6 @@ function addDocumentEventListener(eventName) {
 		setTimeout(function () {
 			chrome.storage.local.get('recording', function (isRecording) {
 				if (isRecording.recording) {
-                    if (eventName == "click")
-                        evt_data['boundingBox'] = {
-                            width: e.target.getBoundingClientRect().width,
-                            height: e.target.getBoundingClientRect().height,
-                            left: e.target.getBoundingClientRect().left,
-                            top: e.target.getBoundingClientRect().top,
-                            right: e.target.getBoundingClientRect().right,
-                            bottom: e.target.getBoundingClientRect().bottom,
-                        };
                     chrome.runtime.sendMessage({
                         action: "addEvent",
                         evt: eventName,

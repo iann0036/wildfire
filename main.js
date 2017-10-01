@@ -484,42 +484,12 @@ updateEvents();
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "addEvent") {
-        if (request.evt_data.boundingBox) {
-            chrome.tabs.captureVisibleTab(null, { 'format': 'png'}, function(screengrab){
-                var canvas = document.createElement('canvas');
-                var devicePixelRatio = window.devicePixelRatio || 1;
-                canvas.width = request.evt_data.boundingBox.width*devicePixelRatio;
-                canvas.height = request.evt_data.boundingBox.height*devicePixelRatio;
-                var ctx = canvas.getContext("2d");
-                var img = new Image();
-                img.onload = function(){
-                    ctx.drawImage(img,
-                        request.evt_data.boundingBox.left*devicePixelRatio,
-                        request.evt_data.boundingBox.top*devicePixelRatio,
-                        request.evt_data.boundingBox.width*devicePixelRatio,
-                        request.evt_data.boundingBox.height*devicePixelRatio,
-                        0,
-                        0,
-                        request.evt_data.boundingBox.width*devicePixelRatio,
-                        request.evt_data.boundingBox.height*devicePixelRatio);
-                    request.evt_data['elementimg'] = canvas.toDataURL("image/png");
-                    events.push({
-                        evt: request.evt,
-                        evt_data: request.evt_data,
-                        time: request.time
-                    });
-                    chrome.storage.local.set({events: events});
-                }
-                img.src = screengrab;
-            });
-        } else {
-            events.push({
-                evt: request.evt,
-                evt_data: request.evt_data,
-                time: request.time
-            });
-            chrome.storage.local.set({events: events});
-        }
+        events.push({
+            evt: request.evt,
+            evt_data: request.evt_data,
+            time: request.time
+        });
+        chrome.storage.local.set({events: events});
     } else if (request.action == "loadCloudWorkflow") {
         chrome.storage.local.set({events: '{"events":[{"evt":"begin_recording","evt_data":{},"time":0},{"evt":"end_recording","evt_data":{},"time":1}]}'},function(){
             chrome.storage.local.set({workflow: request.workflow},function(){
