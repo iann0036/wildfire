@@ -18,11 +18,64 @@ var last_node;
 var isFavSim = false;
 var simulation_variables = [];
 var tracked_tabs = [];
+var native_port = null;
+var nativeRetries = 0;
 
 if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
     windowWidth*=window.devicePixelRatio;
     windowHeight*=window.devicePixelRatio;
 }
+
+// Commands
+
+chrome.commands.onCommand.addListener(function(command) {
+    if (command == "stop-simulation")
+        terminateSimulation(false, "User terminated");
+    /*else if (command == "play-workflow-1")
+        chrome.windows.getCurrent({populate: true}, function(curr_window) {
+            begin_fav_sim(1, curr_window);
+        });
+    else if (command == "play-workflow-2")
+        chrome.windows.getCurrent({populate: true}, function(curr_window) {
+            begin_fav_sim(2, curr_window);
+        });
+    else if (command == "play-workflow-3")
+        chrome.windows.getCurrent({populate: true}, function(curr_window) {
+            begin_fav_sim(3, curr_window);
+        });*/
+});
+
+// Native
+
+function sendNativeMessage(message) {
+    native_port.postMessage(message);
+}
+
+function onNativeMessage(message) {
+    console.log("Native Incoming:");
+    console.log(message);
+}
+
+function onNativeDisconnected() {
+    native_port = null;
+    if (nativeRetries < 5) {
+        nativeRetries+=1;
+        nativeConnect();
+    }
+}
+
+function nativeConnect() {
+    native_port = chrome.runtime.connectNative("ai.wildfire");
+    native_port.onMessage.addListener(onNativeMessage);
+    native_port.onDisconnect.addListener(onNativeDisconnected);
+    sendNativeMessage({
+        'action': 'init'
+    });
+}
+
+nativeConnect();
+
+// Alarms
 
 chrome.alarms.onAlarm.addListener(function(alarm){
     var name = alarm.name;
@@ -1022,6 +1075,27 @@ function execEvent(node) {
             });
         case 'mousedown':
             if (bgSettings.simulatemousedown) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        
+                        sendNativeMessage({
+                            'action': 'mousedown',
+                            'x': clickx.toString(),
+                            'y': clicky.toString(),
+                            'button': 'left'
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
@@ -1074,6 +1148,27 @@ function execEvent(node) {
             break;
         case 'mouseup':
             if (bgSettings.simulatemouseup) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        
+                        sendNativeMessage({
+                            'action': 'mouseup',
+                            'x': clickx.toString(),
+                            'y': clicky.toString(),
+                            'button': 'left'
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
@@ -1139,6 +1234,28 @@ function execEvent(node) {
             break;
         case 'click':
             if (bgSettings.simulateclick) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
+                        var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
+                        
+                        sendNativeMessage({
+                            'action': 'moveclick',
+                            'x': clickx.toString(),
+                            'y': clicky.toString(),
+                            'button': 'left',
+                            'double': 'false'
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         var clickx = parseInt(resolveVariable(node.userData.evt_data.clientX)) || 0;
@@ -1201,6 +1318,22 @@ function execEvent(node) {
             break;
         case 'keydown':
             if (bgSettings.simulatekeydown) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        sendNativeMessage({
+                            'action': 'keydown',
+                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
@@ -1236,6 +1369,22 @@ function execEvent(node) {
             break;
         case 'keyup':
             if (bgSettings.simulatekeyup) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        sendNativeMessage({
+                            'action': 'keyup',
+                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
@@ -1271,6 +1420,22 @@ function execEvent(node) {
             break;
         case 'keypress':
             if (bgSettings.simulatekeypress) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) { 
+                        sendNativeMessage({
+                            'action': 'keypress',
+                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+                
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         code = "$('" + resolveVariable(node.userData.evt_data.csspath) + "').focus();";
@@ -1319,6 +1484,22 @@ function execEvent(node) {
             break;
         case 'input':
             if (bgSettings.simulateinput) {
+                if (node.userData.useOSInput) {
+                    return new Promise(function(resolve, reject) {
+                        sendNativeMessage({
+                            'action': 'input',
+                            'string': resolveVariable(node.userData.evt_data.value)
+                        });
+
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                }
+
                 if (node.userData.useDirectInput) {
                     return new Promise(function(resolve, reject) {
                         try {

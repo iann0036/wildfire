@@ -67,14 +67,14 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "scroll") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scrollLeftEnd\">Scroll To</label>" +
-    "    <div class=\"input-group\">" +
+    "    <div class=\"row\"><div class=\"col-sm-6\" style=\"padding-right: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollLeftEnd\" id=\"event_scrollLeftEnd\" value=\"" + escapeOrDefault(userdata.evt_data.scrollLeftEnd,"0") + "\">" +
-    "    </div>" +
-    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
+    "    </div></div>" +
+    "    <div class=\"col-sm-6\" style=\"padding-left: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"scrollTopEnd\" id=\"event_scrollTopEnd\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTopEnd,"0") + "\">" +
-    "    </div><br />" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
+    "    </div></div></div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_scrollTime\">Scroll Time</label>" +
     "    <div class=\"input-group\">" +
     "        <input type=\"text\" class=\"form-control\" id=\"event_scrollTime\" value=\"" + escapeOrDefault(userdata.evt_data.scrollTime/1000,"0") + "\">" +
@@ -83,14 +83,14 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "click") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
-    "    <div class=\"input-group\">" +
+    "    <div class=\"row\"><div class=\"col-sm-6\" style=\"padding-right: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
     "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
-    "    </div>" +
-    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "    </div></div>" +
+    "    <div class=\"col-sm-6\" style=\"padding-left: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
     "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
-    "    </div><br />" +
+    "    </div></div></div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_downloadlinks\">Options</label>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_downloadlinks\">" +
@@ -104,19 +104,23 @@ function getEventOptionsHtml(userdata) {
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
 		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
     "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+    "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "mouseup" || userdata.evt == "mousedown") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
-    "    <div class=\"input-group\">" +
+    "    <div class=\"row\"><div class=\"col-sm-6\" style=\"padding-right: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
     "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
-    "    </div>" +
-    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "    </div></div>" +
+    "    <div class=\"col-sm-6\" style=\"padding-left: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
     "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
-    "    </div><br />" +
+    "    </div></div></div><br />" +
     "    <label class=\"form-label semibold\" for=\"event_middlebutton\">Options</label>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_middlebutton\">" +
@@ -126,19 +130,23 @@ function getEventOptionsHtml(userdata) {
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
 		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
     "   </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+    "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
   } else if (userdata.evt == "mouseover" || userdata.evt == "mouseout") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_x\">Position</label>" +
-    "    <div class=\"input-group\">" +
+    "    <div class=\"row\"><div class=\"col-sm-6\" style=\"padding-right: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">x</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX,"0") + "\">" +
-    "    </div>" +
-    "    <div style=\"margin-top: 2px;\" class=\"input-group\">" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientX\" id=\"event_x\" value=\"" + escapeOrDefault(userdata.evt_data.clientX || "0") + "\">" +
+    "    </div></div>" +
+    "    <div class=\"col-sm-6\" style=\"padding-left: 5px;\"><div class=\"input-group\">" +
     "        <div class=\"input-group-addon\">y</div>" +
-    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY,"0") + "\">" +
-    "    </div>" +
+    "        <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"clientY\" id=\"event_y\" value=\"" + escapeOrDefault(userdata.evt_data.clientY || "0") + "\">" +
+    "    </div></div></div><br />" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
     "</div>";
@@ -155,7 +163,12 @@ function getEventOptionsHtml(userdata) {
     "    <label class=\"form-label semibold\" for=\"event_useDirectInput\">Options</label>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
-		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+    "      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
+    "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+    "      <label for=\"event_useOSInput\">Use OS Input</label>" +
+    "    </div>" +
     "</div>";
   } else if (userdata.evt == "change") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_value\">Value</label>" +
@@ -213,6 +226,10 @@ function getEventOptionsHtml(userdata) {
 		"      <input type=\"checkbox\" id=\"event_useDirectInput\">" +
 		"      <label for=\"event_useDirectInput\">Use Direct Input</label>" +
 	  "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+    "    </div>" +
     "</div>";
   } else if (userdata.evt == "customjs") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"code\">Code</label>" +
@@ -439,6 +456,9 @@ function selectedFigure(figure) {
       if (figure.userData.useDirectInput) {
         $('#event_useDirectInput').prop('checked', true);
       }
+      if (figure.userData.useOSInput) {
+        $('#event_useOSInput').prop('checked', true);
+      }
       if (figure.userData.evt_data.downloadlinks && figure.userData.evt_data.downloadlinks == 1) {
         $('#event_downloadlinks').prop('checked', true);
       }
@@ -539,6 +559,11 @@ function setDetailListeners() {
   $('#event_useDirectInput').on('change', function() {
     var userData = figure.userData;
     userData.useDirectInput = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_useOSInput').on('change', function() {
+    var userData = figure.userData;
+    userData.useOSInput = $(this).is(":checked");
     figure.setUserData(userData);
   });
   $('#event_keyCode').on('change', function() {
