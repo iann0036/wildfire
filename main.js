@@ -20,6 +20,7 @@ var simulation_variables = [];
 var tracked_tabs = [];
 var native_port = null;
 var nativeRetries = 0;
+var helperversion = null;
 
 if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
     windowWidth*=window.devicePixelRatio;
@@ -52,8 +53,9 @@ function sendNativeMessage(message) {
 }
 
 function onNativeMessage(message) {
-    console.log("Native Incoming:");
-    console.log(message);
+    if (message['action'] == "init") {
+        helperversion = message['response']['helperversion'];
+    }
 }
 
 function onNativeDisconnected() {
@@ -61,6 +63,8 @@ function onNativeDisconnected() {
     if (nativeRetries < 5) {
         nativeRetries+=1;
         nativeConnect();
+    } else {
+        helperversion = null;
     }
 }
 
@@ -68,8 +72,10 @@ function nativeConnect() {
     native_port = chrome.runtime.connectNative("ai.wildfire");
     native_port.onMessage.addListener(onNativeMessage);
     native_port.onDisconnect.addListener(onNativeDisconnected);
+    var manifest = chrome.runtime.getManifest();
     sendNativeMessage({
-        'action': 'init'
+        'action': 'init',
+        'version': manifest.version.toString()
     });
 }
 
@@ -534,7 +540,6 @@ updateProxy();
 configureAlarms();
 updateEvents();
 
-
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "addEvent") {
         events.push({
@@ -550,6 +555,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                     begin_fav_sim(-1, curr_window);
                 });
             });
+        });
+    } else if (request.action == "getHelperStatus") {
+        sendResponse({
+            'native_port': native_port,
+            'helperversion': helperversion,
+            'retries': nativeRetries
         });
     }
 });

@@ -106,7 +106,7 @@ function getEventOptionsHtml(userdata) {
     "    </div>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
-		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
     "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
@@ -132,7 +132,7 @@ function getEventOptionsHtml(userdata) {
     "   </div>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
-		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
     "    </div>" +
     "    <br /><label class=\"form-label semibold\" for=\"event_css_selector\">CSS Selector</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"csspath\" id=\"event_css_selector\" value=\"" + escapeOrDefault(userdata.evt_data.csspath,"") + "\">" +
@@ -167,7 +167,7 @@ function getEventOptionsHtml(userdata) {
     "    </div>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
-    "      <label for=\"event_useOSInput\">Use OS Input</label>" +
+    "      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
     "    </div>" +
     "</div>";
   } else if (userdata.evt == "change") {
@@ -228,7 +228,7 @@ function getEventOptionsHtml(userdata) {
 	  "    </div>" +
     "    <div class=\"checkbox-bird\">" +
 		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
-		"      <label for=\"event_useOSInput\">Use OS Input</label>" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
     "    </div>" +
     "</div>";
   } else if (userdata.evt == "customjs") {

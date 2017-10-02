@@ -127,7 +127,7 @@
                 <li><a href="/docs/settings.html">Settings</a></li>
                 <li><a href="/docs/expressions.html">Expressions</a></li>
                 <li><a href="/docs/direct_input.html">Direct Input</a></li>
-                <li><a href="/docs/desktop_automation.html">Desktop Automation</a></li>
+                <li><a class="active" href="/docs/desktop_automation.html">Desktop Automation</a></li>
             </ul>
         </li>
         <li>Events Reference
@@ -157,7 +157,7 @@
                 <li><a href="/docs/page_scroll.html">Page Scroll</a></li>
                 <li><a href="/docs/csv_import.html">CSV Import</a></li>
                 <li><a href="/docs/mouse_down.html">Mouse Down</a></li>
-                <li><a class="active" href="/docs/mouse_up.html">Mouse Up</a></li>
+                <li><a href="/docs/mouse_up.html">Mouse Up</a></li>
                 <li><a href="/docs/mouse_over.html">Mouse Over</a></li>
                 <li><a href="/docs/mouse_out.html">Mouse Out</a></li>
                 <li><a href="/docs/clipboard_copy.html">Clipboard Copy</a></li>
@@ -188,56 +188,34 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Mouse Up</h2>
+                <h2>Desktop Automation</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: April 2, 2017
+                    Last Updated: October 2, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p style="margin-bottom: 2rem;">
-                    This event simulates the release of a pressed down left-mouse button on the CSS selector at the position specified.
+                <p>
+                    As of Version 1.3.0, Wildfire can control the desktop system outside the context of the browser. To use these features, you are required to install the Wildfire Helper application. Once you have installed the helper on your system, simply restart your browser.
                 </p>
-                <h4>Options</h4>
-                <div class="row" style="padding-top: 10px;">
-                    <div class="col-md-4">
-                        <p style="text-align: right;">
-                            <strong>Position</strong><br />
-                            <span class="color-blue-grey-lighter">&nbsp;</span>
-                        </p>
-                    </div>
-                    <div class="col-md-8">
-                        <p>The X and Y coordinate values relative to the element. They should be any non-negative whole number. If you're unsure, setting both to <code>0</code> is a safe option.</p>
-                    </div>
-                </div>
-                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
-                <div class="row" style="padding-top: 10px;">
-                    <div class="col-md-4">
-                        <p style="text-align: right;">
-                            <strong>Options</strong><br />
-                            <span class="color-blue-grey-lighter">&nbsp;</span>
-                        </p>
-                    </div>
-                    <div class="col-md-8">
-                        <p><strong>Use Middle Mouse Button:</strong> Uses the middle mouse button instead of the default left mouse button.<br />
-                        <strong><i>Use Direct Input:</i></strong> Send mouse events directly to the frame. <a href="/docs/direct_input.html">More Details</a>.</p>
-                    </div>
-                </div>
-                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
-                <div class="row" style="padding-top: 10px;">
-                    <div class="col-md-4">
-                        <p style="text-align: right;">
-                            <strong>CSS Selector</strong><br />
-                            <span class="color-blue-grey-lighter">&nbsp;</span>
-                        </p>
-                    </div>
-                    <div class="col-md-8">
-                        <p>The CSS Selector for the element.</p>
-                    </div>
-                </div>
+                <br /><h4>Windows</h4>
+                <p>
+                    Download the installer <a href="https://wildfire.ai/wildfire-helper-x64.msi">here</a>.
+                </p>
+                <br /><h4>Mac</h4>
+                <p>
+                    Download the installer <a href="https://wildfire.ai/wildfire-helper.dmg">here</a>.
+                </p>
+                <br /><h4>Linux</h4>
+                <p>
+                    Download the installer <a href="https://wildfire.ai/wildfire-helper.sh">here</a>.
+                </p>
+                <br /><p>
+                    Once installed, restart your browser and verify the helper is working by navigating to the About section.
+                </p>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/mouse_down.html">&#8656; Mouse Down</a></p>
-                <p style="float: right;"><a href="/docs/mouse_over.html">Mouse Over &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/direct_input.html">&#8656; Direct Input</a></p>
+                <p style="float: right;"><a href="/docs/begin_recording.html">Begin Recording &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->
