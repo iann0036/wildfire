@@ -53,6 +53,7 @@ function sendNativeMessage(message) {
 }
 
 function onNativeMessage(message) {
+    nativeRetries = 0;
     if (message['action'] == "init") {
         helperversion = message['response']['helperversion'];
     }
@@ -78,6 +79,11 @@ function nativeConnect() {
         'version': manifest.version.toString()
     });
 }
+
+setInterval(function(){
+    if (native_port == null)
+        nativeConnect();
+}, 30000);
 
 nativeConnect();
 
