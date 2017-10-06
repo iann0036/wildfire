@@ -1257,7 +1257,7 @@ function execEvent(node) {
                         var clicky = parseInt(resolveVariable(node.userData.evt_data.clientY)) || 0;
                         
                         sendNativeMessage({
-                            'action': 'moveclick',
+                            'action': 'click',
                             'x': clickx.toString(),
                             'y': clicky.toString(),
                             'button': 'left',
@@ -1339,7 +1339,8 @@ function execEvent(node) {
                     return new Promise(function(resolve, reject) {
                         sendNativeMessage({
                             'action': 'keydown',
-                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                            'key': String(parseInt(resolveVariable(node.userData.evt_data.keyCode))),
+                            'keystr': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
                         });
 
                         resolve({
@@ -1390,7 +1391,8 @@ function execEvent(node) {
                     return new Promise(function(resolve, reject) {
                         sendNativeMessage({
                             'action': 'keyup',
-                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                            'key': String(parseInt(resolveVariable(node.userData.evt_data.keyCode))),
+                            'keystr': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
                         });
 
                         resolve({
@@ -1441,7 +1443,8 @@ function execEvent(node) {
                     return new Promise(function(resolve, reject) { 
                         sendNativeMessage({
                             'action': 'keypress',
-                            'key': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
+                            'key': String(parseInt(resolveVariable(node.userData.evt_data.keyCode))),
+                            'keystr': String.fromCharCode(parseInt(resolveVariable(node.userData.evt_data.keyCode)))
                         });
 
                         resolve({

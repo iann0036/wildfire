@@ -206,6 +206,7 @@ function getEventOptionsHtml(userdata) {
     "      <option value=\"40\">Down Arrow</option>" +
     "      <option value=\"45\">Insert</option>" +
     "      <option value=\"46\">Delete</option>" +
+    "      <option value=\"91\">Windows / Command</option>" +
     chars +
     "      <option value=\"186\">;</option>" +
     "      <option value=\"187\">=</option>" +
