@@ -854,6 +854,10 @@ function saveToLocalStorage() {
                 events: events,
                 cvsHeight: $('#graph').height()
             });
+            if (jsonTxt.length < 1024) {
+                resolve();
+                return;
+            }
             var text = encrypt(jsonTxt);
             chrome.storage.local.set({workflow: text},function(){
                 resolve();
