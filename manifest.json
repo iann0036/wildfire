@@ -30,11 +30,14 @@
       "description": "Play Favorited Workflow #2"
     },
     "play-workflow-3": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+3",
-        "mac": "MacCtrl+Shift+3"
-      },
       "description": "Play Favorited Workflow #3"
+    },
+    "run-current-workflow": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+9",
+        "mac": "MacCtrl+Shift+9"
+      },
+      "description": "Play Current Workflow"
     }
   },
   "icons": {

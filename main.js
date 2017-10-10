@@ -33,7 +33,11 @@ chrome.commands.onCommand.addListener(function(command) {
     console.log(command);
     if (command == "stop-simulation")
         terminateSimulation(false, "User terminated");
-    else {
+    else if (command == "run-current-workflow") {
+        chrome.windows.getCurrent({populate: true}, function(curr_window) {
+            begin_fav_sim(-1, curr_window);
+        });
+    } else {
         chrome.storage.local.get('favorites', function (result) {
             var favorites = result.favorites;
             var index = false;
