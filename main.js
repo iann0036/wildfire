@@ -30,20 +30,33 @@ if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.inde
 // Commands
 
 chrome.commands.onCommand.addListener(function(command) {
+    console.log(command);
     if (command == "stop-simulation")
         terminateSimulation(false, "User terminated");
-    /*else if (command == "play-workflow-1")
-        chrome.windows.getCurrent({populate: true}, function(curr_window) {
-            begin_fav_sim(1, curr_window);
+    else {
+        chrome.storage.local.get('favorites', function (result) {
+            var favorites = result.favorites;
+            var index = false;
+            for (var i=0; i<favorites.length; i++) {
+                if (command == "play-workflow-1" && favorites[i].shortcut == "1") {
+                    index = i;
+                    chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                        begin_fav_sim(index, curr_window);
+                    });
+                } else if (command == "play-workflow-2" && favorites[i].shortcut == "2") {
+                    index = i;
+                    chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                        begin_fav_sim(index, curr_window);
+                    });
+                } else if (command == "play-workflow-3" && favorites[i].shortcut == "3") {
+                    index = i;
+                    chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                        begin_fav_sim(index, curr_window);
+                    });
+                }
+            }
         });
-    else if (command == "play-workflow-2")
-        chrome.windows.getCurrent({populate: true}, function(curr_window) {
-            begin_fav_sim(2, curr_window);
-        });
-    else if (command == "play-workflow-3")
-        chrome.windows.getCurrent({populate: true}, function(curr_window) {
-            begin_fav_sim(3, curr_window);
-        });*/
+    }
 });
 
 // Native

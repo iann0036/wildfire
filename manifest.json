@@ -17,21 +17,24 @@
     },
     "play-workflow-1": {
       "suggested_key": {
-        "default": "Ctrl+Shift+1"
+        "default": "Ctrl+Shift+1",
+        "mac": "MacCtrl+Shift+1"
       },
-      "description": "Play Favorited Workflow (1st Assignment)"
+      "description": "Play Favorited Workflow #1"
     },
     "play-workflow-2": {
       "suggested_key": {
-        "default": "Ctrl+Shift+2"
+        "default": "Ctrl+Shift+2",
+        "mac": "MacCtrl+Shift+2"
       },
-      "description": "Play Favorited Workflow (2nd Assignment)"
+      "description": "Play Favorited Workflow #2"
     },
     "play-workflow-3": {
       "suggested_key": {
-        "default": "Ctrl+Shift+3"
+        "default": "Ctrl+Shift+3",
+        "mac": "MacCtrl+Shift+3"
       },
-      "description": "Play Favorited Workflow (3rd Assignment)"
+      "description": "Play Favorited Workflow #3"
     }
   },
   "icons": {
