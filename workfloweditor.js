@@ -37,9 +37,16 @@ function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
     return;
   
-  var node = canvas.getPrimarySelection();
-  var command = new draw2d.command.CommandDelete(node);
-  canvas.getCommandStack().execute(command);
+  canvas.getCommandStack().startTransaction('delete_multiple');
+  var selection = canvas.getSelection();
+  selection.each(function(i, o) {
+    var command = new draw2d.command.CommandDelete(o);
+    canvas.getCommandStack().execute(command);
+  });
+  canvas.getCommandStack().commitTransaction();
+  canvas.getCommandStack().undostack.pop();
+  $('#workflowToolbarUndo').attr('disabled','');
+
   /*if ($.inArray(figure.userData.evt,link_types)==-1)
     figure.resetPorts();
   canvas.remove(figure);*/
