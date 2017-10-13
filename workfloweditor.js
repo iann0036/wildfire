@@ -1042,6 +1042,7 @@ function initCanvas() {
 
         saveToLocalStorage();
         canvasResize();
+        scrollOverrides();
     },100);
     
     canvas.on("select", function(emitter,event) {
@@ -1351,4 +1352,44 @@ function openTour1_1() {
     ];
     enjoyhint_instance.set(enjoyhint_script_steps);
     enjoyhint_instance.run();
+}
+
+function scrollOverrides() {
+    canvas.fromDocumentToCanvasCoordinate =  $.proxy(function (x, y) {
+      return new draw2d.geo.Point(
+        (x - this.getAbsoluteX() + this.getScrollLeft() + this.getWindowScrollLeft()) * this.zoomFactor,
+        (y - this.getAbsoluteY() + this.getScrollTop() + this.getWindowScrollTop()) * this.zoomFactor);
+    }, canvas);
+
+    canvas.fromCanvasToDocumentCoordinate =  $.proxy(function (x, y) {
+      return new draw2d.geo.Point(
+        ((x * (1 / this.zoomFactor)) + this.getAbsoluteX() - this.getScrollLeft() - this.getWindowScrollLeft()),
+        ((y * (1 / this.zoomFactor)) + this.getAbsoluteY() - this.getScrollTop() - this.getWindowScrollTop()));
+    }, canvas);
+      
+    canvas.getWindowScrollTop =  $.proxy(function (x, y) {
+      if (typeof pageYOffset != 'undefined') {
+        //most browsers except IE before #9      
+        return pageYOffset;
+      }
+      else {
+        var B = document.body; //IE 'quirks'
+        var D = document.documentElement; //IE with doctype
+        D = (D.clientHeight) ? D : B;
+        return D.scrollTop;
+      }
+    }, canvas);
+
+    canvas.getWindowScrollLeft =  $.proxy(function (x, y) {
+      if (typeof pageXOffset != 'undefined') {
+        //most browsers except IE before #9
+        return pageXOffset;
+      }
+      else {
+        var B = document.body; //IE 'quirks'
+        var D = document.documentElement; //IE with doctype
+        D = (D.clientHeight) ? D : B;
+        return D.scrollLeft;
+      }
+    }, canvas);
 }
