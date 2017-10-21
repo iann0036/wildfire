@@ -499,6 +499,10 @@ function readableEventDetail(event) {
             event_type = "Imported CSV";
             minorEvent = false;
             break;
+        case 'closewindow':
+            event_type = "Closed Window";
+            minorEvent = false;
+            break;
         default:
             var escaped_value = event.evt.replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
