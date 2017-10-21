@@ -2,7 +2,7 @@
   "name": "Wildfire",
   "short_name": "Wildfire",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtlggGhizqpz/re1CbIfJezkRUBcWgpts6vKDNZGchNiQseAACsCGiNJCAVpslArTYhdOfqa3QY6qkSdSxsSWhYqPN+ijHWbXSo4ox27nuPso29Yqxsv/sCCIn70gJmju/4gAOX0TcFV+E7LvuqFlgTSk7PV9MEjZv3sFxRSvwPMmjXUIs4GlOTQe+FD73WNVAdGXAaSaz4uSIbe2zxb6CCEtmPBGR/ItsXudk7xSx8LVHDRGjbfoxS6Bf4VkMRBtK9uQc2rX5JchL5VcHkJMXGmlLRePQLt21Tj0rz+yCFzu8OJx8btrCCU07GMQZs96gK6tQw2VaRlrrV3Pwwz8iwIDAQAB",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "manifest_version": 2,
   "author": "wildfire.ai",
   "description": "Record browser actions then replay immediately. Craft your own custom automation workflows.",
@@ -101,5 +101,6 @@
       "strict_min_version": "48.0"
     }
   },
-  "minimum_opera_version": "33.0"
+  "minimum_opera_version": "33.0",
+  "offline_enabled": true
 }

@@ -80,6 +80,8 @@ chrome.storage.local.get('settings', function (settings) {
         $('#setting-suppressalerts').click();
     if (all_settings.directinputdefault)
         $('#setting-directinputdefault').click();
+    if (all_settings.recordnative)
+        $('#setting-recordnative').click();
     if (all_settings.account != "" && all_settings.account !== undefined) {
         $('#setting-account').html(all_settings.account);
         $('#setting-account').parent().append("&nbsp;&nbsp;<a id='unlinkButton' href='#'>Unlink</a>");
@@ -248,6 +250,10 @@ $('#setting-directinputdefault').change(function() {
     all_settings.directinputdefault = $(this).is(":checked");
     updateSettings();
 });
+$('#setting-recordnative').change(function() {
+    all_settings.recordnative = $(this).is(":checked");
+    updateSettings();
+});
 $('#setting-flush-simulation-log').click(function(e) {
 	e.preventDefault();
 	$(this).attr('disabled','disabled');
@@ -298,6 +304,17 @@ chrome.extension.isAllowedIncognitoAccess(function(isAllowedIncognito) {
     if (!isAllowedIncognito) {
         $('#setting-incognito').attr('disabled','disabled');
         $('#incognito-warning').attr('style','');
+    }
+});
+
+chrome.runtime.sendMessage(null, {
+    'action': 'getHelperStatus'
+}, null, function(response) {
+    if (response.helperversion && response.native_port)
+        helperisforsureinstalled = true; // do nothing
+    else {
+        $('#setting-recordnative').attr('disabled','disabled');
+        $('#recordnative-warning').attr('style','');
     }
 });
 

@@ -9,17 +9,25 @@ var mappingData = {
     end_recording: {
         bgColor: '#FF6B6B',
         event_type: 'End Recording',
-        icon: 'winner-runner-arriving-to-end-line.png'
+        icon: 'winner-runner-arriving-to-end-line.png',
+        optlabel: 'Workflow'
     },
-    click: {
-        bgColor: '#556270',
-        event_type: 'Mouse Click',
-        icon: 'cursor-1.png'
+    setvar: {
+        bgColor: '#3FB8AF',
+        event_type: 'Set Variable',
+        icon: 'equality-sign.png'
+    },
+    csvimport: {
+        bgColor: '#F7734F',
+        event_type: 'CSV Import',
+        icon: 'csv-file-format-extension.png',
+        endoptlabel: true
     },
     tabchange: {
         bgColor: '#9265C6',
         event_type: 'New/Change Tab',
-        icon: 'web-tabs.png'
+        icon: 'web-tabs.png',
+        optlabel: 'Tabs'
     },
     tabremove: {
         bgColor: '#8937B2',
@@ -29,82 +37,14 @@ var mappingData = {
     tabswitch: {
         bgColor: '#924FAD',
         event_type: 'Switch Tabs',
-        icon: 'web-tabs.png'
+        icon: 'web-tabs.png',
+        endoptlabel: true
     },
-    input: {
-        bgColor: '#CBE86B',
-        event_type: 'Data Input',
-        icon: 'text-entry-box.png'
-    },
-    setvar: {
-        bgColor: '#3FB8AF',
-        event_type: 'Set Variable',
-        icon: 'equality-sign.png'
-    },
-    change: {
-        bgColor: '#98462A',
-        event_type: 'Change',
-        icon: 'change.png'
-    },
-    focusin: {
-        bgColor: '#4ECDC4',
-        event_type: 'Element Focus',
-        icon: 'focus.png'
-    },
-    focusout: {
-        bgColor: '#F0A900',
-        event_type: 'Element Unfocus',
-        icon: 'unfocus-wfcustom.png'
-    },
-    keydown: {
-        bgColor: '#5D97AF',
-        event_type: 'Key Down',
-        icon: 'key-arrow-down.png'
-    },
-    keyup: {
-        bgColor: '#FC9D9A',
-        event_type: 'Key Up',
-        icon: 'square-arrow-up.png'
-    },
-    keypress: {
-        bgColor: '#C5E0DC',
-        event_type: 'Key Press',
-        icon: 'keyboard-key-a.png'
-    },
-    customjs: {
-        bgColor: '#D4B0D6',
-        event_type: 'Custom Function',
-        icon: 'js-document.png'
-    },
-    purgecookies: {
-        bgColor: '#7D3F32',
-        event_type: 'Purge Cookies',
-        icon: 'christmas-cookies.png'
-    },
-    setproxy: {
-        bgColor: '#EFA821',
-        event_type: 'Set Proxy Settings',
-        icon: 'cloud-computing.png'
-    },
-    submit: {
-        bgColor: '#A46583',
-        event_type: 'Form Submit',
-        icon: 'clicking-cursor.png'
-    },
-    select: {
-        bgColor: '#D95B43',
-        event_type: 'Text Select',
-        icon: 'edit-line.png'
-    },
-    scroll: {
-        bgColor: '#D9CEB2',
-        event_type: 'Page Scroll',
-        icon: 'scroll-bar.png'
-    },
-    csvimport: {
-        bgColor: '#F7734F',
-        event_type: 'CSV Import',
-        icon: 'csv-file-format-extension.png'
+    click: {
+        bgColor: '#556270',
+        event_type: 'Mouse Click',
+        icon: 'cursor-1.png',
+        optlabel: 'Mouse'
     },
     mousedown: {
         bgColor: '#F9E666',
@@ -124,12 +64,48 @@ var mappingData = {
     mouseout: {
         bgColor: '#A5A36C',
         event_type: 'Mouse Out',
-        icon: 'mouse-pointer.png'
+        icon: 'mouse-pointer.png',
+        endoptlabel: true
+    },
+    keypress: {
+        bgColor: '#C5E0DC',
+        event_type: 'Key Press',
+        icon: 'keyboard-key-a.png',
+        optlabel: 'Keyboard'
+    },
+    keydown: {
+        bgColor: '#5D97AF',
+        event_type: 'Key Down',
+        icon: 'key-arrow-down.png'
+    },
+    keyup: {
+        bgColor: '#FC9D9A',
+        event_type: 'Key Up',
+        icon: 'square-arrow-up.png',
+        endoptlabel: true
+    },
+    input: {
+        bgColor: '#CBE86B',
+        event_type: 'Data Input',
+        icon: 'text-entry-box.png',
+        optlabel: 'Input'
+    },
+    change: {
+        bgColor: '#98462A',
+        event_type: 'Change',
+        icon: 'change.png'
+    },
+    submit: {
+        bgColor: '#A46583',
+        event_type: 'Form Submit',
+        icon: 'clicking-cursor.png',
+        endoptlabel: true
     },
     clipboard_copy: {
         bgColor: '#005F6B',
         event_type: 'Clipboard Copy',
-        icon: 'copy-document.png'
+        icon: 'copy-document.png',
+        optlabel: 'Clipboard'
     },
     clipboard_cut: {
         bgColor: '#008C9E',
@@ -139,12 +115,59 @@ var mappingData = {
     clipboard_paste: {
         bgColor: '#00B4CC',
         event_type: 'Clipboard Paste',
-        icon: 'paste-from-clipboard.png'
+        icon: 'paste-from-clipboard.png',
+        endoptlabel: true
+    },
+    scroll: {
+        bgColor: '#D9CEB2',
+        event_type: 'Page Scroll',
+        icon: 'scroll-bar.png',
+        optlabel: 'Other'
+    },
+    focusin: {
+        bgColor: '#4ECDC4',
+        event_type: 'Element Focus',
+        icon: 'focus.png'
+    },
+    focusout: {
+        bgColor: '#F0A900',
+        event_type: 'Element Unfocus',
+        icon: 'unfocus-wfcustom.png'
+    },
+    customjs: {
+        bgColor: '#D4B0D6',
+        event_type: 'Custom Function',
+        icon: 'js-document.png'
+    },
+    purgecookies: {
+        bgColor: '#7D3F32',
+        event_type: 'Purge Cookies',
+        icon: 'christmas-cookies.png'
+    },
+    setproxy: {
+        bgColor: '#EFA821',
+        event_type: 'Set Proxy Settings',
+        icon: 'cloud-computing.png'
+    },
+    select: {
+        bgColor: '#D95B43',
+        event_type: 'Text Select',
+        icon: 'edit-line.png',
+        endoptlabel: true
+    },
+    closewindow: {
+        bgColor: '#688C40',
+        event_type: 'Close Window',
+        icon: 'window-close.png',
+        optlabel: 'Desktop Automation',
+        endoptlabel: true
     },
     recaptcha: {
         bgColor: '#CBD8DE',
-        event_type: 'Solve reCAPTCHA [P]',
-        icon: 'tiles-view.png'
+        event_type: 'Solve reCAPTCHA',
+        icon: 'tiles-view.png',
+        optlabel: 'Cloud Account Required',
+        endoptlabel: true
     }
 };
 

@@ -315,6 +315,8 @@ function getEventOptionsHtml(userdata) {
     "</div>";
   } else if (userdata.evt == "begin_recording" || userdata.evt == "end_recording" || userdata.evt == "clipboard_cut" || userdata.evt == "clipboard_copy" || userdata.evt == "clipboard_paste") {
     return "";
+  } else if (userdata.evt == "closewindow") {
+    return "";
   } else if (userdata.evt == "setproxy") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_scheme\">Proxy Type</label>" +
     "    <select class=\"form-control event-detail\" data-event-detail=\"scheme\" id=\"event_scheme\">" +
@@ -386,11 +388,16 @@ function selectedFigure(figure) {
     } else {
       var selecthtml = "";
       for (var event in mappingData) {
-        if (event != "begin_recording")
+        if (event != "begin_recording") {
+          if (mappingData[event].optlabel)
+            selecthtml += "<optgroup label='" + mappingData[event].optlabel + "'>";
           selecthtml += '<option ';
           if (figure.userData.evt == event)
             selecthtml += "selected='selected' ";
           selecthtml += "value='" + event + "' data-content='<span class=\"user-item\"><img style=\"-webkit-border-radius: 0; border-radius: 0;\" src=\"/icons/dark-" + mappingData[event].icon + "\"/>" + mappingData[event].event_type + "</span>'>" + mappingData[event].event_type + "</option>";
+          if (mappingData[event].endoptlabel)
+            selecthtml += "</optgroup>";
+        }
       }
       $('#sidePanelTypeSelect').html(selecthtml).selectpicker('refresh');
     }
@@ -1241,12 +1248,21 @@ function cloudUploadSwal() {
                                 image: png
                             }
                         }).always(function(resp) {
-                            swal({
-                                title: "Done",
-                                text: "Your <b>" + inputValue.trim() + "</b> workflow has been uploaded to the Wildfire Cloud.",
-                                type: "success",
+                            if (JSON.parse(resp).result) {
+                              swal({
+                                  title: "Done",
+                                  text: "Your <b>" + inputValue.trim() + "</b> workflow has been uploaded to the Wildfire Cloud.",
+                                  type: "success",
+                                  html: true
+                              });
+                            } else {
+                              swal({
+                                title: "Error",
+                                text: "Your workflow could not be uploaded. Check your quota usage and API key.",
+                                type: "error",
                                 html: true
-                            });
+                              });
+                            } 
                             $('.confirm').removeAttr('disabled');
                         });
                     });

@@ -209,6 +209,16 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-6 form-control-label">Run Simulations In Incognito Mode</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-incognito">
+                                                <label for="setting-incognito">&nbsp;</label>
+                                                <span id="incognito-warning" style="display: none;" class="hint-circle orange" data-toggle="tooltip" data-placement="top" title="This extension does not have permission to use incognito windows.">!</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <h5 class="m-t-lg with-border">Events Recorded</h5>
                                     <div class="form-group row">
                                         <label class="col-sm-6 form-control-label">Mouse Click</label>
@@ -358,16 +368,6 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label class="col-sm-6 form-control-label">Run Simulations In Incognito Mode</label>
-                                        <div class="col-sm-6">
-                                            <div class="checkbox-toggle" style="padding-top: 6px;">
-                                                <input type="checkbox" id="setting-incognito">
-                                                <label for="setting-incognito">&nbsp;</label>
-                                                <span id="incognito-warning" style="display: none;" class="hint-circle orange" data-toggle="tooltip" data-placement="top" title="This extension does not have permission to use incognito windows.">!</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
                                         <label class="col-sm-6 form-control-label">Suppress Window Alerts</label>
                                         <div class="col-sm-6">
                                             <div class="checkbox-toggle" style="padding-top: 6px;">
@@ -385,7 +385,17 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <h5 class="m-t-lg with-border" style="margin-top: 24px;">Events Simulated</h5>
+                                    <div class="form-group row" style="visibility: hidden;">
+                                        <label class="col-sm-6 form-control-label">Record Desktop Events</label>
+                                        <div class="col-sm-6">
+                                            <div class="checkbox-toggle" style="padding-top: 6px;">
+                                                <input type="checkbox" id="setting-recordnative">
+                                                <label for="setting-recordnative">&nbsp;</label>
+                                                <span id="recordnative-warning" style="display: none;" class="hint-circle orange" data-toggle="tooltip" data-placement="top" title="The Wildfire Helper is required to be installed for this functionality.">!</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h5 class="m-t-lg with-border" style="margin-top: 80px;">Events Simulated</h5>
                                     <div class="form-group row">
                                         <label class="col-sm-6 form-control-label">Mouse Click</label>
                                         <div class="col-sm-6">

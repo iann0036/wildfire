@@ -53,7 +53,8 @@ chrome.storage.local.get('settings', function (settings) {
         "incognito": false,
         "rightclick": true,
         "suppressalerts": false,
-        "directinputdefault": false
+        "directinputdefault": false,
+        "recordnative": true
     };
     if (settings.settings != null)
         all_settings = $.extend(all_settings,settings.settings);

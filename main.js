@@ -30,7 +30,6 @@ if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.inde
 // Commands
 
 chrome.commands.onCommand.addListener(function(command) {
-    console.log(command);
     if (command == "stop-simulation")
         terminateSimulation(false, "User terminated");
     else if (command == "run-current-workflow") {
@@ -77,6 +76,7 @@ function onNativeMessage(message) {
 }
 
 function onNativeDisconnected() {
+    console.warn("Native Disconnect");
     native_port = null;
     if (nativeRetries < 5) {
         nativeRetries+=1;
@@ -475,6 +475,24 @@ function updateExtIcon() {
     });
 }
 
+function updateNativeRecordingStatus() {
+    if (bgSettings.recordnative) {
+        chrome.storage.local.get('recording', function (isRecording) {
+            /*
+            if (isRecording.recording) {
+                sendNativeMessage({
+                    'action': 'start_recording'
+                });
+            } else {
+                sendNativeMessage({
+                    'action': 'stop_recording'
+                });
+            }
+            */
+            ;
+        });
+    }
+}
 
 function updateEvents() {
     chrome.storage.local.get('events', function (result) {
@@ -539,6 +557,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 	if (changes.recording != undefined) {
     	updateExtIcon();
         updateTrackedTabs();
+        updateNativeRecordingStatus();
 	}
     if (changes.settings != undefined) {
 		updateBgSettings();
@@ -642,7 +661,7 @@ if (typeof InstallTrigger === 'undefined') { // NOT Firefox
             });
             sendResponse({
                 "success": true,
-                    "version": chrome.runtime.getManifest().version
+                "version": chrome.runtime.getManifest().version
             });
         }
     });
@@ -652,9 +671,20 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
     chrome.storage.local.set({simulating: false});    
     if (details.reason == "install") {
         if (navigator.userAgent.includes("Wildfire")) {
-            chrome.windows.getCurrent({populate: true}, function(curr_window) {
-                chrome.tabs.update(curr_window.tabs[0].id, {url: chrome.extension.getURL("new.html")});
-            });
+            if (typeof InstallTrigger !== 'undefined') { // Firefox
+                console.log("1");
+                setTimeout(function(){
+                    browser.windows.getCurrent({populate: true}).then(function(curr_window){
+                        console.log("2");
+                        console.log(curr_window);
+                        browser.tabs.update(curr_window.tabs[0].id, {url: browser.extension.getURL("new.html")});
+                    });
+                }, 1000);
+            } else {
+                chrome.windows.getCurrent({populate: true}, function(curr_window) {
+                    chrome.tabs.update(curr_window.tabs[0].id, {url: chrome.extension.getURL("new.html")});
+                });
+            }
         } else {
             openUI("docs/getting_started.html");
         }
@@ -668,6 +698,8 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
         });*/
     }
 });
+
+
 
 function setContextMenus() {
     if (typeof InstallTrigger !== 'undefined') // Firefox
@@ -1107,6 +1139,18 @@ function execEvent(node) {
                     time: Date.now()
                 });
             });
+        case 'closewindow':
+            return new Promise(function(resolve, reject) {
+                sendNativeMessage({
+                    'action': 'closewindow'
+                });
+                resolve({
+                    error: false,
+                    results: null,
+                    id: node.id,
+                    time: Date.now()
+                });
+            });
         case 'mousedown':
             if (bgSettings.simulatemousedown) {
                 if (node.userData.useOSInput) {
@@ -1142,12 +1186,9 @@ function execEvent(node) {
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
                                 if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
-                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
-                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
                                     clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
                                     clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
                                 }
-                                console.log("Mouse down at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
                                 chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: clickx, y: clicky, button: "left"  });
                                 chrome.debugger.detach({ tabId: tabs[0].id });
@@ -1215,12 +1256,9 @@ function execEvent(node) {
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
                                 if ($.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
-                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
-                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
                                     clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
                                     clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
                                 }
-                                console.log("Mouse up at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
                                 chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickx, y: clicky, button: "left"  });
                                 chrome.debugger.detach({ tabId: tabs[0].id });
@@ -1302,12 +1340,9 @@ function execEvent(node) {
                         runCode(code, node).then(function(result){
                             chrome.tabs.query({windowId: new_window.id, active: true}, function(tabs) {
                                 if (result.results[0]!=null && $.isNumeric(result.results[0].left) && $.isNumeric(result.results[0].top) && $.isNumeric(result.results[0].width) && $.isNumeric(result.results[0].height)) {
-                                    console.log("Using element center point (" + resolveVariable(node.userData.evt_data.csspath) + ")");
-                                    console.log(result.results[0].left + "," + result.results[0].top + "," + result.results[0].width + "," + result.results[0].height);
                                     clickx = parseInt(result.results[0].left) + parseInt(result.results[0].width/2);
                                     clicky = parseInt(result.results[0].top) + parseInt(result.results[0].height/2);
                                 }
-                                console.log("Clicking at " + clickx + "," + clicky);
                                 chrome.debugger.attach({ tabId: tabs[0].id }, "1.2");
                                 chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: clickx, y: clicky, button: "left", clickCount: 1  });
                                 chrome.debugger.sendCommand({ tabId: tabs[0].id }, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickx, y: clicky, button: "left"  });
@@ -1606,7 +1641,6 @@ function execEvent(node) {
                 code = "var tmp_input = '" +
                     resolveVariable(node.userData.evt_data.value) +
                     "';$('" + resolveVariable(node.userData.evt_data.csspath) + "').val(tmp_input);true;";
-                console.log(code);
             }
             break;
         case 'clipboard_cut':
@@ -1805,7 +1839,6 @@ function execEvent(node) {
             break;
         case 'customjs':
             code = resolveVariable(node.userData.evt_data.code);
-            console.log(code);
             break;
         case 'setproxy':
             return new Promise(function(resolve, reject) {
