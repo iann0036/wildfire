@@ -249,6 +249,20 @@ function getEventOptionsHtml(userdata) {
     "    <input type=\"text\" required class=\"form-control event-detail\" data-event-detail=\"searchterm\" id=\"searchterm\" value=\"" + escapeOrDefault(userdata.evt_data.searchterm,"example.com") + "\">" +
     "    <br />" +
     "</div>";
+  } else if (userdata.evt == "ocr") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"ocrsearchterm\">Search Term</label>" +
+    "    <input type=\"text\" required class=\"form-control event-detail\" data-event-detail=\"ocrsearchterm\" id=\"ocrsearchterm\" value=\"" + escapeOrDefault(userdata.evt_data.ocrsearchterm,"") + "\">" +
+    "    <br />" +
+    "    <label class=\"form-label semibold\" for=\"event_useFuzzyMatch\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useFuzzyMatch\">" +
+		"      <label for=\"event_useFuzzyMatch\">Use Fuzzy Matching</label>" +
+    "    </div>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
+	  "    </div>" +
+    "</div>";
   } else if (userdata.evt == "setvar") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"var\">Variable</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"var\" id=\"var\" value=\"" + escapeOrDefault(userdata.evt_data.var,"") + "\">" +
@@ -474,6 +488,9 @@ function selectedFigure(figure) {
       if (figure.userData.useOSInput) {
         $('#event_useOSInput').prop('checked', true);
       }
+      if (figure.userData.evt_data.useFuzzyMatch) {
+        $('#event_useFuzzyMatch').prop('checked', true);
+      }
       if (figure.userData.evt_data.downloadlinks && figure.userData.evt_data.downloadlinks == 1) {
         $('#event_downloadlinks').prop('checked', true);
       }
@@ -579,6 +596,11 @@ function setDetailListeners() {
   $('#event_useOSInput').on('change', function() {
     var userData = figure.userData;
     userData.useOSInput = $(this).is(":checked");
+    figure.setUserData(userData);
+  });
+  $('#event_useFuzzyMatch').on('change', function() {
+    var userData = figure.userData;
+    userData.evt_data.useFuzzyMatch = $(this).is(":checked");
     figure.setUserData(userData);
   });
   $('#event_keyCode').on('change', function() {

@@ -12,7 +12,7 @@ var new_window;
 var sim_start_time;
 var terminated = false;
 var simulation_log = [];
-var waitForElementInterval, waitForTitleInterval, testExpressionInterval, waitForTimeInterval;
+var waitForElementInterval, waitForTitleInterval, testExpressionInterval, waitForTimeInterval, nativeInterval;
 var simulating = false;
 var last_node;
 var isFavSim = false;
@@ -21,6 +21,8 @@ var tracked_tabs = [];
 var native_port = null;
 var nativeRetries = 0;
 var helperversion = null;
+var latestNativeScreenshot = null;
+var latestNativeScreenshotParts = [];
 
 if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) { // Opera
     windowWidth*=window.devicePixelRatio;
@@ -69,9 +71,17 @@ function sendNativeMessage(message) {
 }
 
 function onNativeMessage(message) {
+    console.log(message);
     nativeRetries = 0;
     if (message['action'] == "init") {
         helperversion = message['response']['helperversion'];
+    } else if (message['action'] == "screenshot") {
+        latestNativeScreenshotParts.push(message['response']['image']);
+        if (message['response']['lastpart']) {
+            latestNativeScreenshot = new Image();
+            latestNativeScreenshot.src = "data:image/png;base64," + latestNativeScreenshotParts.join("");
+            latestNativeScreenshotParts = [];
+        }
     }
 }
 
@@ -122,6 +132,8 @@ chrome.alarms.onAlarm.addListener(function(alarm){
     }
 });
 
+////
+
 function updateTrackedTabs() {
     chrome.tabs.query({}, function (tabs) {
         tracked_tabs = tabs;
@@ -143,8 +155,8 @@ function resolveVariable(str) {
 
 function eresolveVariable(str) {
     try {
-        String.prototype.isAlNum = function() {
-            var regExp = /^[A-Za-z0-9]+$/;
+        String.prototype.isAlNumUnderscore = function() {
+            var regExp = /^[A-Za-z0-9_]+$/;
             return (this.match(regExp));
         };
 
@@ -152,6 +164,9 @@ function eresolveVariable(str) {
 
         if (str.length < 2)
             return String(str);
+
+        if (str.length > 1024)
+            return "";
 
         if (str[0] != '$')
             return String(str[0]) + eresolveVariable(str.substring(1));
@@ -163,14 +178,14 @@ function eresolveVariable(str) {
         while (!varname) {
             if (i > str.length)
                 varname = str.substring(1,i-1);
-            else if (str.substring(1,i).isAlNum())
+            else if (str.substring(1,i).isAlNumUnderscore())
                 i+=1;
             else
                 varname = str.substring(1,i-1)
         }
 
         if (simulation_variables[varname] === undefined) {
-            return "" + eresolveVariable(str.substring(i-1));
+            return eresolveVariable(str.substring(i-1));
         }
 
         return String(simulation_variables[varname]) + eresolveVariable(str.substring(i-1));
@@ -1029,6 +1044,81 @@ function processEvent(node) {
     });
 }
 
+function processVision(imagedata, node, resolve, reject) {
+    Tesseract.recognize(imagedata, {
+        lang: 'eng'
+    }).then(function(tessaresult){
+        console.log(tessaresult);
+
+        var fuzz = FuzzySet();
+        var bestmatch = null;
+        if (node.userData.evt_data.useFuzzyMatch) {
+            for (var i=0; i<tessaresult.words.length; i++) {
+                fuzz.add(tessaresult.words[i].text);
+            }
+            bestmatch = fuzz.get(node.userData.evt_data.ocrsearchterm, null, 0.3);
+        }
+
+        var word_matches = [];
+        for (var i=0; i<tessaresult.words.length; i++) {
+            if (node.userData.evt_data.useFuzzyMatch) {
+                if (bestmatch && bestmatch[0][1] == tessaresult.words[i].text) {
+                    word_matches.push(tessaresult.words[i]);
+                    break;
+                }
+            } else if (tessaresult.words[i].text.includes(node.userData.evt_data.ocrsearchterm)) {
+                word_matches.push(tessaresult.words[i]);
+            }
+        }
+        
+        if (word_matches.length > 0) {
+            var matchtext = "";
+            if (node.userData.evt_data.useFuzzyMatch) {
+                matchtext = "\"" + bestmatch[0][1] + "\" (" + parseInt(bestmatch[0][0]*100) + "% match)";
+            } else {
+                matchtext = "\"" + node.userData.evt_data.ocrsearchterm + "\"";
+            }
+
+            if (node.userData.useOSInput) {
+                simulation_variables['WFVARX'] = parseInt(word_matches[0].bbox.x0 + ((word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2));
+                simulation_variables['WFVARY'] = parseInt(word_matches[0].bbox.y0 + ((word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2));
+                resolve({
+                    error: false,
+                    results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") in relation to the screen"],
+                    id: node.id,
+                    time: Date.now()
+                });
+            } else {
+                simulation_variables['WFVARX'] = parseInt((word_matches[0].bbox.x0 + ((word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2))/window.devicePixelRatio);
+                simulation_variables['WFVARY'] = parseInt((word_matches[0].bbox.y0 + ((word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2))/window.devicePixelRatio);
+                runCode("getCSSPath(document.elementFromPoint(" + simulation_variables['WFVARX'] + ", " + simulation_variables['WFVARY'] + "), false)", node).then(function(result){
+                    simulation_variables['WFVARSELECTOR'] = result.results[0];
+                    resolve({
+                        error: false,
+                        results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") with element selector " + simulation_variables['WFVARSELECTOR']],
+                        id: node.id,
+                        time: Date.now()
+                    });
+                }).catch(function(result){
+                    reject({
+                        error: true,
+                        results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") but could not identify element at that position"],
+                        id: node.id,
+                        time: Date.now()
+                    });
+                });
+            }
+        } else {
+            resolve({
+                error: true,
+                results: ["Could not find a match for the search term"],
+                id: node.id,
+                time: Date.now()
+            });
+        }
+    });
+}
+
 function logResultAndRaceLinks(result, failure, node) {
 	// Process result
 	simulation_log.push(result);
@@ -1859,6 +1949,26 @@ function execEvent(node) {
                     });
                 });
             });
+        case 'ocr':
+            return new Promise(function(resolve, reject) {
+                if (node.userData.useOSInput) {
+                    sendNativeMessage({
+                        'action': 'screenshot'
+                    });
+                    nativeInterval = setInterval(function(node, resolve, reject){
+                        if (latestNativeScreenshot) {
+                            clearInterval(nativeInterval);
+                            processVision(latestNativeScreenshot, node, resolve, reject);
+                        }
+                    }, 100, node, resolve, reject);
+                } else {
+                    chrome.tabs.captureVisibleTab(new_window.id,{
+                        "format": "png"
+                    }, function(imagedata){
+                        processVision(imagedata, node, resolve, reject);
+                    });
+                }
+            });
         case 'csvimport':
             return new Promise(function(resolve, reject) {
                 try {
@@ -2411,3 +2521,10 @@ function terminateSimulation(finished, reason) {
         });
     }
 }
+
+/* Start Tesseract */
+window.Tesseract = Tesseract.create({
+    workerPath: chrome.extension.getURL('tesseract/worker.js'),
+    langPath: chrome.extension.getURL('tesseract/'),
+    corePath: chrome.extension.getURL('tesseract/index.js'),
+});

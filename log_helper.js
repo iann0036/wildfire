@@ -118,6 +118,13 @@ var mappingData = {
         icon: 'paste-from-clipboard.png',
         endoptlabel: true
     },
+    ocr: {
+        bgColor: '#99D8AB',
+        event_type: 'Find Text',
+        icon: 'search-circular-symbol-with-letters.png',
+        optlabel: 'Visual',
+        endoptlabel: true
+    },
     scroll: {
         bgColor: '#D9CEB2',
         event_type: 'Page Scroll',
@@ -223,7 +230,7 @@ function formatDiffDate(starttime,endtime) {
     return seconds + "s";
 }
 
-function readableEventDetail(event) {
+function readableEventDetail(event, simulation_log_results) {
     /* Event Time */
     var event_time = ((event.time-recording_start_time)/1000).toFixed(2) + "s";
 
@@ -503,6 +510,12 @@ function readableEventDetail(event) {
             event_type = "Closed Window";
             minorEvent = false;
             break;
+        case 'ocr':
+            event_type = "Find Text";
+            minorEvent = false;
+            if (simulation_log_results && simulation_log_results.length == 1)
+                event_data = simulation_log_results[0];
+            break;
         default:
             var escaped_value = event.evt.replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -515,19 +528,21 @@ function readableEventDetail(event) {
     //if (event_data.length>57)
     //    event_data = event_data.substr(0, 57) + "...";
 
-    if (event.evt_data.inFrame) {
-        event_type += " <span class='hint-circle blue' data-toggle='tooltip' data-placement='top' title='Detected this event within a frame'>?</span>";
-    }
+    if (event.evt_data) {
+        if (event.evt_data.inFrame) {
+            event_type += " <span class='hint-circle blue' data-toggle='tooltip' data-placement='top' title='Detected this event within a frame'>?</span>";
+        }
 
-    if (event.evt_data.csspathfull) {
-        if (event.evt_data.csspathfull != "html > body") {
-            event_type += " <span class='hint-circle grey' data-toggle='tooltip' data-placement='top' title='" + event.evt_data.csspathfull + "'>?</span>";
+        if (event.evt_data.csspathfull) {
+            if (event.evt_data.csspathfull != "html > body") {
+                event_type += " <span class='hint-circle grey' data-toggle='tooltip' data-placement='top' title='" + event.evt_data.csspathfull + "'>?</span>";
+            }
         }
     }
 
     /* Event URL */
     var event_url = false;
-    if (event.evt_data.url) {
+    if (event.evt_data && event.evt_data.url) {
         event_url = event.evt_data.url;
         if (event_url.length>57)
             event_url = event_url.substr(0, 57) + "...";
@@ -564,7 +579,10 @@ function populateEvents(result) {
     }
 
     for (var i=0; events!=null && i<events.length; i++) {
-        event_details = readableEventDetail(events[i]);
+        if (simulation_log)
+            event_details = readableEventDetail(events[i], simulation_log[i].results);
+        else
+            event_details = readableEventDetail(events[i], null);
 
         var innerHTML = "<!--" + JSON.stringify(events[i]) + "-->";
         innerHTML += "<td class=\"table-check\">";
@@ -645,7 +663,7 @@ function populateSimulationEvents(result) {
     for (var i=0; simulation_log!=null && i<simulation_log.length; i++) {
         for (var j=0; j<result.node_details.length; j++) {
             if (result.node_details[j].id == simulation_log[i].id) {
-                event_details = readableEventDetail(result.node_details[j]);
+                event_details = readableEventDetail(result.node_details[j], simulation_log[i].results);
                 break;
             }
         }
