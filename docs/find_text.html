@@ -120,7 +120,7 @@
             <ul>
                 <li><a href="/docs/getting_started.html">Getting Started</a></li>
                 <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
-                <li><a class="active" href="/docs/keyboard_shortcuts.html">Keyboard Shortcuts</a></li>
+                <li><a href="/docs/keyboard_shortcuts.html">Keyboard Shortcuts</a></li>
                 <li><a href="/docs/event_log.html">Event Log</a></li>
                 <li><a href="/docs/simulation_log.html">Simulation Log</a></li>
                 <li><a href="/docs/workflow_editor.html">Workflow Editor</a></li>
@@ -133,6 +133,8 @@
         <li>Events Reference
             <ul>
                 <li><a href="/docs/begin_recording.html">Begin Recording</a></li>
+                <li><a href="/docs/right_click_menu.html">Right-Click Menu</a></li>
+                <li><a href="/docs/keyboard_shortcuts.html">Keyboard Shortcuts</a></li>
                 <li><a href="/docs/end_recording.html">End Recording</a></li>
                 <li><a href="/docs/mouse_click.html">Mouse Click</a></li>
                 <li><a href="/docs/change_tab.html">New/Change Tab</a></li>
@@ -164,7 +166,7 @@
                 <li><a href="/docs/clipboard_cut.html">Clipboard Cut</a></li>
                 <li><a href="/docs/clipboard_paste.html">Clipboard Paste</a></li>
                 <li><a href="/docs/close_window.html">Close Window</a></li>
-                <li><a href="/docs/find_text.html">Find Text</a></li>
+                <li><a class="active" href="/docs/find_text.html">Find Text</a></li>
                 <li><a href="/docs/find_image.html">Find Image</a></li>
                 <li><a href="/docs/solve_recaptcha.html">Solve reCAPTCHA</a></li>
             </ul>
@@ -191,32 +193,44 @@
     <div class="container-fluid">
         <div class="box-typical box-typical-padding documentation">
             <header class="documentation-header">
-                <h2>Keyboard Shortcuts</h2>
+                <h2>Find Text</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: October 10, 2017
+                    Last Updated: October 29, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
-                <p>
-                    Wildfire can be controlled with a small set of keyboard shortcuts to make it easier to control. The following shortcuts are defined by default:
+                <p style="margin-bottom: 2rem;">
+                    This event will locate text in the window or screen using optical character recognition technology. This event will not perform any actions but will instead set the appropriate <a href="/docs/expressions.html">Reserved Variables</a> for your use. This event may take a few seconds to process and only searches the main display.
                 </p>
-                <br />
-                <h5>Stop the currently running workflow</h5>
-                <code>Ctrl + Shift + 0</code> <i>(Windows)</i>&nbsp;&nbsp;&nbsp;<code>Command + Shift + 0</code> <i>(Mac)</i><p>This command may be executed even when the current focused window is not the browser if running in Google Chrome or Opera.</p>
-                <br />
-                <h5>Execute the current workflow</h5>
-                <code>Ctrl + Shift + 9</code><p>Will run the workflow as it exists in the Workflow Editor.</p>
-                <br />
-                <h5>Execute a favorited workflow</h5>
-                <code>Ctrl + Shift + 1</code>&nbsp;&nbsp;&nbsp;<code>Ctrl + Shift + 2</code><p>You can assign your favorited workflows to these shortcuts in the Settings > Favorites area.</p>
-                <br />
-                <p>
-                    In Chrome, if you prefer a different key assignment, you can modify any shortcuts by visiting chrome://extensions/configureCommands
-                </p>
+                <h4>Options</h4>
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Search Term</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <p>The search term to look for.<br /><i><b>Note: </b>Only single word searches are currently supported.</i></p>
+                    </div>
+                </div>
+                <hr style="margin-top: 1em;margin-right: 0px;margin-bottom: 1em;margin-left: 0px;" />
+                <div class="row" style="padding-top: 10px;">
+                    <div class="col-md-4">
+                        <p style="text-align: right;">
+                            <strong>Options</strong><br />
+                            <span class="color-blue-grey-lighter">&nbsp;</span>
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <strong><i>Use Fuzzy Matching:</i></strong> Accept near matches when searching text. This is recommended due to the inprecise nature of the recognition technology.</p>
+                        <p><strong><i>Use Desktop Automation:</i></strong> Search and return coordinates relative to the entire screen. This option requires the <a href="/docs/desktop_automation.html">Wildfire Helper</a>.</p>
+                    </div>
+                </div>
                 <hr style="margin-bottom: 1rem;" />
-                <p style="float: left;"><a href="/docs/right_click_menu.html">&#8656; Right-Click Menu</a></p>
-                <p style="float: right;"><a href="/docs/event_log.html">Event Log &#8658;</a></p>
+                <p style="float: left;"><a href="/docs/close_window.html">&#8656; Close Window</a></p>
+                <p style="float: right;"><a href="/docs/find_image.html">Find Image &#8658;</a></p>
             </div>
         </div><!--.box-typical-->
     </div><!--.container-fluid-->
