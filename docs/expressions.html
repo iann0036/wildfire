@@ -192,7 +192,7 @@
                 <h2>Expressions</h2>
                 <!--<p class="lead color-blue-grey">XXXXX</p>-->
                 <div class="documentation-header-by">
-                    Last Updated: March 15, 2017
+                    Last Updated: October 28, 2017
                 </div>
             </header>
             <div class="text-block text-block-typical">
@@ -221,6 +221,73 @@
                 <blockquote class="blockquote" style="margin-top: 1rem;margin-right: 0px;margin-bottom: 2rem;margin-left: 0px;">
                     <p style="margin-bottom: 0;">If you need to use the literal '$' symbol as the first character of a value, prepend an additional dollar sign to ensure it's not used as a variable. For example, to set a value to a price, enter it like <code>$$1.23</code>.</p>
                 </blockquote>
+                <h4>Reserved Variables</h4>
+                <p>
+                    The system reserves the use of any variables starting with an underscore. You cannot set these variables directly, however you may use these in your own workflows. Values are regenerated immediately before evaluation.
+                </p>
+                <table id="table-sm" class="table table-bordered table-hover table-sm">
+                    <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>_OS</td>
+                        <td>The operating system being used ("windows", "mac", "linux" or "unknown")</td>
+                    </tr>
+                    <tr>
+                        <td>_BROWSER</td>
+                        <td>The browser being used ("chrome", "firefox", "opera" or "unknown")</td>
+                    </tr>
+                    <tr>
+                        <td>_WINDOW_WIDTH</td>
+                        <td>The width (in pixels) of the simulation window</td>
+                    </tr>
+                    <tr>
+                        <td>_WINDOW_HEIGHT</td>
+                        <td>The height (in pixels) of the simulation window</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDTEXT_X</td>
+                        <td>The X-coordinate result from a <a href="/docs/find_text.html">Find Text</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDTEXT_Y</td>
+                        <td>The Y-coordinate result from a <a href="/docs/find_text.html">Find Text</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDTEXT_SELECTOR</td>
+                        <td>The CSS Selector of the element found with a <a href="/docs/find_text.html">Find Text</a> event, if found</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_X</td>
+                        <td>The X-coordinate from the center of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_Y</td>
+                        <td>The Y-coordinate from the center of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_X1</td>
+                        <td>The X-coordinate from the left-edge of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_Y1</td>
+                        <td>The Y-coordinate from the top-edge of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_X2</td>
+                        <td>The X-coordinate from the right-edge of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    <tr>
+                        <td>_FINDIMAGE_Y2</td>
+                        <td>The Y-coordinate from the bottom-edge of the result from a <a href="/docs/find_image.html">Find Image</a> event</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <br />
                 <h4>Syntax</h4>
                 <p>
                     You can group together operations and even evaluate functions within an expression, similar to the way a mathematical formula works. Below is a table of the available operators, in the order they are processed:

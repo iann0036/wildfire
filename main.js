@@ -71,7 +71,6 @@ function sendNativeMessage(message) {
 }
 
 function onNativeMessage(message) {
-    console.log(message);
     nativeRetries = 0;
     if (message['action'] == "init") {
         helperversion = message['response']['helperversion'];
@@ -128,9 +127,51 @@ chrome.alarms.onAlarm.addListener(function(alarm){
         });
         setTimeout(function(){
             begin_sim_with_option(name_parts[1]);
+            configureAlarms();
         },5000);
     }
 });
+
+function configureAlarms() {
+    chrome.alarms.clearAll(function(){
+        chrome.storage.local.get('scheduled', function (result) {
+            var options;
+            var scheduled = result.scheduled;
+
+            if (!Array.isArray(scheduled)) {
+                scheduled = [];
+            }
+
+            for (var i=0; i<scheduled.length; i++) {
+                if (parseInt(scheduled[i].repeat) || Date.now() < parseInt(scheduled[i].date)) {
+                    if (Date.now() >= parseInt(scheduled[i].date))
+                        scheduled[i].date = Date.now() + ((parseInt(scheduled[i].repeat)*60000) - (Date.now() % (parseInt(scheduled[i].repeat)*60000)));
+                    options = {
+                        when: parseInt(scheduled[i].date)
+                    };
+                    if (scheduled[i].repeat!=0)
+                        options['periodInMinutes'] = parseInt(scheduled[i].repeat);
+                    var days = "";
+                    if (scheduled[i].sunday!==false)
+                        days += "0";
+                    if (scheduled[i].monday!==false)
+                        days += "1";
+                    if (scheduled[i].tuesday!==false)
+                        days += "2";
+                    if (scheduled[i].wednesday!==false)
+                        days += "3";
+                    if (scheduled[i].thursday!==false)
+                        days += "4";
+                    if (scheduled[i].friday!==false)
+                        days += "5";
+                    if (scheduled[i].saturday!==false)
+                        days += "6";
+                    chrome.alarms.create("scheduled_" + scheduled[i].workflow + "_" + days, options);
+                }
+            }
+        });
+    });
+}
 
 ////
 
@@ -192,47 +233,6 @@ function eresolveVariable(str) {
     } catch (e) {
         return "";
     }
-}
-
-function configureAlarms() {
-    chrome.alarms.clearAll(function(){
-        chrome.storage.local.get('scheduled', function (result) {
-            var options;
-            var scheduled = result.scheduled;
-
-            if (!Array.isArray(scheduled)) {
-                scheduled = [];
-            }
-
-            for (var i=0; i<scheduled.length; i++) {
-                if (parseInt(scheduled[i].repeat) || Date.now() < parseInt(scheduled[i].date)) {
-                    if (Date.now() >= parseInt(scheduled[i].date))
-                        scheduled[i].date = Date.now() + ((parseInt(scheduled[i].repeat)*60000) - (Date.now() % (parseInt(scheduled[i].repeat)*60000)));
-                    options = {
-                        when: parseInt(scheduled[i].date)
-                    };
-                    if (scheduled[i].repeat!=0)
-                        options['periodInMinutes'] = parseInt(scheduled[i].repeat);
-                    var days = "";
-                    if (scheduled[i].sunday!==false)
-                        days += "0";
-                    if (scheduled[i].monday!==false)
-                        days += "1";
-                    if (scheduled[i].tuesday!==false)
-                        days += "2";
-                    if (scheduled[i].wednesday!==false)
-                        days += "3";
-                    if (scheduled[i].thursday!==false)
-                        days += "4";
-                    if (scheduled[i].friday!==false)
-                        days += "5";
-                    if (scheduled[i].saturday!==false)
-                        days += "6";
-                    chrome.alarms.create("scheduled_" + scheduled[i].workflow + "_" + days, options);
-                }
-            }
-        });
-    });
 }
 
 function updateBgSettings() {
@@ -687,11 +687,8 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
     if (details.reason == "install") {
         if (navigator.userAgent.includes("Wildfire")) {
             if (typeof InstallTrigger !== 'undefined') { // Firefox
-                console.log("1");
                 setTimeout(function(){
                     browser.windows.getCurrent({populate: true}).then(function(curr_window){
-                        console.log("2");
-                        console.log(curr_window);
                         browser.tabs.update(curr_window.tabs[0].id, {url: browser.extension.getURL("new.html")});
                     });
                 }, 1000);
@@ -843,6 +840,28 @@ function encrypt(str) {
 }
 function decrypt(str) {
   return CryptoJS.AES.decrypt(str, generatePassphrase()).toString(CryptoJS.enc.Utf8);
+}
+
+function setDefaultSimulationVariables() {
+    simulation_variables['_BROWSER'] = "unknown";
+    if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0)
+        simulation_variables['_BROWSER'] = "opera";
+    else if (typeof InstallTrigger !== 'undefined')
+        simulation_variables['_BROWSER'] = "firefox";
+    else if (!!window.chrome)
+        simulation_variables['_BROWSER'] = "chrome";
+
+    simulation_variables['_OS'] = "unknown";
+    if (['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'].indexOf(window.navigator.platform) !== -1) {
+        simulation_variables['_OS'] = 'mac';
+    } else if (['Win32', 'Win64', 'Windows', 'WinCE'].indexOf(window.navigator.platform) !== -1) {
+        simulation_variables['_OS'] = 'windows';
+    } else if (!os && /Linux/.test(window.navigator.platform)) {
+        simulation_variables['_OS'] = 'linux';
+    }
+
+    simulation_variables['_WINDOW_WIDTH'] = new_window.width;
+    simulation_variables['_WINDOW_HEIGHT'] = new_window.height;
 }
 
 function begin_fav_sim(fav_index, curr_window) {
@@ -1036,6 +1055,8 @@ function processEvent(node) {
 		return;
     
     last_node = node;
+    
+    setDefaultSimulationVariables();
 
     execEvent(node).then(function(result){
         logResultAndRaceLinks(result, false, node);
@@ -1044,7 +1065,7 @@ function processEvent(node) {
     });
 }
 
-function processVision(imagedata, node, resolve, reject) {
+function processOCR(imagedata, node, resolve, reject) {
     Tesseract.recognize(imagedata, {
         lang: 'eng'
     }).then(function(tessaresult){
@@ -1080,29 +1101,29 @@ function processVision(imagedata, node, resolve, reject) {
             }
 
             if (node.userData.useOSInput) {
-                simulation_variables['WFVARX'] = parseInt(word_matches[0].bbox.x0 + ((word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2));
-                simulation_variables['WFVARY'] = parseInt(word_matches[0].bbox.y0 + ((word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2));
+                simulation_variables['_FINDTEXT_X'] = parseInt((word_matches[0].bbox.x0 + (word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2)/window.devicePixelRatio);
+                simulation_variables['_FINDTEXT_Y'] = parseInt((word_matches[0].bbox.y0 + (word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2)/window.devicePixelRatio);
                 resolve({
                     error: false,
-                    results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") in relation to the screen"],
+                    results: ["Matched " + matchtext + " at (" + simulation_variables['_FINDTEXT_X'] + "," + simulation_variables['_FINDTEXT_Y'] + ") in relation to the screen"],
                     id: node.id,
                     time: Date.now()
                 });
             } else {
-                simulation_variables['WFVARX'] = parseInt((word_matches[0].bbox.x0 + ((word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2))/window.devicePixelRatio);
-                simulation_variables['WFVARY'] = parseInt((word_matches[0].bbox.y0 + ((word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2))/window.devicePixelRatio);
-                runCode("getCSSPath(document.elementFromPoint(" + simulation_variables['WFVARX'] + ", " + simulation_variables['WFVARY'] + "), false)", node).then(function(result){
-                    simulation_variables['WFVARSELECTOR'] = result.results[0];
+                simulation_variables['_FINDTEXT_X'] = parseInt((word_matches[0].bbox.x0 + (word_matches[0].bbox.x1 - word_matches[0].bbox.x0)/2)/window.devicePixelRatio);
+                simulation_variables['_FINDTEXT_Y'] = parseInt((word_matches[0].bbox.y0 + (word_matches[0].bbox.y1 - word_matches[0].bbox.y0)/2)/window.devicePixelRatio);
+                runCode("getCSSPath(document.elementFromPoint(" + simulation_variables['_FINDTEXT_X'] + ", " + simulation_variables['_FINDTEXT_Y'] + "), false)", node).then(function(result){
+                    simulation_variables['_FINDTEXT_SELECTOR'] = result.results[0];
                     resolve({
                         error: false,
-                        results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") with element selector " + simulation_variables['WFVARSELECTOR']],
+                        results: ["Matched " + matchtext + " at (" + simulation_variables['_FINDTEXT_X'] + "," + simulation_variables['_FINDTEXT_Y'] + ") with element selector " + simulation_variables['_FINDTEXT_SELECTOR']],
                         id: node.id,
                         time: Date.now()
                     });
                 }).catch(function(result){
                     reject({
                         error: true,
-                        results: ["Matched " + matchtext + " at (" + simulation_variables['WFVARX'] + "," + simulation_variables['WFVARY'] + ") but could not identify element at that position"],
+                        results: ["Matched " + matchtext + " at (" + simulation_variables['_FINDTEXT_X'] + "," + simulation_variables['_FINDTEXT_Y'] + ") but could not identify element at that position"],
                         id: node.id,
                         time: Date.now()
                     });
@@ -1958,14 +1979,34 @@ function execEvent(node) {
                     nativeInterval = setInterval(function(node, resolve, reject){
                         if (latestNativeScreenshot) {
                             clearInterval(nativeInterval);
-                            processVision(latestNativeScreenshot, node, resolve, reject);
+                            processOCR(latestNativeScreenshot, node, resolve, reject);
                         }
                     }, 100, node, resolve, reject);
                 } else {
                     chrome.tabs.captureVisibleTab(new_window.id,{
                         "format": "png"
                     }, function(imagedata){
-                        processVision(imagedata, node, resolve, reject);
+                        processOCR(imagedata, node, resolve, reject);
+                    });
+                }
+            });
+        case 'subimage':
+            return new Promise(function(resolve, reject) {
+                if (node.userData.useOSInput) {
+                    sendNativeMessage({
+                        'action': 'screenshot'
+                    });
+                    nativeInterval = setInterval(function(node, resolve, reject){
+                        if (latestNativeScreenshot) {
+                            clearInterval(nativeInterval);
+                            findSubimage(latestNativeScreenshot.src, node.userData.evt_data.subimgresults, node.userData.evt_data.colorvariance, node, resolve, reject);
+                        }
+                    }, 100, node, resolve, reject);
+                } else {
+                    chrome.tabs.captureVisibleTab(new_window.id,{
+                        "format": "png"
+                    }, function(imagedata){
+                        findSubimage(imagedata, node.userData.evt_data.subimgresults, node.userData.evt_data.colorvariance, node, resolve, reject);
                     });
                 }
             });
@@ -1975,7 +2016,8 @@ function execEvent(node) {
                     var rows = node.userData.evt_data.csvresults.data;
                     for (var j=1; j<rows.length; j++) {
                         for (var k=0; k<rows[j].length; k++) {
-                            simulation_variables[rows[0][k] + "." + j] = rows[j][k];
+                            if (rows[0][k][0] != '_')
+                                simulation_variables[rows[0][k] + "." + j] = rows[j][k];
                         }
                     }
 
@@ -1996,13 +2038,25 @@ function execEvent(node) {
             });
         case 'setvar':
             return new Promise(function(resolve, reject) {
+                if (node.userData.evt_data.var[0] == '_')
+                    reject({
+                        error: true,
+                        results: ["Error processing expression: " + err.message],
+                        id: node.id,
+                        time: Date.now()
+                    });
+
                 if (node.userData.evt_data.usage === undefined) // was never initially set
                     node.userData.evt_data.usage = "expression";
 
                 if (node.userData.evt_data.usage == "expression") {
                     try {
                         var parser = new Parser();
-                        simulation_variables[node.userData.evt_data.var] = parser.evaluate(node.userData.evt_data.expr,simulation_variables);
+                        try {
+                            simulation_variables[node.userData.evt_data.var] = parser.evaluate(node.userData.evt_data.expr,simulation_variables);
+                        } catch(err) {
+                            simulation_variables[node.userData.evt_data.var] = parser.evaluate('"' + node.userData.evt_data.expr + '"',simulation_variables);
+                        }
                         resolve({
                             error: false,
                             results: null,
@@ -2520,6 +2574,87 @@ function terminateSimulation(finished, reason) {
                 chrome.windows.remove(new_window.id,function(){});
         });
     }
+}
+
+function pixelMatch(px1, px2, variance) {
+    return (Math.abs(px1[0]-px2[0])<variance && Math.abs(px1[1]-px2[1])<variance && Math.abs(px1[2]-px2[2])<variance && Math.abs(px1[3]-px2[3])<variance);
+}
+
+function findSubimage(haystackSrc, needleSrc, color_variance, node, resolve, reject) {
+    var haystackCanvas = document.createElement('canvas');
+    var needleCanvas = document.createElement('canvas');
+    var needleContext, haystackContext;
+    
+    var haystackImg = new Image();
+    var needleImg = new Image();
+    var needlePixel, haystackPixel;
+    var breakloop = false;
+    
+    needleImg.onload = function () {
+        needleCanvas.width = needleImg.width;
+        needleCanvas.height = needleImg.height;
+        needleContext = needleCanvas.getContext('2d');
+
+        haystackImg.onload = function () {
+            haystackCanvas.width = haystackImg.width;
+            haystackCanvas.height = haystackImg.height;
+            haystackContext = haystackCanvas.getContext('2d');
+
+            haystackContext.drawImage(haystackImg, 0, 0, haystackCanvas.width, haystackCanvas.height);
+            needleContext.drawImage(needleImg, 0, 0, needleCanvas.width, needleCanvas.height);
+    
+            needlePixels = needleContext.getImageData(0, 0, needleCanvas.width, needleCanvas.height).data;
+            haystackPixels = haystackContext.getImageData(0, 0, haystackCanvas.width, haystackCanvas.height).data;
+
+            for (var y=0; y<haystackCanvas.height-needleCanvas.height; y++) {
+                for (var x=0; x<haystackCanvas.width-needleCanvas.width; x++) {
+                    haystackPixel = [haystackPixels[4*((haystackCanvas.width*y)+x)],haystackPixels[4*((haystackCanvas.width*y)+x)+1],haystackPixels[4*((haystackCanvas.width*y)+x)+2],haystackPixels[4*((haystackCanvas.width*y)+x)+3]];
+                    
+                    breakloop = false;
+                    for (var ny=0; ny<needleCanvas.height; ny++) {
+                        for (var nx=0; nx<needleCanvas.width; nx++) {
+                            needlePixel = [needlePixels[4*((needleCanvas.width*ny)+nx)],needlePixels[4*((needleCanvas.width*ny)+nx)+1],needlePixels[4*((needleCanvas.width*ny)+nx)+2],needlePixels[4*((needleCanvas.width*ny)+nx)+3]];
+                            haystackPixel = [haystackPixels[4*((haystackCanvas.width*(ny+y))+(nx+x))],haystackPixels[4*((haystackCanvas.width*(ny+y))+(nx+x))+1],haystackPixels[4*((haystackCanvas.width*(ny+y))+(nx+x))+2],haystackPixels[4*((haystackCanvas.width*(ny+y))+(nx+x))+3]];
+                            if (!pixelMatch(needlePixel, haystackPixel, color_variance)) {
+                                breakloop = true;
+                            }
+                            if (breakloop) break;
+                        }
+                        if (breakloop) break;
+                    }
+                    if (!breakloop) {
+                        var scalingFactor = window.devicePixelRatio;
+
+                        simulation_variables['_FINDIMAGE_X'] = parseInt((x + parseInt(needleCanvas.width/2))/scalingFactor);
+                        simulation_variables['_FINDIMAGE_Y'] = parseInt((y + parseInt(needleCanvas.height/2))/scalingFactor);
+                        simulation_variables['_FINDIMAGE_X1'] = parseInt(x/scalingFactor);
+                        simulation_variables['_FINDIMAGE_X2'] = parseInt((x + needleCanvas.width)/scalingFactor);
+                        simulation_variables['_FINDIMAGE_Y1'] = parseInt(y/scalingFactor);
+                        simulation_variables['_FINDIMAGE_Y2'] = parseInt((y + needleCanvas.height)/scalingFactor);
+
+                        resolve({
+                            error: false,
+                            results: ["Found image at (" + simulation_variables['_FINDIMAGE_X'] + "," + simulation_variables['_FINDIMAGE_Y'] + ")"],
+                            id: node.id,
+                            time: Date.now()
+                        });
+                        return;
+                    }
+                }
+            }
+            
+            resolve({
+                error: true,
+                results: ["Could not find a matching image"],
+                id: node.id,
+                time: Date.now()
+            });
+        };
+        haystackImg.crossOrigin = "Anonymous";
+        haystackImg.src = haystackSrc;
+    };
+    needleImg.crossOrigin = "Anonymous";
+    needleImg.src = needleSrc;
 }
 
 /* Start Tesseract */

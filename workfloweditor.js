@@ -263,6 +263,19 @@ function getEventOptionsHtml(userdata) {
 		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
 	  "    </div>" +
     "</div>";
+  } else if (userdata.evt == "subimage") {
+    return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"subimg\">Search Image</label>" +
+    (userdata.evt_data.subimgfile ? "    <div id=\"subimg-files\"><img style=\"max-width: 100%; max-height: 200px;\" src=\"" + userdata.evt_data.subimgresults + "\" /><br /><small><a id=\"clearSubimg\">Clear</a></small><br /></div><div style=\"display: none;\" id=\"subimg-drop-zone\"><span class=\"btn btn-file\"><span><i class=\"fa fa-upload\"></i> Choose Image</span><input id=\"event_subimgfile\" type=\"file\" name=\"event_subimgfile[]\"></span></div>" : "    <div id=\"subimg-files\"></div><div id=\"subimg-drop-zone\"><span class=\"btn btn-file\"><span><i class=\"fa fa-upload\"></i> Choose Image</span><input id=\"event_subimgfile\" type=\"file\" name=\"event_subimgfile[]\"></span></div>") +
+    "    </div>" + 
+    "    <label class=\"form-label semibold\" for=\"colorvariance\">Color Variance</label>" +
+    "    <input type=\"text\" required class=\"form-control event-detail\" data-event-detail=\"colorvariance\" id=\"colorvariance\" value=\"" + escapeOrDefault(userdata.evt_data.colorvariance,"10") + "\">" +
+    "    <br />" +
+    "    <label class=\"form-label semibold\" for=\"event_useOSInput\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
+    "    </div>" +
+    "</div>";
   } else if (userdata.evt == "setvar") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"var\">Variable</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"var\" id=\"var\" value=\"" + escapeOrDefault(userdata.evt_data.var,"") + "\">" +
@@ -672,6 +685,43 @@ function setDetailListeners() {
     figure.setUserData(userData);
     $('#csv-files').html("");
     $('#event_csvfile').val("");
+  });
+
+  $('#event_subimgfile').on('change', function(change_detail) {
+    if ($('#event_subimgfile').val() == "") return; // cleared file
+    var file = change_detail.target.files[0];
+    var reader  = new FileReader();
+    reader.addEventListener("load", function(){
+      var userData = figure.userData;
+      userData.evt_data.subimgresults = reader.result;
+      userData.evt_data.subimgfile = {
+        name: file.name,
+        size: file.size,
+        lastModified: file.lastModified
+      };
+      figure.setUserData(userData);
+  
+      $('#subimg-drop-zone').attr('style','display: none;');
+      $('#subimg-files').html("<img style=\"max-width: 100%; max-height: 200px;\" src=\"" + reader.result + "\" /><br /><small><a id=\"clearSubimg\">Clear</a></small><br />");
+      $('#clearSubimg').click(function(){
+        $('#subimg-drop-zone').attr('style','display: block;');
+        var userData = figure.userData;
+        userData.evt_data.subimgresults = false;
+        userData.evt_data.subimgfile = false;
+        figure.setUserData(userData);
+        $('#subimg-files').html("");
+        $('#event_subimgfile').val("");
+      });
+    }, false);
+    reader.readAsDataURL(file);
+  });
+  $('#clearSubimg').click(function(){
+    $('#subimg-drop-zone').attr('style','display: block;');
+    var userData = figure.userData;
+    userData.evt_data.subimgfile = false;
+    figure.setUserData(userData);
+    $('#subimg-files').html("");
+    $('#event_subimgfile').val("");
   });
   
   $('#event_usage').on('change', function() {

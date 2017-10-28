@@ -122,7 +122,12 @@ var mappingData = {
         bgColor: '#99D8AB',
         event_type: 'Find Text',
         icon: 'search-circular-symbol-with-letters.png',
-        optlabel: 'Visual',
+        optlabel: 'Visual'
+    },
+    subimage: {
+        bgColor: '#C47280',
+        event_type: 'Find Image',
+        icon: 'search-image.png',
         endoptlabel: true
     },
     scroll: {
@@ -515,6 +520,10 @@ function readableEventDetail(event, simulation_log_results) {
             minorEvent = false;
             if (simulation_log_results && simulation_log_results.length == 1)
                 event_data = simulation_log_results[0];
+            break;
+        case 'subimage':
+            event_type = "Find Image";
+            minorEvent = false;
             break;
         default:
             var escaped_value = event.evt.replace(/&/g, "&amp;")
