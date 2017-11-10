@@ -60,7 +60,6 @@ function toggleRecording() {
                     } else {
                         chrome.windows.create({
                             url: chrome.extension.getURL("workfloweditor.html"),
-                            type: "popup",
                             width: windowWidth,
                             height: windowHeight,
                             left: Math.round(screen.width/2-(windowWidth/2)),
@@ -152,7 +151,6 @@ window.onload = function() {
         } else {
             chrome.windows.create({
                 url: chrome.extension.getURL("dashboard.html"),
-                type: "popup",
                 width: windowWidth,
                 height: windowHeight,
                 left: Math.round(screen.width/2-(windowWidth/2)),

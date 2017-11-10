@@ -300,7 +300,6 @@ function openUI(url) {
     } else {
         chrome.windows.create({
             url: chrome.extension.getURL(url),
-            type: "popup",
             width: windowWidth,
             height: windowHeight,
             left: Math.round(screen.width/2-(windowWidth/2)),
@@ -2107,6 +2106,23 @@ function execEvent(node) {
                     });
                 } else if (node.userData.evt_data.usage == "outerhtml") {
                     runCode("$('" + node.userData.evt_data.expr + "')[0].outerHTML", node).then(function(result){
+                        simulation_variables[node.userData.evt_data.var] = result.results[0];
+                        resolve({
+                            error: false,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    }).catch(function(result){
+                        reject({
+                            error: true,
+                            results: null,
+                            id: node.id,
+                            time: Date.now()
+                        });
+                    });
+                } else if (node.userData.evt_data.usage == "elemattr") {
+                    runCode("$('" + node.userData.evt_data.expr + "')[0].getAttribute('" + node.userData.evt_data.attribute + "')", node).then(function(result){
                         simulation_variables[node.userData.evt_data.var] = result.results[0];
                         resolve({
                             error: false,

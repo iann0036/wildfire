@@ -1,34 +1,27 @@
-var nodes = [];
-var links = [];
-var CustomTick;
-var CustomCross;
-var CustomPending;
-var CustomStop;
-var node;
+var CustomTick, CustomCross, CustomPending, CustomStop, CustomNode, CustomArrow, CustomSection;
 
-var CustomTracker = [];
-
-var CustomNode, CustomArrow, CustomSection;
-
-var message_port = chrome.runtime.connect({name: "sim"});
-send_message({action: "getstate"});
-message_port.onMessage.addListener(function(msg) {
-    if (msg.type == "state") {
-        if (msg.state == "terminated") {
-            updateNodeProcessIcon(msg.nodeid, "stop");
+var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
+    NAME: "myRaftLabelLocator",
+    init: function() {
+        this._super();
+    },
+    relocate: function(index, target) {
+        var parent = target.getParent();
+        var boundingBox = parent.getBoundingBox();
+        var offset = (parent instanceof draw2d.Port) ? boundingBox.w/2 : 0;
+  
+        var targetBoundingBox = target.getBoundingBox();
+        if (target instanceof draw2d.Port) {
+            target.setPosition(boundingBox.w/2-offset,0);
+        } else {
+            //target.setPosition(boundingBox.w/2-(targetBoundingBox.w/2)-offset,-(targetBoundingBox.h+2));
+            target.setPosition(0,0);
         }
-    } else if (msg.type == "nodestatus") {
-        updateNodeProcessIcon(msg.nodeid, msg.status);
     }
 });
 
-function send_message(msg) {
-    try {
-        message_port.postMessage(msg);
-    } catch(err) {
-        message_port = chrome.runtime.connect({name: "sim"});
-        message_port.postMessage(msg);
-    }
+function doSuper() {
+    this._super();
 }
 
 function defineCustoms() {
@@ -81,13 +74,6 @@ function defineCustoms() {
                     self.add(label, new myRaftLabelLocator());
                     self.setMinWidth(label.getWidth());
                     self.setMinHeight(label.getHeight());
-
-                    /*canvas.editPolicy.grep(function(p){
-                        if(p.NAME === gridPolicy.NAME) {
-                            canvas.uninstallEditPolicy( gridPolicy );
-                            canvas.installEditPolicy( gridPolicy );
-                        }
-                    });*/
                 }
             }, 1, this);
         }
@@ -146,67 +132,5 @@ function defineCustoms() {
             this.canvas.paper.image("icons/stop.png", this.getWidth() - 16, -8, this.getWidth() - 24, this.getHeight() - 24);
             return this.canvas.paper.setFinish();
         }
-    });
-}
-
-function clearProcessIcons() {
-    canvas.getFigures().each(function(i, o) {
-        var children = o.getChildren();
-        if (children.data) {
-            for (var j=0; j<children.data.length; j++) {
-                if (children.data[j].userData) {
-                    if (children.data[j].userData.isProgressFigure) {
-                        canvas.remove(children.data[j]);
-                    }
-                }
-            }
-        }
-    });
-
-    canvas.getCommandStack().markSaveLocation();
-}
-
-function updateNodeProcessIcon(nodeid, status) {
-    var custom, node;
-
-    if (status == "pending") {
-        custom = new CustomPending();
-    } else if (status == "tick") {
-        custom = new CustomTick();
-    } else if (status == "cross") {
-        custom = new CustomCross();
-    } else if (status == "stop") {
-        custom = new CustomStop();
-    }
-    for (var i=0; i<nodes.length; i++) {
-        if (nodes[i].id !== undefined && nodes[i].id == nodeid) {
-            node = nodes[i];
-            break;
-        }
-    }
-    CustomTracker.push(custom);
-    node.add(custom, new draw2d.layout.locator.CenterLocator(node));
-}
-
-function initWorkflowSimulation() {
-    if (!events || events.length<2) { // TODO: test events? eventually get rid of events requirement :/
-        swal({
-            title: "No events found",
-            text: "You haven't recorded any actions yet!",
-            type: "info",
-            showCancelButton: false,
-            cancelButtonClass: "btn-default",
-            confirmButtonClass: "btn-info",
-            confirmButtonText: "OK",
-            closeOnConfirm: true
-        });
-        return;
-    }
-
-    defineCustoms();
-    clearProcessIcons();
-
-    send_message({
-        action: "begin_sim"
     });
 }

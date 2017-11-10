@@ -1,9 +1,12 @@
 var canvas;
 var conn;
 var nodes = [];
+var node;
+var links = [];
 var figure;
 var gridPolicy;
 var delayedResizeCounter;
+var CustomTracker = [];
 
 var link_types = [
   "timer",
@@ -12,26 +15,6 @@ var link_types = [
   "test_expression",
   "wait_for_time"
 ];
-
-var myRaftLabelLocator = draw2d.layout.locator.TopLocator.extend({
-  NAME: "myRaftLabelLocator",
-  init: function() {
-      this._super();
-  },
-  relocate: function(index, target) {
-      var parent = target.getParent();
-      var boundingBox = parent.getBoundingBox();
-      var offset = (parent instanceof draw2d.Port) ? boundingBox.w/2 : 0;
-
-      var targetBoundingBox = target.getBoundingBox();
-      if (target instanceof draw2d.Port) {
-          target.setPosition(boundingBox.w/2-offset,0);
-      } else {
-          //target.setPosition(boundingBox.w/2-(targetBoundingBox.w/2)-offset,-(targetBoundingBox.h+2));
-          target.setPosition(0,0);
-      }
-  }
-});
 
 function deleteSelection() {
   if (figure.userData && figure.userData.evt && figure.userData.evt == "begin_recording")
@@ -285,10 +268,13 @@ function getEventOptionsHtml(userdata) {
     "        <option value=\"innertext\">Element Text</option>" +
     "        <option value=\"attrval\">Element Value</option>" +
     "        <option value=\"outerhtml\">Element HTML</option>" +
+    "        <option value=\"elemattr\">Element Attribute</option>" +
     "        <option value=\"urlparam\">URL Parameter</option>" +
     "        <option value=\"title\">Document Title</option>" +
     "        <option value=\"url\">Document URL</option>" +
     "    </select>" +
+    "    </div><div id=\"attributeblock\" style=\"display: none;\" class=\"form-group\"><label class=\"form-label semibold\" for=\"attribute\">Attribute</label>" +
+    "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"attribute\" id=\"attribute\" value=\"" + escapeOrDefault(userdata.evt_data.attribute,"") + "\">" +
     "    </div><div class=\"form-group\"><label class=\"form-label semibold\" for=\"expr\">Value</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"expr\" id=\"expr\" value=\"" + escapeOrDefault(userdata.evt_data.expr,"") + "\">" +
     "    <br />" +
@@ -491,6 +477,11 @@ function selectedFigure(figure) {
           $('#expr').attr("disabled","disabled");
         else
           $('#expr').removeAttr("disabled");
+        
+        if (figure.userData.evt_data.usage != "elemattr")
+          $('#attributeblock').attr("style","display: none;");
+        else
+          $('#attributeblock').removeAttr("style");
       }
       if (figure.userData.evt_data.button && figure.userData.evt_data.button == 1) {
         $('#event_middlebutton').prop('checked', true);
@@ -534,7 +525,7 @@ function changeType() {
       figure.resetChildren();
       figure.setBackgroundColor(mappingData[userData.evt].bgColor);
       var CustomIcon = draw2d.SetFigure.extend({
-        init : function(){ this._super(); },
+        init : doSuper,
         createSet: function(){
             this.canvas.paper.setStart();
             this.canvas.paper.rect(0, 0, this.getWidth(), this.getHeight()).attr({
@@ -635,6 +626,13 @@ function setDetailListeners() {
     var userData = figure.userData;
     userData.evt_data.scrollTime = ($(this).val() * 1000);
     figure.setUserData(userData);
+  });
+  $('#event_usage').on('change', function() {
+    console.log($(this).val());
+    if ($(this).val() == "elemattr")
+      $('#attributeblock').removeAttr("style");
+    else
+      $('#attributeblock').attr("style","display: none;");
   });
 
   $('#event_csvfile').on('change', function(change_detail) {
@@ -1480,4 +1478,88 @@ function scrollOverrides() {
         return D.scrollLeft;
       }
     }, canvas);
+}
+
+/* From simulate */
+var message_port = chrome.runtime.connect({name: "sim"});
+send_message({action: "getstate"});
+message_port.onMessage.addListener(function(msg) {
+    if (msg.type == "state") {
+        if (msg.state == "terminated") {
+            updateNodeProcessIcon(msg.nodeid, "stop");
+        }
+    } else if (msg.type == "nodestatus") {
+        updateNodeProcessIcon(msg.nodeid, msg.status);
+    }
+});
+
+function send_message(msg) {
+    try {
+        message_port.postMessage(msg);
+    } catch(err) {
+        message_port = chrome.runtime.connect({name: "sim"});
+        message_port.postMessage(msg);
+    }
+}
+
+function clearProcessIcons() {
+  canvas.getFigures().each(function(i, o) {
+      var children = o.getChildren();
+      if (children.data) {
+          for (var j=0; j<children.data.length; j++) {
+              if (children.data[j].userData) {
+                  if (children.data[j].userData.isProgressFigure) {
+                      canvas.remove(children.data[j]);
+                  }
+              }
+          }
+      }
+  });
+
+  canvas.getCommandStack().markSaveLocation();
+}
+
+function updateNodeProcessIcon(nodeid, status) {
+  var custom, node;
+
+  if (status == "pending") {
+      custom = new CustomPending();
+  } else if (status == "tick") {
+      custom = new CustomTick();
+  } else if (status == "cross") {
+      custom = new CustomCross();
+  } else if (status == "stop") {
+      custom = new CustomStop();
+  }
+  for (var i=0; i<nodes.length; i++) {
+      if (nodes[i].id !== undefined && nodes[i].id == nodeid) {
+          node = nodes[i];
+          break;
+      }
+  }
+  CustomTracker.push(custom);
+  node.add(custom, new draw2d.layout.locator.CenterLocator(node));
+}
+
+function initWorkflowSimulation() {
+  if (!events || events.length<2) { // TODO: test events? eventually get rid of events requirement :/
+      swal({
+          title: "No events found",
+          text: "You haven't recorded any actions yet!",
+          type: "info",
+          showCancelButton: false,
+          cancelButtonClass: "btn-default",
+          confirmButtonClass: "btn-info",
+          confirmButtonText: "OK",
+          closeOnConfirm: true
+      });
+      return;
+  }
+
+  defineCustoms();
+  clearProcessIcons();
+
+  send_message({
+      action: "begin_sim"
+  });
 }
