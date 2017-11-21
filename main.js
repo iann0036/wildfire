@@ -2557,6 +2557,8 @@ function terminateSimulation(finished, reason) {
                     node_details: node_details,
                     favorite: isFavSim
                 });
+                if (simulations.length > 4)
+                    simulations.splice(0, simulations.length - 4);
                 chrome.storage.local.set({simulations: simulations});
                 if (navigator.userAgent.includes("Wildfire")) {
                     chrome.tabs.query({windowId: new_window.id}, function(tabs){
@@ -2585,6 +2587,8 @@ function terminateSimulation(finished, reason) {
                 node_details: node_details,
                 favorite: isFavSim
             });
+            if (simulations.length > 4)
+                simulations.splice(0, simulations.length - 4);
             chrome.storage.local.set({simulations: simulations});
             if (!bgSettings.leavesimulationopen && !isFavSim)
                 chrome.windows.remove(new_window.id,function(){});
