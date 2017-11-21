@@ -888,7 +888,7 @@ function begin_fav_sim(fav_index, curr_window) {
 
         setTimeout(function(node){ // allow time for simulation window to open
             processEvent(node);
-        }, 1000, node);
+        }, 200, node);
     }).catch(function(){
         ; // TODO: Better handling
     });
@@ -990,7 +990,7 @@ function begin_sim_with_option(fav_index) {
                             }, 2000, node);
                         } else                    
                             processEvent(node);
-                    }, 1000, node);
+                    }, 200, node);
                 }).catch(function(){
                     chrome.windows.remove(new_window.id,function(){});
                     terminated = true;
@@ -1029,7 +1029,7 @@ function begin_sim_with_option(fav_index) {
                             }, 2000, node);
                         } else                    
                             processEvent(node);
-                    }, 1000, node);
+                    }, 200, node);
                 }).catch(function(){
                     chrome.windows.remove(new_window.id,function(){});
                     terminated = true;
