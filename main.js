@@ -713,55 +713,99 @@ chrome.runtime.onInstalled !== undefined && chrome.runtime.onInstalled.addListen
 
 
 function setContextMenus() {
-    if (typeof InstallTrigger !== 'undefined') // Firefox
-        return;
 	chrome.storage.local.get('favorites', function (result) {
         var favorites = result.favorites;
         if (!Array.isArray(favorites)) { // for safety only
             favorites = [];
         }
-		chrome.contextMenus.removeAll(function(){
-			if (bgSettings.rightclick) {
-				chrome.contextMenus.create({
-					"title": "Run the current workflow",
-                    "id": "wildfire-currentwf",
-					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
-					"documentUrlPatterns": ["http://*/*","https://*/*"],
-					"onclick": function(info, tab){
-						chrome.windows.get(tab.windowId, null, function(curr_window) {
-                            begin_fav_sim(-1, curr_window);
-                        });
-					}
-				});
-				for (var i=0; i<favorites.length; i++) {
-					if (favorites[i].rightclick)
-						chrome.contextMenus.create({
-							"title": "Run '" + favorites[i].name + "'",
-                            "id": "wildfire-favorite-" + i,
-							"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
-							"documentUrlPatterns": ["http://*/*","https://*/*"],
-							"onclick": function(info, tab){
-                                chrome.windows.get(tab.windowId, null, function(curr_window) {
-                                    begin_fav_sim(info.menuItemId.replace("wildfire-favorite-",""), curr_window);
-                                });
-							}
-						});
-				}
-				chrome.contextMenus.create({
-					"type": "separator",
-					"documentUrlPatterns": ["http://*/*","https://*/*"],
-					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"]
-				});
-				chrome.contextMenus.create({
-					"title": "Manage Favorites",
-					"contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
-					"documentUrlPatterns": ["http://*/*","https://*/*"],
-					"onclick": function(){
-                        openUI("settings.html#favorites");
-					}
-				});
-			}
-		});
+        if (typeof InstallTrigger !== 'undefined') // Firefox
+            browser.contextMenus.removeAll().then(function(){
+                if (bgSettings.rightclick) {
+                    browser.contextMenus.create({
+                        "title": "Run the current workflow",
+                        "id": "wildfire-currentwf",
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+                        "onclick": function(info, tab){
+                            browser.windows.get(tab.windowId, null).then(function(curr_window) {
+                                begin_fav_sim(-1, curr_window);
+                            });
+                        }
+                    });
+                    for (var i=0; i<favorites.length; i++) {
+                        if (favorites[i].rightclick)
+                            browser.contextMenus.create({
+                                "title": "Run '" + favorites[i].name + "'",
+                                "id": "wildfire-favorite-" + i,
+                                "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
+                                "documentUrlPatterns": ["http://*/*","https://*/*"],
+                                "onclick": function(info, tab){
+                                    browser.windows.get(tab.windowId, null).then(function(curr_window) {
+                                        begin_fav_sim(info.menuItemId.replace("wildfire-favorite-",""), curr_window);
+                                    });
+                                }
+                            });
+                    }
+                    browser.contextMenus.create({
+                        "type": "separator",
+                        "id": "mf-sep",
+                        "documentUrlPatterns": ["http://*/*","https://*/*"],
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                    });
+                    browser.contextMenus.create({
+                        "title": "Manage Favorites",
+                        "id": "mf",
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+                        "documentUrlPatterns": ["http://*/*","https://*/*"],
+                        "onclick": function(){
+                            openUI("settings.html#favorites");
+                        }
+                    });
+                }
+            });
+        else {
+            chrome.contextMenus.removeAll(function(){
+                if (bgSettings.rightclick) {
+                    chrome.contextMenus.create({
+                        "title": "Run the current workflow",
+                        "id": "wildfire-currentwf",
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+                        "documentUrlPatterns": ["http://*/*","https://*/*"],
+                        "onclick": function(info, tab){
+                            chrome.windows.get(tab.windowId, null, function(curr_window) {
+                                begin_fav_sim(-1, curr_window);
+                            });
+                        }
+                    });
+                    for (var i=0; i<favorites.length; i++) {
+                        if (favorites[i].rightclick)
+                            chrome.contextMenus.create({
+                                "title": "Run '" + favorites[i].name + "'",
+                                "id": "wildfire-favorite-" + i,
+                                "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"], // ignore chrome-extension://
+                                "documentUrlPatterns": ["http://*/*","https://*/*"],
+                                "onclick": function(info, tab){
+                                    chrome.windows.get(tab.windowId, null, function(curr_window) {
+                                        begin_fav_sim(info.menuItemId.replace("wildfire-favorite-",""), curr_window);
+                                    });
+                                }
+                            });
+                    }
+                    chrome.contextMenus.create({
+                        "type": "separator",
+                        "documentUrlPatterns": ["http://*/*","https://*/*"],
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                    });
+                    chrome.contextMenus.create({
+                        "title": "Manage Favorites",
+                        "contexts": ["page", "frame", "selection", "link", "editable", "image", "video", "audio"],
+                        "documentUrlPatterns": ["http://*/*","https://*/*"],
+                        "onclick": function(){
+                            openUI("settings.html#favorites");
+                        }
+                    });
+                }
+            });
+        }
 	});
 }
 
