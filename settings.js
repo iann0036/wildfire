@@ -667,6 +667,7 @@ function populateScheduledTable() {
 
             for (var i=0; i<scheduled.length; i++) {
                 var repeat = "Never";
+                if (scheduled[i].repeat==1) repeat = "Every Minute";
                 if (scheduled[i].repeat==5) repeat = "Every 5 Minutes";
                 if (scheduled[i].repeat==15) repeat = "Every 15 Minutes";
                 if (scheduled[i].repeat==30) repeat = "Every 30 Minutes";

@@ -899,8 +899,6 @@ function setDefaultSimulationVariables() {
         simulation_variables['_OS'] = 'mac';
     } else if (['Win32', 'Win64', 'Windows', 'WinCE'].indexOf(window.navigator.platform) !== -1) {
         simulation_variables['_OS'] = 'windows';
-    } else if (!os && /Linux/.test(window.navigator.platform)) {
-        simulation_variables['_OS'] = 'linux';
     }
 
     simulation_variables['_WINDOW_WIDTH'] = new_window.width;
