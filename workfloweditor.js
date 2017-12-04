@@ -352,9 +352,14 @@ function getEventOptionsHtml(userdata) {
   } else if (userdata.evt == "timer" || userdata.evt === undefined) {
     if (userdata.wait_time === undefined)
       userdata.wait_time = 0;
+    var wait_time = 0;
+    if (isNaN(parseFloat(userdata.wait_time)))
+      wait_time = userdata.wait_time;
+    else
+      wait_time = escapeOrDefault(userdata.wait_time/1000,"0");
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"event_detail_timer\">Timer</label>" +
     "    <div class=\"input-group\">" +
-    "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + escapeOrDefault(userdata.wait_time/1000,"0") + "\">" +
+    "        <input type=\"text\" class=\"form-control\" id=\"event_detail_timer\" value=\"" + wait_time + "\">" +
     "        <div class=\"input-group-addon\">secs</div>" +
     "    </div>" +
     "</div>";
@@ -548,7 +553,11 @@ function changeType() {
 function setDetailListeners() {
   $('#event_detail_timer').on('input', function() {
     var userData = figure.userData;
-    userData['wait_time'] = $('#event_detail_timer').val() * 1000;
+    userData['wait_time'] = 0;
+    if (isNaN(parseFloat($('#event_detail_timer').val())))
+      userData['wait_time'] = $('#event_detail_timer').val();
+    else
+      userData['wait_time'] = $('#event_detail_timer').val() * 1000;
     figure.setUserData(userData);
   });
   $('#event_detail_waittilltime').on('input', function() {

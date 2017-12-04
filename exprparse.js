@@ -457,7 +457,7 @@ function trunc(a) {
   return a < 0 ? Math.ceil(a) : Math.floor(a);
 }
 function random(a) {
-  return Math.random() * (a || 1);
+  return Number((Math.random() * (a || 1)).toFixed(3));
 }
 function factorial(a) { // a!
   return gamma(a + 1);

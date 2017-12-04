@@ -191,7 +191,9 @@ function resolveChar(str) {
 }
 
 function resolveVariable(str) {
-    return eresolveVariable(String(str).replace("\\","\\\\").replace("\`","\\\`"));
+    var ret = eresolveVariable(String(str).replace("\\","\\\\").replace("\`","\\\`"));
+    //console.log("Resolved " + str + " to " + ret);
+    return ret;
 }
 
 function eresolveVariable(str) {
@@ -1203,7 +1205,12 @@ function logResultAndRaceLinks(result, failure, node) {
 			nodeConnectionPromises.push(
 				new Promise(function(resolve, reject) {
 					if (links[i].userData.evt == "timer") {
-						setTimeout(resolve, resolveVariable(links[i].userData.wait_time), links[i]);
+                        var wait_time = 0;
+                        if (isNaN(parseFloat(links[i].userData.wait_time)))
+                            wait_time = Number(resolveVariable(links[i].userData.wait_time)) * 1000;
+                        else
+                            wait_time = links[i].userData.wait_time;
+						setTimeout(resolve, wait_time, links[i]);
 					} else if (links[i].userData.evt == "wait_for_element") {
 						waitForElement(resolve, resolveVariable(links[i].userData.csspath), links[i]);
 					} else if (links[i].userData.evt == "wait_for_title") {
