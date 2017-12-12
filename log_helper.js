@@ -127,7 +127,12 @@ var mappingData = {
     subimage: {
         bgColor: '#C47280',
         event_type: 'Find Image',
-        icon: 'search-image.png',
+        icon: 'search-image.png'
+    },
+    screenshot: {
+        bgColor: '#7D7D7D',
+        event_type: 'Take Screenshot',
+        icon: 'photo-camera.png',
         endoptlabel: true
     },
     scroll: {
@@ -524,6 +529,12 @@ function readableEventDetail(event, simulation_log_results) {
         case 'subimage':
             event_type = "Find Image";
             minorEvent = false;
+            break;
+        case 'screenshot':
+            event_type = "Took Screenshot";
+            minorEvent = false;
+            if (simulation_log_results && simulation_log_results.length == 1)
+                event_data = simulation_log_results[0];
             break;
         default:
             var escaped_value = event.evt.replace(/&/g, "&amp;")

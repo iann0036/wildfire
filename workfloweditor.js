@@ -259,6 +259,13 @@ function getEventOptionsHtml(userdata) {
 		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
     "    </div>" +
     "</div>";
+  } else if (userdata.evt == "screenshot") {
+    return "    <label class=\"form-label semibold\" for=\"event_useOSInput\">Options</label>" +
+    "    <div class=\"checkbox-bird\">" +
+		"      <input type=\"checkbox\" id=\"event_useOSInput\">" +
+		"      <label for=\"event_useOSInput\">Use Desktop Automation</label>" +
+    "    </div>" +
+    "</div>";
   } else if (userdata.evt == "setvar") {
     return "<div class=\"form-group\"><label class=\"form-label semibold\" for=\"var\">Variable</label>" +
     "    <input type=\"text\" class=\"form-control event-detail\" data-event-detail=\"var\" id=\"var\" value=\"" + escapeOrDefault(userdata.evt_data.var,"") + "\">" +

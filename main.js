@@ -2021,6 +2021,7 @@ function execEvent(node) {
         case 'ocr':
             return new Promise(function(resolve, reject) {
                 if (node.userData.useOSInput) {
+                    latestNativeScreenshot = null;
                     sendNativeMessage({
                         'action': 'screenshot'
                     });
@@ -2041,6 +2042,7 @@ function execEvent(node) {
         case 'subimage':
             return new Promise(function(resolve, reject) {
                 if (node.userData.useOSInput) {
+                    latestNativeScreenshot = null;
                     sendNativeMessage({
                         'action': 'screenshot'
                     });
@@ -2055,6 +2057,37 @@ function execEvent(node) {
                         "format": "png"
                     }, function(imagedata){
                         findSubimage(imagedata, node.userData.evt_data.subimgresults, node.userData.evt_data.colorvariance, node, resolve, reject);
+                    });
+                }
+            });
+        case 'screenshot':
+            return new Promise(function(resolve, reject) {
+                latestNativeScreenshot = null;
+                if (node.userData.useOSInput) {
+                    sendNativeMessage({
+                        'action': 'screenshot'
+                    });
+                    nativeInterval = setInterval(function(node, resolve, reject){
+                        if (latestNativeScreenshot) {
+                            clearInterval(nativeInterval);
+                            resolve({
+                                error: false,
+                                results: [latestNativeScreenshot.src],
+                                id: node.id,
+                                time: Date.now()
+                            });
+                        }
+                    }, 100, node, resolve, reject);
+                } else {
+                    chrome.tabs.captureVisibleTab(new_window.id,{
+                        "format": "png"
+                    }, function(imagedata){
+                        resolve({
+                            error: false,
+                            results: [imagedata],
+                            id: node.id,
+                            time: Date.now()
+                        });
                     });
                 }
             });
