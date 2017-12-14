@@ -534,7 +534,7 @@ function readableEventDetail(event, simulation_log_results) {
             event_type = "Took Screenshot";
             minorEvent = false;
             if (simulation_log_results && simulation_log_results.length == 1)
-                event_data = simulation_log_results[0];
+                event_data = "<a class='imageDownload' data-image='" + simulation_log_results[0] + "'>Download Screenshot</a>";
             break;
         default:
             var escaped_value = event.evt.replace(/&/g, "&amp;")
@@ -756,6 +756,18 @@ function populateSimulationEvents(result) {
     // Refresh table UI
     if (events.length>0)
         $('.jspContainer').height(rows_height + 43);
+
+    $('.imageDownload').click(function(e) {
+        console.log(this.getAttribute('data-image'));
+
+        var pom = document.createElement('a');
+        pom.setAttribute('href', this.getAttribute('data-image'));
+        pom.setAttribute('download', "screenshot.png");
+        pom.style.display = 'none';
+        document.body.appendChild(pom);
+        pom.click();
+        document.body.removeChild(pom);  
+    });
 }
 
 $('#table-check-head').click(function(e) {
